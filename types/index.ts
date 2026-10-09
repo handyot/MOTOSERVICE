@@ -40,6 +40,21 @@ export interface PartItem {
   warrantyMonths: number;
 }
 
+export interface FeaturedPartItem {
+  id: string;
+  sku: string;
+  name: string;
+  shortDescription: string;
+  price: number;
+  currency: string;
+  imageUrl?: string | null;
+  categoryName?: string | null;
+  voltage?: number;
+  powerW?: number;
+  capacityAh?: number;
+  isPopular?: boolean;
+}
+
 export interface CompatibilityCheckResult {
   isCompatible: boolean;
   confidenceScore: number; // 0 - 100
