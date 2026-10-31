@@ -1,9 +1,12 @@
 import { Hero } from "../components/home/Hero";
-import { CompatibilityWidget } from "../components/home/CompatibilityWidget";
 import { CategoryGrid } from "../components/home/CategoryGrid";
 import { FeaturedParts } from "../components/home/FeaturedParts";
+import { TechFeatures } from "../components/home/TechFeatures";
+import { ArchitectureStatusBanner } from "../components/home/ArchitectureStatusBanner";
 import { WhyChooseUs } from "../components/home/WhyChooseUs";
 import { AssistanceCTA } from "../components/home/AssistanceCTA";
+import { NewsletterSection } from "../components/home/NewsletterSection";
+import { EcoMotoCatalogSection } from "../components/ecomoto/EcoMotoCatalogSection";
 import { createClient } from "../lib/supabase/server";
 import type { FeaturedPartItem } from "../types";
 
@@ -15,6 +18,7 @@ export default async function Home() {
 
   try {
     const supabase = await createClient();
+
     const { data, error: queryError } = await supabase
       .from("repuestos")
       .select(`
@@ -50,7 +54,10 @@ export default async function Home() {
           sku: item.codigo_sku,
           name: item.nombre,
           shortDescription: item.descripcion || "",
-          price: typeof item.precio === "number" ? item.precio : Number(item.precio),
+          price:
+            typeof item.precio === "number"
+              ? item.precio
+              : Number(item.precio),
           currency: item.moneda || "PEN",
           imageUrl: item.imagen_url,
           categoryName: cat?.nombre ?? null,
@@ -61,6 +68,7 @@ export default async function Home() {
     if (typeof err === "object" && err !== null && "digest" in err) {
       throw err;
     }
+
     console.error(
       "[MOTOSERVICE] Error inesperado en el servidor al obtener repuestos:",
       err instanceof Error ? err.message : err
@@ -70,23 +78,29 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col">
-      {/* 1. Hero banner: Propuesta de valor de MOTOSERVICE */}
       <Hero />
 
-      {/* 2. Asistente interactivo de compatibilidad (Motor JavaScript) */}
-      <CompatibilityWidget />
+      {/* Catálogo investigado: motos oficiales, repuestos compatibles, buscador y comparador */}
+      <EcoMotoCatalogSection />
 
-      {/* 3. Categorías de repuestos para motos eléctricas */}
+      {/* Líneas de especialización de repuestos */}
       <CategoryGrid />
 
-      {/* 4. Catálogo destacado con especificaciones técnicas y precios */}
+      {/* Repuestos destacados oficiales consultados desde Supabase */}
       <FeaturedParts parts={parts} error={error} />
 
-      {/* 5. Pilares de confianza y diferenciación */}
-      <WhyChooseUs />
+      {/* Metodología y criterios de verificación técnica */}
+      <TechFeatures />
 
-      {/* 6. Bloque de asistencia técnica personalizada */}
+      {/* Estado real y transparente de la arquitectura */}
+      <ArchitectureStatusBanner />
+
+      {/* Pilares de confianza y asistencia técnica */}
+      <WhyChooseUs />
       <AssistanceCTA />
+
+      {/* Novedades y guías técnicas */}
+      <NewsletterSection />
     </div>
   );
 }

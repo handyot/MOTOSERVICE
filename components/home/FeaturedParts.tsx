@@ -1,6 +1,10 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
 import { formatCurrency, formatVoltage, formatPower } from "../../lib/formatters.js";
-import { Badge } from "../ui/Badge";
 import { Icon } from "../ui/Icons";
+import { useCart } from "../../lib/cart/cart-context";
 import type { FeaturedPartItem } from "../../types";
 
 interface FeaturedPartsProps {
@@ -9,80 +13,115 @@ interface FeaturedPartsProps {
 }
 
 export function FeaturedParts({ parts = [], error = false }: FeaturedPartsProps) {
+  const { addItem } = useCart();
+  const [feedback, setFeedback] = useState<{ [sku: string]: string }>({});
+
+  const handleAdd = (part: FeaturedPartItem) => {
+    const res = addItem({
+      id: part.sku,
+      sku: part.sku,
+      name: part.name,
+      price: part.price,
+      currency: part.currency,
+      categoryName: part.categoryName,
+      imageUrl: part.imageUrl,
+      isDirectSale: true,
+      stockAvailable: 15,
+      voltage: part.voltage,
+    });
+
+    setFeedback((prev) => ({
+      ...prev,
+      [part.sku]: res.success ? "¡Añadido al carrito!" : (res.message || "No disponible"),
+    }));
+
+    setTimeout(() => {
+      setFeedback((prev) => {
+        const next = { ...prev };
+        delete next[part.sku];
+        return next;
+      });
+    }, 3000);
+  };
+
   return (
-    <section id="catalogo" className="scroll-mt-20 py-20 bg-slate-900/30">
+    <section id="catalogo" className="scroll-mt-20 py-16 bg-slate-50 border-b border-gray-200">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 pb-4 border-b border-gray-200">
           <div>
-            <Badge variant="electric" className="mb-2">
-              Selección Técnica
-            </Badge>
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-              Repuestos Destacados
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="px-2.5 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+                Venta Directa NeroElectric Motors
+              </span>
+              <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5">
+                ● Stock Propio Inmediato
+              </span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+              Repuestos con Despacho Inmediato
             </h2>
-            <p className="mt-2 text-slate-400 text-sm sm:text-base max-w-xl">
-              Los componentes más solicitados para mantenimiento preventivo, aumento de potencia
-              y extensión de autonomía.
+            <p className="mt-1 text-gray-600 text-xs sm:text-sm max-w-xl">
+              Componentes con disponibilidad física en almacén Lima, precios confirmados y garantía técnica.
             </p>
           </div>
           <a
             href="#compatibilidad"
-            className="mt-4 md:mt-0 text-sm font-bold text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-1"
+            className="mt-3 md:mt-0 text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
           >
-            Filtra por tu modelo exacto
-            <Icon name="arrow-right" className="w-4 h-4" />
+            Filtrar por tu modelo exacto
+            <Icon name="arrow-right" className="w-3.5 h-3.5" />
           </a>
         </div>
 
         {error ? (
-          <div className="rounded-2xl border border-rose-900/40 bg-rose-950/20 p-8 sm:p-12 text-center max-w-lg mx-auto">
-            <div className="w-14 h-14 rounded-2xl bg-rose-950/60 border border-rose-800/40 flex items-center justify-center text-rose-400 mx-auto mb-4">
-              <Icon name="alert-circle" className="w-7 h-7" />
+          <div className="rounded-xl border border-gray-200 bg-white p-8 text-center max-w-lg mx-auto shadow-xs">
+            <div className="w-12 h-12 rounded-lg bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3">
+              <Icon name="alert-circle" className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">
-              No pudimos cargar los repuestos destacados
+            <h3 className="text-base font-bold text-gray-900 mb-1">
+              Dificultad al consultar repuestos
             </h3>
-            <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              Ocurrió una dificultad temporal al consultar el catálogo. Por favor intenta recargar la página más tarde.
+            <p className="text-gray-500 text-xs leading-relaxed mb-4">
+              Por favor intenta recargar la página o consulta con un asesor técnico.
             </p>
             <a
               href="#compatibilidad"
-              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-semibold px-4 py-2 text-xs transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 text-xs transition-colors"
             >
               Consultar Compatibilidad
-              <Icon name="arrow-right" className="w-4 h-4" />
+              <Icon name="arrow-right" className="w-3.5 h-3.5" />
             </a>
           </div>
         ) : parts.length === 0 ? (
-          <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-10 sm:p-14 text-center max-w-lg mx-auto">
-            <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-cyan-400 mx-auto mb-4">
-              <Icon name="search" className="w-8 h-8" />
+          <div className="rounded-xl border border-gray-200 bg-white p-10 text-center max-w-lg mx-auto shadow-xs">
+            <div className="w-12 h-12 rounded-lg bg-gray-50 text-gray-500 flex items-center justify-center mx-auto mb-3">
+              <Icon name="search" className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">
-              No hay repuestos disponibles
+            <h3 className="text-base font-bold text-gray-900 mb-1">
+              Catálogo en actualización
             </h3>
-            <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-              Actualmente no tenemos productos destacados en el catálogo activo. Vuelve a consultar pronto o explora nuestro asistente de compatibilidad.
+            <p className="text-gray-500 text-xs mb-4">
+              Puedes verificar compatibilidad de repuestos o consultar directamente con nuestro taller.
             </p>
             <a
               href="#compatibilidad"
-              className="inline-flex items-center gap-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-5 py-2.5 text-xs transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 text-xs transition-colors"
             >
-              Consultar Compatibilidad
-              <Icon name="arrow-right" className="w-4 h-4" />
+              Verificar Compatibilidad
+              <Icon name="arrow-right" className="w-3.5 h-3.5" />
             </a>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {parts.map((part) => (
               <div
                 key={part.id}
-                className="rounded-2xl border border-slate-800 bg-slate-950 p-6 flex flex-col justify-between hover:border-slate-700 hover:shadow-xl hover:shadow-slate-900/50 transition-all"
+                className="rounded-xl border border-gray-200 bg-white p-5 flex flex-col justify-between hover:border-gray-300 hover:shadow-xs transition-all"
               >
                 <div>
                   {/* Imagen o Marcador Visual */}
                   {part.imageUrl ? (
-                    <div className="relative w-full h-44 mb-5 rounded-xl overflow-hidden bg-slate-900 border border-slate-800 flex items-center justify-center">
+                    <div className="relative w-full h-44 mb-4 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 flex items-center justify-center">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={part.imageUrl}
@@ -90,63 +129,73 @@ export function FeaturedParts({ parts = [], error = false }: FeaturedPartsProps)
                         className="w-full h-full object-cover"
                         loading="lazy"
                       />
+                      <div className="absolute top-2 left-2">
+                        <span className="rounded bg-white/90 backdrop-blur-xs px-2 py-0.5 text-[10px] font-semibold text-emerald-700 border border-gray-200">
+                          Venta Directa
+                        </span>
+                      </div>
                     </div>
                   ) : (
-                    <div className="w-full h-44 mb-5 rounded-xl bg-slate-900/40 border border-slate-800/80 flex flex-col items-center justify-center text-slate-500 gap-2">
-                      <div className="w-12 h-12 rounded-xl bg-slate-800/60 border border-slate-700/40 flex items-center justify-center text-cyan-400">
-                        <Icon name="circuit" className="w-6 h-6" />
+                    <div className="relative w-full h-44 mb-4 rounded-lg bg-gray-50 border border-gray-100 flex flex-col items-center justify-center text-gray-400 gap-2">
+                      <div className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-blue-600">
+                        <Icon name="circuit" className="w-5 h-5" />
                       </div>
-                      <span className="text-xs font-medium text-slate-400">
-                        Sin imagen disponible
+                      <span className="text-xs font-medium text-gray-500">
+                        Componente Verificado
                       </span>
+                      <div className="absolute top-2 left-2">
+                        <span className="rounded bg-white px-2 py-0.5 text-[10px] font-semibold text-emerald-700 border border-gray-200">
+                          Venta Directa
+                        </span>
+                      </div>
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between mb-3 gap-2">
-                    <span className="text-xs font-mono text-slate-500 truncate">
+                  <div className="flex items-center justify-between mb-2 gap-2">
+                    <span className="text-xs font-mono text-gray-500 font-semibold truncate">
                       SKU: {part.sku}
                     </span>
                     {part.categoryName ? (
-                      <Badge variant="electric" className="shrink-0">
+                      <span className="shrink-0 px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-700 border border-gray-200">
                         {part.categoryName}
-                      </Badge>
+                      </span>
                     ) : part.isPopular ? (
-                      <Badge variant="electric" className="shrink-0">
+                      <span className="shrink-0 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                         Más Vendido
-                      </Badge>
+                      </span>
                     ) : null}
                   </div>
 
-                  <h3 className="text-lg font-bold text-white leading-snug">
+                  <h3 className="text-base font-bold text-gray-900 leading-snug">
                     {part.name}
                   </h3>
-                  <p className="mt-2 text-xs sm:text-sm text-slate-400 leading-relaxed line-clamp-3">
+                  <p className="mt-1.5 text-xs text-gray-500 leading-relaxed line-clamp-2">
                     {part.shortDescription}
                   </p>
 
                   {/* Specs pill row */}
                   {(part.voltage || part.powerW || part.capacityAh) ? (
-                    <div className="flex flex-wrap gap-2 mt-4">
+                    <div className="flex flex-wrap gap-2 mt-3">
                       {part.voltage && (
-                        <div className="rounded-lg bg-slate-900 border border-slate-800 px-2.5 py-1 text-xs">
-                          <span className="text-slate-500 mr-1">Tensión:</span>
-                          <span className="font-bold text-cyan-400">
+                        <div className="rounded bg-gray-50 border border-gray-200 px-2 py-0.5 text-xs text-gray-700">
+                          <span className="text-gray-400 mr-1 text-[11px]">Tensión:</span>
+                          <span className="font-semibold text-blue-700">
                             {formatVoltage(part.voltage)}
                           </span>
                         </div>
                       )}
                       {part.powerW && (
-                        <div className="rounded-lg bg-slate-900 border border-slate-800 px-2.5 py-1 text-xs">
-                          <span className="text-slate-500 mr-1">Potencia:</span>
-                          <span className="font-bold text-white">
+                        <div className="rounded bg-gray-50 border border-gray-200 px-2 py-0.5 text-xs text-gray-700">
+                          <span className="text-gray-400 mr-1 text-[11px]">Potencia:</span>
+                          <span className="font-semibold text-gray-800">
                             {formatPower(part.powerW)}
                           </span>
                         </div>
                       )}
                       {part.capacityAh && (
-                        <div className="rounded-lg bg-slate-900 border border-slate-800 px-2.5 py-1 text-xs">
-                          <span className="text-slate-500 mr-1">Capacidad:</span>
-                          <span className="font-bold text-emerald-400">
+                        <div className="rounded bg-gray-50 border border-gray-200 px-2 py-0.5 text-xs text-gray-700">
+                          <span className="text-gray-400 mr-1 text-[11px]">Capacidad:</span>
+                          <span className="font-semibold text-emerald-700">
                             {part.capacityAh} Ah
                           </span>
                         </div>
@@ -155,23 +204,49 @@ export function FeaturedParts({ parts = [], error = false }: FeaturedPartsProps)
                   ) : null}
                 </div>
 
-                {/* Bottom footer */}
-                <div className="mt-6 pt-5 border-t border-slate-800/80 flex items-center justify-between">
-                  <div>
-                    <span className="text-[11px] uppercase tracking-wider text-slate-500 block">
-                      Precio Estimado
-                    </span>
-                    <span className="text-2xl font-black text-cyan-400">
-                      {formatCurrency(part.price, part.currency)}
+                {/* Bottom footer con precio y botón de compra directa */}
+                <div className="mt-5 pt-4 border-t border-gray-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-gray-400 block font-semibold">
+                        Precio
+                      </span>
+                      <span className="text-xl font-bold text-gray-900">
+                        {formatCurrency(part.price, part.currency)}
+                      </span>
+                    </div>
+
+                    <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      En stock (Lima)
                     </span>
                   </div>
 
-                  <a
-                    href="#compatibilidad"
-                    className="rounded-xl bg-slate-900 hover:bg-cyan-500 hover:text-slate-950 border border-slate-700 hover:border-cyan-400 px-4 py-2.5 text-xs font-bold text-white transition-all"
-                  >
-                    Verificar Ajuste
-                  </a>
+                  {feedback[part.sku] && (
+                    <div className="rounded-md bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-800 flex items-center justify-between">
+                      <span>{feedback[part.sku]}</span>
+                      <Link href="/carrito" className="underline text-emerald-900 font-bold">
+                        Ir al carrito →
+                      </Link>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleAdd(part)}
+                      className="flex-1 rounded-lg bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold py-2.5 text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                    >
+                      <Icon name="cart" className="w-3.5 h-3.5" />
+                      Añadir al Carrito
+                    </button>
+
+                    <a
+                      href="#compatibilidad"
+                      className="rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3 py-2.5 text-xs font-semibold text-gray-600 transition-colors flex items-center justify-center"
+                      title="Verificar compatibilidad técnica"
+                    >
+                      <Icon name="check-circle" className="w-3.5 h-3.5 text-emerald-600" />
+                    </a>
+                  </div>
                 </div>
               </div>
             ))}

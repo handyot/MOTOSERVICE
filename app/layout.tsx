@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "../components/layout/Navbar";
 import { Footer } from "../components/layout/Footer";
+import { CartProvider } from "../lib/cart/cart-context";
+import { VoltIAWidget } from "../components/voltia/VoltIAWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,21 +17,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MOTOSERVICE | Repuestos y soluciones para tu moto eléctrica",
+  title: "NeroElectric Motors | Repuestos y Soluciones para Motos Eléctricas",
   description:
-    "Plataforma comercial especializada en repuestos para motos eléctricas y asistencia técnica de compatibilidad. Baterías de litio, controladores senoidales, motores HUB y accesorios.",
+    "Tienda técnica especializada en repuestos originales y homologados, mantenimiento y soluciones para motos eléctricas en Perú. Baterías de litio, controladores senoidales, motores y asesoría de compatibilidad.",
   keywords: [
-    "motos eléctricas",
-    "repuestos moto eléctrica",
-    "baterías de litio para moto",
-    "controlador senoidal",
-    "motor hub brushless",
-    "NIU",
-    "Super Soco",
-    "Yadea",
-    "compatibilidad repuestos moto",
-    "MOTOSERVICE",
+    "NeroElectric Motors",
+    "repuestos motos eléctricas",
+    "baterías de litio para moto eléctrica",
+    "controladores senoidales",
+    "motores brushless hub",
+    "TAILG repuestos",
+    "Yadea repuestos",
+    "KAYENCORP repuestos",
+    "GreenLine repuestos",
+    "compatibilidad moto eléctrica Perú",
   ],
+  icons: {
+    icon: "/branding/nero-emblem.png",
+    shortcut: "/branding/nero-emblem.png",
+    apple: "/branding/nero-emblem.png",
+  },
 };
 
 export default function RootLayout({
@@ -40,12 +47,15 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-slate-950">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+      <body className="min-h-full flex flex-col bg-white text-gray-900 selection:bg-blue-600 selection:text-white">
+        <CartProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <VoltIAWidget />
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );

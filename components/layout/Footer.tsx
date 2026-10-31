@@ -1,129 +1,152 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Icon } from "../ui/Icons";
 
 export function Footer() {
   return (
-    <footer className="border-t border-slate-800 bg-slate-950 text-slate-400">
+    <footer className="border-t border-gray-200 bg-slate-50 text-gray-600">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          {/* Brand Col */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-500 shadow-md shadow-cyan-500/30">
-                <Icon name="zap" className="h-5 w-5 text-slate-950" />
-              </div>
-              <span className="text-xl font-black text-white">
-                MOTO<span className="text-cyan-400">SERVICE</span>
-              </span>
-            </div>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              Repuestos y soluciones para tu moto eléctrica. Especialistas en
-              baterías de litio, controladores senoidales, motores hub y
-              asistencia técnica de compatibilidad.
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+
+          {/* Columna de Marca NeroElectric Motors */}
+          <div className="space-y-3.5">
+            <Link href="/" className="inline-block">
+              <Image
+                src="/branding/nero-electric-motors-optimized.png"
+                alt="NeroElectric Motors"
+                width={180}
+                height={50}
+                className="h-8 sm:h-9 w-auto object-contain"
+              />
+            </Link>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Tienda técnica especializada en repuestos para motocicletas eléctricas, bicimotos y VMP. Baterías, controladores, cargadores y servicio de verificación técnica.
             </p>
-            <div className="text-xs text-slate-500">
-              Lima, Perú • Cobertura y envíos a todo el territorio nacional.
+            <div className="flex items-center gap-2 text-xs text-gray-700">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-600"></span>
+              <span>Almacén Central y Taller Técnico: Lima, Perú</span>
+            </div>
+            <div className="pt-1">
+              <a
+                href="https://wa.me/51999999999?text=Hola%20NeroElectric%20Motors,%20necesito%20asistencia%20t%C3%A9cnica"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 transition-colors"
+              >
+                <Icon name="whatsapp" className="w-4 h-4 text-emerald-600" />
+                WhatsApp: Consultas Técnicas
+              </a>
             </div>
           </div>
 
-          {/* Quick links */}
+          {/* Líneas de Repuestos */}
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-200 mb-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-900 mb-3">
               Líneas de Repuestos
             </h3>
-            <ul className="space-y-2.5 text-sm">
+            <ul className="space-y-2 text-xs">
               <li>
-                <Link href="#categorias" className="hover:text-cyan-400 transition-colors">
-                  Baterías de Litio & BMS
+                <Link href="/#categorias" className="hover:text-blue-600 transition-colors">
+                  Baterías de Litio NMC y LiFePO4
                 </Link>
               </li>
               <li>
-                <Link href="#categorias" className="hover:text-cyan-400 transition-colors">
+                <Link href="/#categorias" className="hover:text-blue-600 transition-colors">
                   Controladores Senoidales ESC
                 </Link>
               </li>
               <li>
-                <Link href="#categorias" className="hover:text-cyan-400 transition-colors">
-                  Motores Brushless HUB & Centrales
+                <Link href="/#categorias" className="hover:text-blue-600 transition-colors">
+                  Motores HUB Brushless y Centrales
                 </Link>
               </li>
               <li>
-                <Link href="#categorias" className="hover:text-cyan-400 transition-colors">
-                  Sistemas de Frenos Regenerativos
+                <Link href="/#categorias" className="hover:text-blue-600 transition-colors">
+                  Cargadores Rápidos 48V - 72V
                 </Link>
               </li>
               <li>
-                <Link href="#categorias" className="hover:text-cyan-400 transition-colors">
-                  Cargadores Inteligentes 48V-72V
+                <Link href="/#categorias" className="hover:text-blue-600 transition-colors">
+                  Frenos con Corte Regenerativo
+                </Link>
+              </li>
+              <li>
+                <Link href="/#categorias" className="hover:text-blue-600 transition-colors">
+                  Neumáticos Urbanos Reforzados
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Models supported */}
+          {/* Marcas y Compatibilidad */}
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-200 mb-4">
-              Marcas Soportadas
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-900 mb-3">
+              Marcas Homologadas
             </h3>
-            <ul className="space-y-2.5 text-sm">
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-                NIU (Serie NQi, MQi, UQi)
+            <ul className="space-y-2 text-xs">
+              <li className="flex items-center gap-2 text-gray-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                TAILG (E5, N6, F55, T7...)
               </li>
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-                Super Soco (TC, TC Max, CPx, TS)
+              <li className="flex items-center gap-2 text-gray-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                YADEA (M6, M6 Pro, E8S Pro...)
               </li>
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-                Yadea (G5, C-Umi, E8S)
+              <li className="flex items-center gap-2 text-gray-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                KAYENCORP (IDO, MNK2, Sport...)
               </li>
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-                Sunra (Miku Super, Hawk, Robo)
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-                Segway / Ninebot & Conversiones
+              <li className="flex items-center gap-2 text-gray-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                GreenLine (M3, F4 Pro, MX6...)
               </li>
             </ul>
           </div>
 
-          {/* Guarantees & Tech info */}
+          {/* Políticas y Soporte */}
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-200 mb-4">
-              Garantía y Plataforma
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-900 mb-3">
+              Información y Soporte
             </h3>
-            <div className="space-y-3 text-sm">
-              <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3">
-                <p className="text-xs font-semibold text-slate-300 mb-1">
-                  Pasarela de Pago Segura (Culqi 3DS)
+            <div className="space-y-2.5 text-xs">
+              <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-xs">
+                <p className="font-semibold text-gray-900 mb-1 flex items-center gap-1.5">
+                  <Icon name="shield" className="w-4 h-4 text-emerald-600" />
+                  Garantía y Compatibilidad
                 </p>
-                <p className="text-[11px] text-slate-500">
-                  Infraestructura lista para pagos con autenticación 3D Secure y tarjetas locales/internacionales.
+                <p className="text-[11px] text-gray-500 leading-snug">
+                  Verificación de tensión nominal y terminales de conexión antes del despacho en almacén.
                 </p>
               </div>
-              <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3">
-                <p className="text-xs font-semibold text-slate-300 mb-1">
-                  Arquitectura Cloud
+
+              <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-xs">
+                <p className="font-semibold text-gray-900 mb-1 flex items-center gap-1.5">
+                  <Icon name="tool" className="w-4 h-4 text-blue-600" />
+                  Asistente Técnico VoltIA
                 </p>
-                <p className="text-[11px] text-slate-500">
-                  Potenciado por Next.js App Router, Supabase para gestión de datos y despliegue continuo en Vercel.
+                <p className="text-[11px] text-gray-500 leading-snug">
+                  Diagnóstico interactivo para identificar averías y orientar repuestos compatibles.
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="border-t border-slate-800/80 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+        {/* Barra inferior */}
+        <div className="border-t border-gray-200 pt-5 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-3">
           <p>
-            © {new Date().getFullYear()} MOTOSERVICE. Todos los derechos reservados. Repuestos y soluciones para tu moto eléctrica.
+            © {new Date().getFullYear()} NeroElectric Motors. Todos los derechos reservados. Lima, Perú.
           </p>
-          <div className="flex gap-6">
-            <span>Términos y Condiciones</span>
-            <span>Garantía de Compatibilidad</span>
-            <span>Soporte Técnico</span>
+          <div className="flex gap-4 text-gray-600">
+            <Link href="/#compatibilidad" className="hover:text-blue-600 transition-colors">
+              Compatibilidad
+            </Link>
+            <Link href="/cuenta" className="hover:text-blue-600 transition-colors">
+              Mi Cuenta
+            </Link>
+            <Link href="/admin" className="hover:text-blue-600 transition-colors">
+              Administración
+            </Link>
           </div>
         </div>
       </div>

@@ -1,55 +1,57 @@
 import { Icon } from "../ui/Icons";
-import { Badge } from "../ui/Badge";
 
 export function AssistanceCTA() {
   return (
-    <section id="asesoria" className="scroll-mt-20 py-20 bg-gradient-to-b from-slate-900 to-slate-950">
+    <section id="asesoria" className="scroll-mt-20 py-16 bg-white border-b border-gray-200">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-slate-950 via-slate-900 to-cyan-950/40 p-8 sm:p-12 lg:p-16">
-          {/* Background glow */}
-          <div className="absolute top-0 right-0 -mt-12 -mr-12 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="rounded-2xl border border-gray-200 bg-slate-50 p-8 sm:p-10 lg:p-12">
 
-          <div className="relative z-10 max-w-2xl">
-            <Badge variant="electric" className="mb-4">
-              Asistencia Técnica al Cliente
-            </Badge>
-
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">
-              ¿Dudas sobre la compatibilidad del controlador o batería de tu moto?
-            </h2>
-
-            <p className="mt-4 text-base text-slate-300 leading-relaxed">
-              Nuestro equipo técnico te ayuda a validar dimensiones, protocolos de comunicación
-              (CAN-Bus/LIN), arnés de cables y voltaje antes de que realices cualquier compra.
-            </p>
-
-            <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-              <a
-                href="#compatibilidad"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 px-6 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-400/20 transition-all"
-              >
-                <Icon name="check-circle" className="w-5 h-5 text-slate-950" />
-                Diagnosticar mi Moto Ahora
-              </a>
-
-              <div className="inline-flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-800 bg-slate-900/60 text-slate-300 text-xs sm:text-sm">
-                <Icon name="headset" className="w-5 h-5 text-cyan-400 shrink-0" />
-                <span>Atención directa para talleres y propietarios particulares.</span>
-              </div>
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 mb-3">
+              <Icon name="tool" className="w-3.5 h-3.5 text-blue-600" />
+              Soporte Técnico Especializado
             </div>
 
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-slate-800/80">
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <Icon name="check" className="w-4 h-4 text-emerald-400 shrink-0" />
-                Revisión de arnés y fichas
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight leading-tight">
+              ¿Dudas sobre qué repuesto o batería necesita tu moto eléctrica?
+            </h2>
+
+            <p className="mt-3 text-sm text-gray-600 leading-relaxed">
+              En <strong>NeroElectric Motors</strong> te asesoramos directamente para verificar dimensiones del compartimento, curvas de descarga de batería, conectores de potencia y programación de controladores senoidales.
+            </p>
+
+            <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <a
+                href="https://wa.me/51999999999?text=Hola%20NeroElectric%20Motors,%20tengo%20una%20consulta%20t%C3%A9cnica%20sobre%20mi%20moto%20el%C3%A9ctrica"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-95 px-5 py-3 text-xs sm:text-sm font-semibold text-white shadow-xs transition-all cursor-pointer"
+              >
+                <Icon name="whatsapp" className="w-4 h-4 text-white" />
+                <span>Contactar a un Técnico por WhatsApp</span>
+              </a>
+
+              <a
+                href="#compatibilidad"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 px-5 py-3 text-xs sm:text-sm font-semibold text-gray-700 transition-all shadow-xs"
+              >
+                <Icon name="check-circle" className="w-4 h-4 text-blue-600" />
+                <span>Verificar con Asistente VoltIA</span>
+              </a>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-5 border-t border-gray-200 text-xs text-gray-600">
+              <div className="flex items-center gap-2">
+                <Icon name="check" className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Diagnóstico de arnés y sensores</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <Icon name="check" className="w-4 h-4 text-emerald-400 shrink-0" />
-                Validación de BMS y celdas
+              <div className="flex items-center gap-2">
+                <Icon name="check" className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Evaluación de packs de litio</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <Icon name="check" className="w-4 h-4 text-emerald-400 shrink-0" />
-                Configuración de controladores
+              <div className="flex items-center gap-2">
+                <Icon name="check" className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Compatibilidad 48V, 60V y 72V</span>
               </div>
             </div>
           </div>
