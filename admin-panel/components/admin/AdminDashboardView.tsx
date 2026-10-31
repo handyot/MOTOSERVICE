@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { AuthAccount, OrderStatus } from '../../types';
 import { signOutAction } from '../../lib/auth/actions';
 import { Icon } from '../ui/Icons';
@@ -35,6 +37,7 @@ export interface AdminOrderRecord {
   estado_pedido: OrderStatus;
   estado_comprobante: string;
   es_invitado: boolean;
+  created_at?: string;
 }
 
 export interface AdminDocumentRecord {
@@ -50,6 +53,7 @@ export interface AdminDocumentRecord {
   total_igv?: number | string;
   total_comprobante?: number | string;
   estado: string;
+  created_at?: string;
 }
 
 export interface AdminAssistanceRecord {
@@ -58,12 +62,14 @@ export interface AdminAssistanceRecord {
   email_contacto: string;
   tipo_solicitud: string;
   descripcion: string;
+  created_at?: string;
 }
 
 export interface AdminSubscriptionRecord {
   id_suscripcion?: string;
   email: string;
   origen: string;
+  created_at?: string;
 }
 
 export interface AdminBrandRecord {
@@ -101,6 +107,31 @@ export interface AdminCompatibilityRecord {
   notas_tecnicas?: string | null;
 }
 
+type ModuleId =
+  | 'resumen'
+  | 'catalogo_db'
+  | 'productos'
+  | 'pedidos'
+  | 'clientes'
+  | 'promociones'
+  | 'facturacion'
+  | 'despacho'
+  | 'voltia'
+  | 'importador';
+
+interface NavItem {
+  id: ModuleId;
+  label: string;
+  shortLabel: string;
+  icon: string;
+  count?: number;
+}
+
+interface NavGroup {
+  groupTitle: string;
+  items: NavItem[];
+}
+
 interface AdminDashboardViewProps {
   account: AuthAccount;
   stats: AdminStats;
@@ -128,47 +159,251 @@ export function AdminDashboardView({
   initialParts = [],
   initialCompatibilities = [],
 }: AdminDashboardViewProps) {
-  const [activeModule, setActiveModule] = useState<
-    | 'resumen'
-    | 'catalogo_db'
-    | 'productos'
-    | 'pedidos'
-    | 'facturacion'
-    | 'despacho'
-    | 'clientes'
-    | 'voltia'
-    | 'promociones'
-    | 'importador'
-  >('resumen');
+  const [activeModule, setActiveModule] = useState<ModuleId>('resumen');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Datos reactivos de operación
   const [orders, setOrders] = useState<AdminOrderRecord[]>(initialOrders);
   const [brands, setBrands] = useState<AdminBrandRecord[]>(initialBrands);
   const [models, setModels] = useState<AdminModelRecord[]>(initialModels);
-  const [parts] = useState<AdminPartRecord[]>(initialParts);
-  const [compatibilities] = useState<AdminCompatibilityRecord[]>(
+  const [parts, setParts] = useState<AdminPartRecord[]>(initialParts);
+  const [compatibilities, setCompatibilities] = useState<AdminCompatibilityRecord[]>(
     initialCompatibilities
   );
 
-  const [statusFeedback, setStatusFeedback] = useState<string | null>(null);
+  // Feedback global de acciones operativas
+  const [statusFeedback, setStatusFeedback] = useState<{
+    type: 'success' | 'error' | 'warning';
+    text: string;
+  } | null>(null);
   const [isUpdatingOrder, setIsUpdatingOrder] = useState<string | null>(null);
 
-  // Estado para formulario rápido de Marcas / Modelos / Compatibilidades
+  // Sub-vista y filtros del módulo Catálogo Base (Módulo B)
+  const [catalogEntityTab, setCatalogEntityTab] = useState<
+    'modelos' | 'repuestos' | 'compatibilidades' | 'marcas'
+  >('modelos');
+  const [catalogSearch, setCatalogSearch] = useState('');
+  const [catalogBrandFilter, setCatalogBrandFilter] = useState<string>('ALL');
+  const [isSubmittingCatalog, setIsSubmittingCatalog] = useState(false);
+
+  // Estados de formularios de alta en Catálogo Base (conectados a /api/admin/catalog/manage)
   const [newBrandName, setNewBrandName] = useState('');
+  const [newBrandOrigin, setNewBrandOrigin] = useState('China');
+
   const [newModelBrandId, setNewModelBrandId] = useState(
     initialBrands[0]?.id_marca ? String(initialBrands[0].id_marca) : '1'
   );
   const [newModelName, setNewModelName] = useState('');
   const [newModelVoltage, setNewModelVoltage] = useState('72');
-  const [newModelPower] = useState('2000');
+  const [newModelPower, setNewModelPower] = useState('2000');
 
-  const storefrontUrl = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://neroelectric.com';
+  const [newPartSku, setNewPartSku] = useState('');
+  const [newPartName, setNewPartName] = useState('');
+  const [newPartPrice, setNewPartPrice] = useState('');
 
-  const ownProducts = FEATURED_PARTS.map((p) => ({
-    ...p,
-    ownStock: 15,
-    isDirectSale: true,
-  }));
+  const [newCompatPartId, setNewCompatPartId] = useState(
+    initialParts[0]?.id_repuesto ? String(initialParts[0].id_repuesto) : ''
+  );
+  const [newCompatModelId, setNewCompatModelId] = useState(
+    initialModels[0]?.id_modelo ? String(initialModels[0].id_modelo) : ''
+  );
+  const [newCompatLevel, setNewCompatLevel] = useState('CONFIRMADA');
+  const [newCompatNotes, setNewCompatNotes] = useState('');
 
+  // Filtros en Inventario Propio, Pedidos, Clientes, Facturación, VoltIA y Promociones
+  const [inventorySearch, setInventorySearch] = useState('');
+  const [inventoryCategoryFilter, setInventoryCategoryFilter] = useState('ALL');
+
+  const [orderSearch, setOrderSearch] = useState('');
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('ALL');
+
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [customerTypeFilter, setCustomerTypeFilter] = useState<'ALL' | 'REGISTERED' | 'GUEST'>('ALL');
+
+  const [documentSearch, setDocumentSearch] = useState('');
+  const [documentTypeFilter, setDocumentTypeFilter] = useState('ALL');
+
+  const [assistanceSearch, setAssistanceSearch] = useState('');
+  const [subscriptionSearch, setSubscriptionSearch] = useState('');
+
+  const storefrontUrl = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://neroelectricmotors.com';
+
+  const ownProducts = useMemo(
+    () =>
+      FEATURED_PARTS.map((p) => ({
+        ...p,
+        ownStock: 15,
+        isDirectSale: true,
+      })),
+    []
+  );
+
+  // Mapa rápido de ID de marca -> Nombre
+  const brandNameById = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const b of brands) {
+      map.set(b.id_marca, b.nombre);
+    }
+    return map;
+  }, [brands]);
+
+  // Mapa rápido de ID de modelo y repuesto para compatibilidades
+  const modelNameById = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const m of models) {
+      const bName = brandNameById.get(m.id_marca);
+      map.set(m.id_modelo, bName ? `${bName} ${m.nombre}` : m.nombre);
+    }
+    return map;
+  }, [models, brandNameById]);
+
+  const partNameById = useMemo(() => {
+    const map = new Map<number, { name: string; sku: string }>();
+    for (const p of parts) {
+      map.set(p.id_repuesto, { name: p.nombre, sku: p.codigo_sku });
+    }
+    return map;
+  }, [parts]);
+
+  // Estructura de navegación agrupada según requerimiento 3A
+  const navGroups: NavGroup[] = useMemo(
+    () => [
+      {
+        groupTitle: 'General',
+        items: [
+          {
+            id: 'resumen',
+            label: 'Resumen operativo',
+            shortLabel: 'Resumen',
+            icon: 'layout-dashboard',
+          },
+        ],
+      },
+      {
+        groupTitle: 'Catálogo e inventario',
+        items: [
+          {
+            id: 'catalogo_db',
+            label: 'Marcas, modelos, repuestos y compatibilidades',
+            shortLabel: 'Catálogo base',
+            icon: 'database',
+            count: stats.totalModelos + stats.totalRepuestos > 0 ? stats.totalModelos + stats.totalRepuestos : undefined,
+          },
+          {
+            id: 'productos',
+            label: 'Inventario propio vs proveedor',
+            shortLabel: 'Inventario',
+            icon: 'package',
+            count: ownProducts.length > 0 ? ownProducts.length : undefined,
+          },
+        ],
+      },
+      {
+        groupTitle: 'Operaciones comerciales',
+        items: [
+          {
+            id: 'pedidos',
+            label: 'Pedidos',
+            shortLabel: 'Pedidos',
+            icon: 'shopping-bag',
+            count: orders.length > 0 ? orders.length : undefined,
+          },
+          {
+            id: 'clientes',
+            label: 'Clientes e invitados',
+            shortLabel: 'Clientes',
+            icon: 'users',
+            count: orders.length > 0 ? orders.length : undefined,
+          },
+          {
+            id: 'promociones',
+            label: 'Promociones',
+            shortLabel: 'Promociones',
+            icon: 'tag',
+            count: initialSubscriptions.length > 0 ? initialSubscriptions.length : undefined,
+          },
+        ],
+      },
+      {
+        groupTitle: 'Administración y logística',
+        items: [
+          {
+            id: 'facturacion',
+            label: 'Boletas y facturas SUNAT',
+            shortLabel: 'Facturación SUNAT',
+            icon: 'file-text',
+            count: initialDocuments.length > 0 ? initialDocuments.length : undefined,
+          },
+          {
+            id: 'despacho',
+            label: 'Despachos y guías',
+            shortLabel: 'Despachos',
+            icon: 'truck',
+          },
+        ],
+      },
+      {
+        groupTitle: 'Servicio y asistencia',
+        items: [
+          {
+            id: 'voltia',
+            label: 'VoltIA y asistencia técnica',
+            shortLabel: 'VoltIA y taller',
+            icon: 'headset',
+            count: initialAssistance.length > 0 ? initialAssistance.length : undefined,
+          },
+        ],
+      },
+      {
+        groupTitle: 'Herramientas',
+        items: [
+          {
+            id: 'importador',
+            label: 'Importador de catálogos CSV/JSON',
+            shortLabel: 'Importador CSV/JSON',
+            icon: 'upload',
+          },
+        ],
+      },
+    ],
+    [
+      stats.totalModelos,
+      stats.totalRepuestos,
+      ownProducts.length,
+      orders.length,
+      initialSubscriptions.length,
+      initialDocuments.length,
+      initialAssistance.length,
+    ]
+  );
+
+  // Obtener información contextual del módulo activo para el breadcrumb de la barra superior
+  const activeItem = navGroups
+    .flatMap((group) =>
+      group.items.map((item) => ({
+        groupTitle: group.groupTitle,
+        label: item.label,
+        shortLabel: item.shortLabel,
+        id: item.id,
+      }))
+    )
+    .find((entry) => entry.id === activeModule);
+
+  const activeContext = activeItem || {
+    groupTitle: 'General',
+    label: 'Resumen operativo',
+    shortLabel: 'Resumen',
+  };
+
+  const showFeedback = (type: 'success' | 'error' | 'warning', text: string) => {
+    setStatusFeedback({ type, text });
+    setTimeout(() => {
+      setStatusFeedback((prev) => (prev?.text === text ? null : prev));
+    }, 5000);
+  };
+
+  // Acción real: Actualizar estado de pedido
   const handleUpdateOrderStatus = async (orderId: string, targetStatus: OrderStatus) => {
     setIsUpdatingOrder(orderId);
     setStatusFeedback(null);
@@ -184,21 +419,22 @@ export function AdminDashboardView({
         setOrders((prev) =>
           prev.map((o) => (o.id_pedido === orderId ? { ...o, estado_pedido: targetStatus } : o))
         );
-        setStatusFeedback(`Pedido actualizado a «${targetStatus}».`);
+        showFeedback('success', `Pedido actualizado correctamente al estado «${targetStatus}».`);
       } else {
-        setStatusFeedback(`Error: ${data.error || 'No se pudo actualizar el estado'}`);
+        showFeedback('error', data.error || 'No se pudo actualizar el estado del pedido.');
       }
     } catch {
-      setStatusFeedback('Error de comunicación con el servidor.');
+      showFeedback('error', 'Error de comunicación con el servidor administrativo.');
     } finally {
       setIsUpdatingOrder(null);
-      setTimeout(() => setStatusFeedback(null), 4000);
     }
   };
 
+  // Acción real: Alta de Marca
   const handleCreateBrand = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBrandName.trim()) return;
+    setIsSubmittingCatalog(true);
     try {
       const res = await fetch('/api/admin/catalog/manage', {
         method: 'POST',
@@ -206,25 +442,32 @@ export function AdminDashboardView({
         body: JSON.stringify({
           entity: 'marcas',
           operation: 'create',
-          payload: { nombre: newBrandName.trim(), pais_origen: 'China' },
+          payload: {
+            nombre: newBrandName.trim(),
+            pais_origen: newBrandOrigin.trim() || 'China',
+          },
         }),
       });
       const data = await res.json();
       if (res.ok && data.success && data.record) {
         setBrands((prev) => [...prev, data.record]);
         setNewBrandName('');
-        setStatusFeedback(`Marca «${data.record.nombre}» registrada correctamente.`);
+        showFeedback('success', `Marca «${data.record.nombre}» registrada en public.marcas.`);
       } else {
-        setStatusFeedback(`Aviso: ${data.error || 'No se pudo crear la marca'}`);
+        showFeedback('warning', data.error || 'No se pudo registrar la marca.');
       }
     } catch {
-      setStatusFeedback('Error conectando con el servidor administrativo.');
+      showFeedback('error', 'Error conectando con el servidor administrativo.');
+    } finally {
+      setIsSubmittingCatalog(false);
     }
   };
 
+  // Acción real: Alta de Modelo EV
   const handleCreateModel = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newModelName.trim()) return;
+    setIsSubmittingCatalog(true);
     try {
       const res = await fetch('/api/admin/catalog/manage', {
         method: 'POST',
@@ -235,8 +478,8 @@ export function AdminDashboardView({
           payload: {
             id_marca: Number(newModelBrandId),
             nombre: newModelName.trim(),
-            voltaje_nominal_v: Number(newModelVoltage),
-            potencia_motor_w: Number(newModelPower),
+            voltaje_nominal_v: Number(newModelVoltage) || null,
+            potencia_motor_w: Number(newModelPower) || null,
           },
         }),
       });
@@ -244,697 +487,2521 @@ export function AdminDashboardView({
       if (res.ok && data.success && data.record) {
         setModels((prev) => [data.record, ...prev]);
         setNewModelName('');
-        setStatusFeedback(`Modelo «${data.record.nombre}» registrado correctamente.`);
+        showFeedback('success', `Modelo «${data.record.nombre}» registrado en public.modelos_moto.`);
       } else {
-        setStatusFeedback(`Aviso: ${data.error || 'No se pudo crear el modelo'}`);
+        showFeedback('warning', data.error || 'No se pudo registrar el modelo.');
       }
     } catch {
-      setStatusFeedback('Error conectando con el servidor administrativo.');
+      showFeedback('error', 'Error conectando con el servidor administrativo.');
+    } finally {
+      setIsSubmittingCatalog(false);
     }
   };
 
+  // Acción real: Alta de Repuesto
+  const handleCreatePart = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPartSku.trim() || !newPartName.trim()) return;
+    setIsSubmittingCatalog(true);
+    try {
+      const res = await fetch('/api/admin/catalog/manage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entity: 'repuestos',
+          operation: 'create',
+          payload: {
+            id_categoria: 1,
+            codigo_sku: newPartSku.trim(),
+            nombre: newPartName.trim(),
+            precio: Number(newPartPrice) || 0,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.record) {
+        setParts((prev) => [data.record, ...prev]);
+        setNewPartSku('');
+        setNewPartName('');
+        setNewPartPrice('');
+        showFeedback('success', `Repuesto «${data.record.nombre}» registrado en public.repuestos.`);
+      } else {
+        showFeedback('warning', data.error || 'No se pudo registrar el repuesto.');
+      }
+    } catch {
+      showFeedback('error', 'Error conectando con el servidor administrativo.');
+    } finally {
+      setIsSubmittingCatalog(false);
+    }
+  };
+
+  // Acción real: Alta de Compatibilidad
+  const handleCreateCompatibility = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCompatPartId || !newCompatModelId) return;
+    setIsSubmittingCatalog(true);
+    try {
+      const res = await fetch('/api/admin/catalog/manage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entity: 'compatibilidades',
+          operation: 'create',
+          payload: {
+            id_repuesto: Number(newCompatPartId),
+            id_modelo: Number(newCompatModelId),
+            nivel_verificacion: newCompatLevel,
+            notas_tecnicas: newCompatNotes.trim() || null,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.record) {
+        setCompatibilities((prev) => [data.record, ...prev]);
+        setNewCompatNotes('');
+        showFeedback('success', 'Vínculo de compatibilidad técnica registrado en public.compatibilidades.');
+      } else {
+        showFeedback('warning', data.error || 'No se pudo registrar la compatibilidad.');
+      }
+    } catch {
+      showFeedback('error', 'Error conectando con el servidor administrativo.');
+    } finally {
+      setIsSubmittingCatalog(false);
+    }
+  };
+
+  // Colecciones filtradas para búsqueda rápida en tablas
+  const filteredModels = useMemo(() => {
+    const q = catalogSearch.trim().toLowerCase();
+    return models.filter((m) => {
+      const matchesBrand = catalogBrandFilter === 'ALL' || String(m.id_marca) === catalogBrandFilter;
+      const bName = (brandNameById.get(m.id_marca) || '').toLowerCase();
+      const matchesQuery =
+        !q ||
+        m.nombre.toLowerCase().includes(q) ||
+        bName.includes(q) ||
+        String(m.voltaje_nominal_v || '').includes(q);
+      return matchesBrand && matchesQuery;
+    });
+  }, [models, catalogSearch, catalogBrandFilter, brandNameById]);
+
+  const filteredParts = useMemo(() => {
+    const q = catalogSearch.trim().toLowerCase();
+    return parts.filter(
+      (p) =>
+        !q ||
+        p.nombre.toLowerCase().includes(q) ||
+        p.codigo_sku.toLowerCase().includes(q)
+    );
+  }, [parts, catalogSearch]);
+
+  const filteredCompatibilities = useMemo(() => {
+    const q = catalogSearch.trim().toLowerCase();
+    return compatibilities.filter((c) => {
+      if (!q) return true;
+      const pInfo = partNameById.get(c.id_repuesto);
+      const mName = modelNameById.get(c.id_modelo) || '';
+      return (
+        (pInfo?.name || '').toLowerCase().includes(q) ||
+        (pInfo?.sku || '').toLowerCase().includes(q) ||
+        mName.toLowerCase().includes(q) ||
+        (c.notas_tecnicas || '').toLowerCase().includes(q)
+      );
+    });
+  }, [compatibilities, catalogSearch, partNameById, modelNameById]);
+
+  const filteredBrands = useMemo(() => {
+    const q = catalogSearch.trim().toLowerCase();
+    return brands.filter(
+      (b) =>
+        !q ||
+        b.nombre.toLowerCase().includes(q) ||
+        (b.pais_origen || '').toLowerCase().includes(q)
+    );
+  }, [brands, catalogSearch]);
+
+  const inventoryCategories = useMemo(
+    () => Array.from(new Set(ownProducts.map((p) => p.categorySlug))),
+    [ownProducts]
+  );
+
+  const filteredOwnProducts = useMemo(() => {
+    const q = inventorySearch.trim().toLowerCase();
+    return ownProducts.filter((p) => {
+      const matchesCat = inventoryCategoryFilter === 'ALL' || p.categorySlug === inventoryCategoryFilter;
+      const matchesQ =
+        !q ||
+        p.name.toLowerCase().includes(q) ||
+        p.sku.toLowerCase().includes(q) ||
+        p.categorySlug.toLowerCase().includes(q);
+      return matchesCat && matchesQ;
+    });
+  }, [ownProducts, inventorySearch, inventoryCategoryFilter]);
+
+  const filteredOrders = useMemo(() => {
+    const q = orderSearch.trim().toLowerCase();
+    return orders.filter((o) => {
+      const matchesStatus = orderStatusFilter === 'ALL' || o.estado_pedido === orderStatusFilter;
+      const matchesQ =
+        !q ||
+        o.numero_pedido.toLowerCase().includes(q) ||
+        o.cliente_nombre.toLowerCase().includes(q) ||
+        o.cliente_email.toLowerCase().includes(q) ||
+        (o.doc_numero || '').toLowerCase().includes(q);
+      return matchesStatus && matchesQ;
+    });
+  }, [orders, orderSearch, orderStatusFilter]);
+
+  const filteredCustomers = useMemo(() => {
+    const q = customerSearch.trim().toLowerCase();
+    return orders.filter((o) => {
+      const matchesType =
+        customerTypeFilter === 'ALL' ||
+        (customerTypeFilter === 'GUEST' && o.es_invitado) ||
+        (customerTypeFilter === 'REGISTERED' && !o.es_invitado);
+      const matchesQ =
+        !q ||
+        o.cliente_nombre.toLowerCase().includes(q) ||
+        o.cliente_email.toLowerCase().includes(q) ||
+        (o.doc_numero || '').toLowerCase().includes(q);
+      return matchesType && matchesQ;
+    });
+  }, [orders, customerSearch, customerTypeFilter]);
+
+  const filteredDocuments = useMemo(() => {
+    const q = documentSearch.trim().toLowerCase();
+    return initialDocuments.filter((d) => {
+      const matchesType =
+        documentTypeFilter === 'ALL' ||
+        (d.tipo || '').toUpperCase() === documentTypeFilter;
+      const serieNum = `${d.serie || ''}-${d.numero || ''}`.toLowerCase();
+      const receptor = `${d.datos_receptor?.businessName || ''} ${d.datos_receptor?.docNumber || ''}`.toLowerCase();
+      const matchesQ = !q || serieNum.includes(q) || receptor.includes(q);
+      return matchesType && matchesQ;
+    });
+  }, [initialDocuments, documentSearch, documentTypeFilter]);
+
+  const filteredAssistance = useMemo(() => {
+    const q = assistanceSearch.trim().toLowerCase();
+    return initialAssistance.filter(
+      (a) =>
+        !q ||
+        a.nombre_contacto.toLowerCase().includes(q) ||
+        a.email_contacto.toLowerCase().includes(q) ||
+        a.tipo_solicitud.toLowerCase().includes(q) ||
+        a.descripcion.toLowerCase().includes(q)
+    );
+  }, [initialAssistance, assistanceSearch]);
+
+  const filteredSubscriptions = useMemo(() => {
+    const q = subscriptionSearch.trim().toLowerCase();
+    return initialSubscriptions.filter(
+      (s) =>
+        !q ||
+        s.email.toLowerCase().includes(q) ||
+        (s.origen || '').toLowerCase().includes(q)
+    );
+  }, [initialSubscriptions, subscriptionSearch]);
+
+  // Pendientes reales para el Resumen Operativo
+  const pendingOrdersCount = useMemo(
+    () =>
+      orders.filter(
+        (o) => o.estado_pedido === 'confirmado' || o.estado_pedido === 'en_preparacion'
+      ).length,
+    [orders]
+  );
+
+  const logisticsOrders = useMemo(
+    () =>
+      orders.filter(
+        (o) =>
+          o.estado_pedido === 'confirmado' ||
+          o.estado_pedido === 'en_preparacion' ||
+          o.estado_pedido === 'despachado'
+      ),
+    [orders]
+  );
+
+  const formattedCurrentDate = useMemo(() => {
+    try {
+      return new Intl.DateTimeFormat('es-PE', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }).format(new Date());
+    } catch {
+      return '';
+    }
+  }, []);
+
+  const handleSelectModule = (id: ModuleId) => {
+    setActiveModule(id);
+    setIsMobileMenuOpen(false);
+  };
+
+  const renderOrderStatusBadge = (status: OrderStatus) => {
+    const styles: Record<string, string> = {
+      pendiente_pago: 'bg-amber-50 text-amber-800 border-amber-200',
+      pagado: 'bg-blue-50 text-blue-800 border-blue-200',
+      confirmado: 'bg-amber-50 text-amber-900 border-amber-300',
+      en_preparacion: 'bg-blue-50 text-blue-800 border-blue-200',
+      despachado: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+      entregado: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+      cancelado: 'bg-red-50 text-red-700 border-red-200',
+      reembolsado: 'bg-slate-100 text-slate-700 border-slate-300',
+    };
+    return (
+      <span
+        className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
+          styles[status] || 'bg-slate-100 text-slate-700 border-slate-200'
+        }`}
+      >
+        {status.replace(/_/g, ' ')}
+      </span>
+    );
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header Administrativo */}
-      <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-slate-900 via-amber-950/20 to-slate-900 p-6 shadow-xl backdrop-blur-md">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
-              <Icon name="shield" className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-bold text-white">Panel Operativo NeroElectric Motors</h1>
-                <span className="rounded bg-amber-900/60 border border-amber-700/60 px-2 py-0.5 text-[11px] font-bold text-amber-300 uppercase tracking-wider">
-                  Rol: {account.role.toUpperCase()} Verificado
-                </span>
+    <div className="min-h-screen flex bg-[#F4F6F9] text-slate-900">
+      {/* Drawer móvil accesible */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 lg:hidden flex"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menú de navegación administrativa"
+        >
+          <div
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <aside className="relative z-10 w-72 max-w-[85vw] bg-[#0B1528] text-slate-100 flex flex-col h-full shadow-2xl">
+            <div className="h-16 px-4 flex items-center justify-between border-b border-slate-800/80">
+              <div className="flex items-center gap-2.5">
+                <Image
+                  src="/branding/nero-emblem.png"
+                  alt="NeroElectric Motors"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-lg object-contain bg-slate-900 p-0.5 border border-amber-400/30"
+                />
+                <div>
+                  <span className="block text-xs font-extrabold tracking-wider uppercase text-white">
+                    NERO ELECTRIC MOTORS
+                  </span>
+                  <span className="block text-[10px] font-medium text-amber-400">
+                    ERP Comercial y Técnico
+                  </span>
+                </div>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Operador autenticado: <strong className="text-slate-200">{account.fullName}</strong> ({account.email})
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {storefrontUrl && (
-              <a
-                href={storefrontUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-200 hover:text-white hover:bg-slate-700 transition-colors"
-              >
-                Abrir Tienda Pública ↗
-              </a>
-            )}
-            <form action={signOutAction}>
               <button
-                type="submit"
-                className="rounded-lg border border-rose-900/50 bg-rose-950/30 px-3 py-1.5 text-xs font-medium text-rose-300 hover:bg-rose-900/50 transition-colors flex items-center gap-1.5 cursor-pointer"
+                type="button"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="rounded-lg p-1.5 text-slate-400 hover:text-white hover:bg-slate-800"
+                aria-label="Cerrar menú lateral"
               >
-                <Icon name="x" className="w-3.5 h-3.5" />
-                <span>Cerrar Sesión</span>
+                <Icon name="x" className="w-5 h-5" />
               </button>
-            </form>
-          </div>
-        </div>
-
-        {statusFeedback && (
-          <div className="mt-4 rounded-xl bg-slate-950 border border-amber-500/40 p-3 text-xs text-amber-300 font-semibold flex items-center justify-between">
-            <span>{statusFeedback}</span>
-            <button onClick={() => setStatusFeedback(null)} className="text-slate-400 hover:text-white">✕</button>
-          </div>
-        )}
-
-        {/* Pestañas / Módulos Operativos */}
-        <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t border-slate-800 text-xs font-semibold">
-          <button
-            onClick={() => setActiveModule('resumen')}
-            className={`rounded-lg px-3 py-1.5 transition-colors ${
-              activeModule === 'resumen' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            A. Resumen Operativo
-          </button>
-          <button
-            onClick={() => setActiveModule('catalogo_db')}
-            className={`rounded-lg px-3 py-1.5 transition-colors ${
-              activeModule === 'catalogo_db' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            B. Marcas, Modelos, Repuestos y Compatibilidades
-          </button>
-          <button
-            onClick={() => setActiveModule('productos')}
-            className={`rounded-lg px-3 py-1.5 transition-colors ${
-              activeModule === 'productos' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            C. Inventario Propio vs Proveedor
-          </button>
-          <button
-            onClick={() => setActiveModule('pedidos')}
-            className={`rounded-lg px-3 py-1.5 transition-colors ${
-              activeModule === 'pedidos' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            D. Pedidos ({orders.length})
-          </button>
-          <button
-            onClick={() => setActiveModule('facturacion')}
-            className={`rounded-lg px-3 py-1.5 transition-colors ${
-              activeModule === 'facturacion' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            E. Boletas & Facturas SUNAT
-          </button>
-          <button
-            onClick={() => setActiveModule('despacho')}
-            className={`rounded-lg px-3 py-1.5 transition-colors ${
-              activeModule === 'despacho' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            F. Despachos y Guías
-          </button>
-          <button
-            onClick={() => setActiveModule('clientes')}
-            className={`rounded-lg px-3 py-1.5 transition-colors ${
-              activeModule === 'clientes' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            G. Clientes & Invitados
-          </button>
-          <button
-            onClick={() => setActiveModule('voltia')}
-            className={`rounded-lg px-3 py-1.5 transition-colors ${
-              activeModule === 'voltia' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            H. VoltIA & Asistencia Técnica
-          </button>
-          <button
-            onClick={() => setActiveModule('promociones')}
-            className={`rounded-lg px-3 py-1.5 transition-colors ${
-              activeModule === 'promociones' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            I. Promociones (5%)
-          </button>
-          <button
-            onClick={() => setActiveModule('importador')}
-            className={`rounded-lg px-3 py-1.5 transition-colors ${
-              activeModule === 'importador' ? 'bg-amber-500 text-slate-950 shadow font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            J. Importador Catálogos (CSV/JSON)
-          </button>
-        </div>
-      </div>
-
-      {/* MÓDULO A: Resumen Operativo */}
-      {activeModule === 'resumen' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-              <span className="block text-xs font-medium text-slate-400 uppercase tracking-wider">
-                Marcas / Modelos EV
-              </span>
-              <span className="text-2xl font-black text-white mt-1 block">
-                {stats.totalMarcas} / {stats.totalModelos}
-              </span>
-              <span className="text-[11px] text-cyan-400 mt-1 block">Catálogo base en Supabase</span>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-              <span className="block text-xs font-medium text-slate-400 uppercase tracking-wider">
-                Repuestos / Compatibilidades
-              </span>
-              <span className="text-2xl font-black text-emerald-400 mt-1 block">
-                {stats.totalRepuestos} / {stats.totalCompatibilidades}
-              </span>
-              <span className="text-[11px] text-emerald-400 mt-1 block">Sincronizados con Tienda Pública</span>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-              <span className="block text-xs font-medium text-slate-400 uppercase tracking-wider">
-                Solicitudes de Asistencia
-              </span>
-              <span className="text-2xl font-black text-amber-400 mt-1 block">
-                {initialAssistance.length}
-              </span>
-              <span className="text-[11px] text-amber-400 mt-1 block">Casos de VoltIA / Taller</span>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-              <span className="block text-xs font-medium text-slate-400 uppercase tracking-wider">
-                Suscripciones Comerciales
-              </span>
-              <span className="text-2xl font-black text-cyan-400 mt-1 block">
-                {initialSubscriptions.length}
-              </span>
-              <span className="text-[11px] text-cyan-400 mt-1 block">Consentimientos v1.0</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-3">
-              <h3 className="font-bold text-white text-sm">Estado de Pasarela Culqi 3DS</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                El adaptador de cobros calcula los montos autorizados estrictamente en el servidor en céntimos (PEN). Las transacciones se ejecutan con soporte de 3DS y procesamiento de webhooks idempotente.
-              </p>
-              <div className="pt-2 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
-                <span className="text-xs font-bold text-emerald-300">Adaptador Culqi 3DS Activo</span>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-3">
-              <h3 className="font-bold text-white text-sm">Facturador Electrónico SUNAT</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Los comprobantes se estructuran automáticamente en Boletas (DNI 8 dígitos) y Facturas (RUC 11 dígitos con IGV desglosado 18%). Emisión oficial hacia SEE-OSE preparada.
-              </p>
-              <div className="pt-2 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-amber-400"></span>
-                <span className="text-xs font-bold text-amber-300">SEE-OSE Adaptador Preparado</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MÓDULO B: Gestión de Catálogo Base (Marcas, Modelos, Repuestos y Compatibilidades) */}
-      {activeModule === 'catalogo_db' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Marcas */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div>
-                  <h2 className="text-sm font-bold text-white">Marcas Homologadas ({brands.length})</h2>
-                  <p className="text-[11px] text-slate-400">Tabla: <code className="text-cyan-400">public.marcas</code></p>
-                </div>
-              </div>
-
-              <form onSubmit={handleCreateBrand} className="flex gap-2">
-                <input
-                  type="text"
-                  value={newBrandName}
-                  onChange={(e) => setNewBrandName(e.target.value)}
-                  placeholder="Nueva marca (ej. NIU)"
-                  className="flex-1 rounded-lg bg-slate-950 border border-slate-800 px-3 py-1.5 text-xs text-white"
-                />
-                <button
-                  type="submit"
-                  className="rounded-lg bg-amber-500 hover:bg-amber-400 px-3 py-1.5 text-xs font-bold text-slate-950"
-                >
-                  + Agregar Marca
-                </button>
-              </form>
-
-              <div className="max-h-56 overflow-y-auto divide-y divide-slate-800/60 text-xs">
-                {brands.map((b) => (
-                  <div key={b.id_marca} className="py-2 flex items-center justify-between">
-                    <span className="font-bold text-white">{b.nombre}</span>
-                    <span className="text-slate-400 font-mono text-[11px]">
-                      ID #{b.id_marca} • {b.estado ? 'Activa' : 'Inactiva'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Modelos */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div>
-                  <h2 className="text-sm font-bold text-white">Modelos de Motos Eléctricas ({models.length} mostrados)</h2>
-                  <p className="text-[11px] text-slate-400">Tabla: <code className="text-cyan-400">public.modelos_moto</code></p>
-                </div>
-              </div>
-
-              <form onSubmit={handleCreateModel} className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <select
-                  value={newModelBrandId}
-                  onChange={(e) => setNewModelBrandId(e.target.value)}
-                  className="rounded-lg bg-slate-950 border border-slate-800 px-2 py-1.5 text-white"
-                >
-                  {brands.map((b) => (
-                    <option key={b.id_marca} value={b.id_marca}>
-                      {b.nombre}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="text"
-                  value={newModelName}
-                  onChange={(e) => setNewModelName(e.target.value)}
-                  placeholder="Modelo (ej. F55)"
-                  className="rounded-lg bg-slate-950 border border-slate-800 px-2 py-1.5 text-white"
-                />
-                <input
-                  type="number"
-                  value={newModelVoltage}
-                  onChange={(e) => setNewModelVoltage(e.target.value)}
-                  placeholder="Voltaje V"
-                  className="rounded-lg bg-slate-950 border border-slate-800 px-2 py-1.5 text-white"
-                />
-                <button
-                  type="submit"
-                  className="rounded-lg bg-amber-500 hover:bg-amber-400 px-3 py-1.5 font-bold text-slate-950"
-                >
-                  + Modelo
-                </button>
-              </form>
-
-              <div className="max-h-56 overflow-y-auto divide-y divide-slate-800/60 text-xs">
-                {models.map((m) => (
-                  <div key={m.id_modelo} className="py-2 flex items-center justify-between">
-                    <span className="font-semibold text-white">{m.nombre}</span>
-                    <span className="text-cyan-400 font-mono text-[11px]">
-                      {m.voltaje_nominal_v ? `${m.voltaje_nominal_v}V` : 'S/V'} •{' '}
-                      {m.potencia_motor_w ? `${m.potencia_motor_w}W` : 'S/W'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Repuestos y Compatibilidades en Base de Datos */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 space-y-3">
-              <h2 className="text-sm font-bold text-white">
-                Repuestos Registrados en PostgreSQL ({parts.length} recientes)
-              </h2>
-              <div className="max-h-64 overflow-y-auto divide-y divide-slate-800/60 text-xs">
-                {parts.map((p) => (
-                  <div key={p.id_repuesto} className="py-2 flex items-center justify-between gap-2">
-                    <div>
-                      <span className="font-mono text-cyan-400 text-[11px] block">{p.codigo_sku}</span>
-                      <span className="text-white font-semibold">{p.nombre}</span>
-                    </div>
-                    <span className="font-bold text-emerald-400 shrink-0">
-                      {formatCurrency(Number(p.precio), p.moneda || 'PEN')}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 space-y-3">
-              <h2 className="text-sm font-bold text-white">
-                Matriz de Compatibilidades Técnicas ({compatibilities.length} recientes)
-              </h2>
-              <div className="max-h-64 overflow-y-auto divide-y divide-slate-800/60 text-xs">
-                {compatibilities.map((c) => (
-                  <div key={c.id_compatibilidad} className="py-2 flex items-center justify-between gap-2">
-                    <div>
-                      <span className="text-white font-mono">
-                        Repuesto #{c.id_repuesto} ↔ Modelo #{c.id_modelo}
-                      </span>
-                      {c.notas_tecnicas && (
-                        <span className="block text-[11px] text-slate-400">{c.notas_tecnicas}</span>
-                      )}
-                    </div>
-                    <span className="rounded bg-emerald-950 border border-emerald-800 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
-                      {c.nivel_verificacion}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MÓDULO C: Inventario Propio vs Proveedor */}
-      {activeModule === 'productos' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
-            <div>
-              <h2 className="text-base font-bold text-white">Gestión de Inventario: Venta Directa vs Consulta Externa</h2>
-              <p className="text-xs text-slate-400">
-                Regla comercial estricta: Solo los productos con stock propio confirmado pueden pasar al checkout.
-              </p>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-900 text-slate-400 uppercase tracking-wider font-bold">
-                <tr>
-                  <th className="p-3">SKU</th>
-                  <th className="p-3">Producto</th>
-                  <th className="p-3">Categoría</th>
-                  <th className="p-3">Precio Oficial</th>
-                  <th className="p-3">Stock Propio</th>
-                  <th className="p-3">Modalidad Comercial</th>
-                  <th className="p-3">Garantía</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
-                {ownProducts.map((p) => (
-                  <tr key={p.sku} className="hover:bg-slate-900/50">
-                    <td className="p-3 font-mono text-cyan-400 font-bold">{p.sku}</td>
-                    <td className="p-3 font-bold text-white">{p.name}</td>
-                    <td className="p-3">{p.categorySlug}</td>
-                    <td className="p-3 font-bold text-white">{formatCurrency(p.price, p.currency)}</td>
-                    <td className="p-3">
-                      <span className="rounded bg-emerald-950 border border-emerald-800 px-2 py-0.5 text-emerald-400 font-bold">
-                        {p.ownStock} unid.
-                      </span>
-                    </td>
-                    <td className="p-3">
-                      <span className="rounded bg-cyan-950 border border-cyan-800 px-2 py-0.5 text-cyan-400 font-bold">
-                        Venta Directa
-                      </span>
-                    </td>
-                    <td className="p-3">{p.warrantyMonths} meses</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* MÓDULO D: Pedidos y Transiciones de Estado */}
-      {activeModule === 'pedidos' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
-            <div>
-              <h2 className="text-base font-bold text-white">Bandeja de Pedidos y Ciclo de Compra</h2>
-              <p className="text-xs text-slate-400">
-                Transiciones de la máquina de estados validadas por el servidor: Confirmado → En Preparación → Despachado → Entregado.
-              </p>
-            </div>
-          </div>
-
-          {orders.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 text-xs">
-              No hay pedidos registrados en el sistema actualmente.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-slate-900 text-slate-400 uppercase tracking-wider font-bold">
-                  <tr>
-                    <th className="p-3">Orden</th>
-                    <th className="p-3">Comprador</th>
-                    <th className="p-3">Modalidad</th>
-                    <th className="p-3">Total</th>
-                    <th className="p-3">Pago</th>
-                    <th className="p-3">Estado Pedido</th>
-                    <th className="p-3">Comprobante</th>
-                    <th className="p-3">Acciones de Operador</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {orders.map((o) => (
-                    <tr key={o.id_pedido} className="hover:bg-slate-900/50">
-                      <td className="p-3 font-mono font-bold text-cyan-400">
-                        {o.numero_pedido}
-                      </td>
-                      <td className="p-3">
-                        <span className="font-bold text-white block">{o.cliente_nombre}</span>
-                        <span className="text-[10px] text-slate-500 block">{o.cliente_email}</span>
-                      </td>
-                      <td className="p-3">{o.modalidad_entrega}</td>
-                      <td className="p-3 font-bold text-white">{formatCurrency(Number(o.total), o.moneda || 'PEN')}</td>
-                      <td className="p-3">
-                        <span className="rounded bg-emerald-950 border border-emerald-800 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
-                          {o.estado_pago}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <span className="rounded bg-slate-900 border border-slate-800 px-2 py-0.5 text-[10px] font-bold text-white">
-                          {o.estado_pedido}
-                        </span>
-                      </td>
-                      <td className="p-3 uppercase font-mono text-[10px]">{o.tipo_comprobante} ({o.estado_comprobante})</td>
-                      <td className="p-3">
-                        <div className="flex flex-wrap gap-1">
-                          {o.estado_pedido === 'confirmado' && (
-                            <button
-                              disabled={isUpdatingOrder === o.id_pedido}
-                              onClick={() => handleUpdateOrderStatus(o.id_pedido, 'en_preparacion')}
-                              className="rounded bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-500/40 px-2 py-1 text-[10px] font-bold"
+            <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5" aria-label="Navegación móvil">
+              {navGroups.map((group) => (
+                <div key={group.groupTitle}>
+                  <p className="px-2.5 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    {group.groupTitle}
+                  </p>
+                  <div className="space-y-1">
+                    {group.items.map((item) => {
+                      const isActive = activeModule === item.id;
+                      return (
+                        <button
+                          type="button"
+                          key={item.id}
+                          onClick={() => handleSelectModule(item.id)}
+                          aria-current={isActive ? 'page' : undefined}
+                          className={`w-full flex items-center justify-between gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs font-medium transition-colors cursor-pointer ${
+                            isActive
+                              ? 'bg-slate-800/90 text-white border-l-3 border-amber-400 font-semibold'
+                              : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <Icon
+                              name={item.icon}
+                              className={`w-4 h-4 shrink-0 ${
+                                isActive ? 'text-amber-400' : 'text-slate-400'
+                              }`}
+                            />
+                            <span className="truncate">{item.label}</span>
+                          </div>
+                          {typeof item.count === 'number' && item.count > 0 && (
+                            <span
+                              className={`rounded-full px-1.5 py-0.5 text-[10px] font-mono font-bold shrink-0 ${
+                                isActive
+                                  ? 'bg-amber-400 text-slate-950'
+                                  : 'bg-slate-800 text-slate-300'
+                              }`}
                             >
-                              Pasar a Preparación
-                            </button>
+                              {item.count}
+                            </span>
                           )}
-                          {o.estado_pedido === 'en_preparacion' && (
-                            <button
-                              disabled={isUpdatingOrder === o.id_pedido}
-                              onClick={() => handleUpdateOrderStatus(o.id_pedido, 'despachado')}
-                              className="rounded bg-blue-500/20 hover:bg-blue-500/40 text-blue-300 border border-blue-500/40 px-2 py-1 text-[10px] font-bold"
-                            >
-                              Marcar Despachado
-                            </button>
-                          )}
-                          {o.estado_pedido === 'despachado' && (
-                            <button
-                              disabled={isUpdatingOrder === o.id_pedido}
-                              onClick={() => handleUpdateOrderStatus(o.id_pedido, 'entregado')}
-                              className="rounded bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 border border-emerald-500/40 px-2 py-1 text-[10px] font-bold"
-                            >
-                              Confirmar Entrega
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* MÓDULO E: Boletas y Facturas Electrónicas */}
-      {activeModule === 'facturacion' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
-          <div className="border-b border-slate-800 pb-3">
-            <h2 className="text-base font-bold text-white">Comprobantes de Pago Electrónicos (SUNAT SEE-OSE)</h2>
-            <p className="text-xs text-slate-400">
-              Desglose de IGV (18%), validación de DNI (8 dígitos) y RUC (11 dígitos).
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-amber-800/40 bg-amber-950/20 p-4 text-xs text-amber-200">
-            <strong>Estado del Proveedor Fiscal:</strong> Adaptador estructurado para SEE-OSE / Facturador SUNAT. Los comprobantes se emiten en serie correlativa (B001 / F001).
-          </div>
-
-          {initialDocuments.length === 0 ? (
-            <p className="text-xs text-slate-500">No hay documentos electrónicos emitidos aún.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-slate-900 text-slate-400 uppercase font-bold">
-                  <tr>
-                    <th className="p-3">Tipo</th>
-                    <th className="p-3">Serie y Número</th>
-                    <th className="p-3">Receptor</th>
-                    <th className="p-3">Base Gravada</th>
-                    <th className="p-3">IGV (18%)</th>
-                    <th className="p-3">Total</th>
-                    <th className="p-3">Estado</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {initialDocuments.map((doc) => (
-                    <tr key={doc.id_documento}>
-                      <td className="p-3 font-bold text-white">{doc.tipo}</td>
-                      <td className="p-3 font-mono text-cyan-400">{doc.serie}-{doc.numero}</td>
-                      <td className="p-3">{doc.datos_receptor?.businessName} ({doc.datos_receptor?.docNumber})</td>
-                      <td className="p-3">{formatCurrency(Number(doc.total_gravada), 'PEN')}</td>
-                      <td className="p-3">{formatCurrency(Number(doc.total_igv), 'PEN')}</td>
-                      <td className="p-3 font-bold text-white">{formatCurrency(Number(doc.total_comprobante), 'PEN')}</td>
-                      <td className="p-3">
-                        <span className="rounded bg-amber-950 border border-amber-800 px-2 py-0.5 text-amber-300 font-bold">
-                          {doc.estado}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* MÓDULO F: Despacho y Guías */}
-      {activeModule === 'despacho' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
-          <div className="border-b border-slate-800 pb-3">
-            <h2 className="text-base font-bold text-white">Logística, Envíos y Guías de Remisión</h2>
-            <p className="text-xs text-slate-400">
-              Control de empaque técnico para baterías de litio y despacho con operadores logísticos autorizados.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-2">
-              <h3 className="font-bold text-white">Protocolo de Despacho Seguro (Baterías EV)</h3>
-              <ul className="space-y-1.5 text-slate-400">
-                <li>• Embalaje ignífugo y aislamiento de terminales Anderson / XT90.</li>
-                <li>• Verificación de breaker en OFF antes del envío.</li>
-                <li>• Etiquetado de mercancía eléctrica sensible Clase 9.</li>
-              </ul>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-2">
-              <h3 className="font-bold text-white">Guía de Remisión Electrónica Remitente (GRE)</h3>
-              <p className="text-slate-400 leading-relaxed">
-                Preparado para generación de serie T001 con motivo de traslado «Venta» según la normativa SUNAT Resolución N° 000123-2022/SUNAT.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MÓDULO G: Clientes e Invitados */}
-      {activeModule === 'clientes' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
-          <div className="border-b border-slate-800 pb-3">
-            <h2 className="text-base font-bold text-white">Control de Compradores (Invitados y Registrados)</h2>
-            <p className="text-xs text-slate-400">
-              Datos protegidos mediante RLS; solo accesibles con autorización administrativa verificada.
-            </p>
-          </div>
-
-          <div className="divide-y divide-slate-800 text-xs">
-            {orders.length === 0 ? (
-              <p className="text-slate-500 py-4">Sin registros de compradores en órdenes recientes.</p>
-            ) : (
-              orders.map((o) => (
-                <div key={o.id_pedido} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div>
-                    <span className="font-bold text-white text-sm">{o.cliente_nombre}</span>
-                    <span className="text-slate-400 block">{o.cliente_email} • {o.cliente_telefono || 'Sin teléfono'}</span>
-                    <span className="text-[10px] text-slate-500 font-mono">Doc: {o.doc_numero} ({o.tipo_comprobante})</span>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <div>
-                    <span className={`rounded px-2 py-0.5 text-[10px] font-bold ${o.es_invitado ? 'bg-slate-900 text-slate-400 border border-slate-800' : 'bg-cyan-950 text-cyan-400 border border-cyan-800'}`}>
-                      {o.es_invitado ? 'Comprador Invitado' : 'Cliente con Cuenta'}
-                    </span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* MÓDULO H: VoltIA & Asistencia Técnica */}
-      {activeModule === 'voltia' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
-          <div className="border-b border-slate-800 pb-3">
-            <h2 className="text-base font-bold text-white">Bandeja de Asistencia Técnica y Cotizaciones de VoltIA</h2>
-            <p className="text-xs text-slate-400">
-              Casos derivados por riesgos eléctricos, diagnósticos no concluyentes o solicitudes de piezas especiales.
-            </p>
-          </div>
-
-          {initialAssistance.length === 0 ? (
-            <p className="text-xs text-slate-500">No hay tickets de asistencia pendientes en este momento.</p>
-          ) : (
-            <div className="space-y-3">
-              {initialAssistance.map((ast) => (
-                <div key={ast.id_solicitud} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-xs space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-white text-sm">{ast.nombre_contacto} ({ast.email_contacto})</span>
-                    <span className="rounded bg-amber-950 border border-amber-800 px-2 py-0.5 text-amber-300 font-bold">
-                      {ast.tipo_solicitud}
-                    </span>
-                  </div>
-                  <p className="text-slate-300">{ast.descripcion}</p>
                 </div>
               ))}
+            </nav>
+          </aside>
+        </div>
+      )}
+
+      {/* A. Sidebar Izquierdo Persistente en Escritorio */}
+      <aside
+        className={`hidden lg:flex flex-col shrink-0 bg-[#0B1528] text-slate-100 border-r border-slate-900 transition-all duration-200 select-none ${
+          isSidebarCollapsed ? 'w-[72px]' : 'w-68'
+        }`}
+        aria-label="Barra lateral de módulos administrativos"
+      >
+        {/* Cabecera del Sidebar con Identidad NERO ELECTRIC MOTORS */}
+        <div className="h-16 px-3.5 flex items-center justify-between border-b border-slate-800/80 shrink-0">
+          <button
+            type="button"
+            onClick={() => setActiveModule('resumen')}
+            className="flex items-center gap-2.5 text-left min-w-0 focus:outline-none cursor-pointer"
+            title="Ir a Resumen operativo"
+          >
+            <Image
+              src="/branding/nero-emblem.png"
+              alt="NeroElectric Motors"
+              width={34}
+              height={34}
+              className="h-8 w-8 shrink-0 rounded-lg object-contain bg-slate-900 p-0.5 border border-amber-400/40"
+            />
+            {!isSidebarCollapsed && (
+              <div className="min-w-0">
+                <span className="block text-xs font-extrabold tracking-wider uppercase text-white truncate">
+                  NERO ELECTRIC MOTORS
+                </span>
+                <span className="block text-[10px] font-medium text-amber-400 truncate">
+                  Panel ERP Administrativo
+                </span>
+              </div>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+            className="rounded-lg p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+            aria-label={isSidebarCollapsed ? 'Expandir barra lateral' : 'Contraer barra lateral'}
+            title={isSidebarCollapsed ? 'Expandir menú lateral' : 'Contraer menú lateral'}
+          >
+            <Icon
+              name={isSidebarCollapsed ? 'chevron-right' : 'chevron-left'}
+              className="w-4 h-4"
+            />
+          </button>
+        </div>
+
+        {/* Grupos de Módulos del Sidebar */}
+        <nav className="flex-1 overflow-y-auto px-2.5 py-4 space-y-5" aria-label="Menú principal del ERP">
+          {navGroups.map((group) => (
+            <div key={group.groupTitle}>
+              {!isSidebarCollapsed ? (
+                <p className="px-2.5 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  {group.groupTitle}
+                </p>
+              ) : (
+                <div className="h-px bg-slate-800 my-2 mx-2" />
+              )}
+
+              <div className="space-y-1">
+                {group.items.map((item) => {
+                  const isActive = activeModule === item.id;
+                  return (
+                    <button
+                      type="button"
+                      key={item.id}
+                      onClick={() => setActiveModule(item.id)}
+                      aria-current={isActive ? 'page' : undefined}
+                      title={isSidebarCollapsed ? `${group.groupTitle}: ${item.label}` : item.label}
+                      className={`w-full flex items-center ${
+                        isSidebarCollapsed ? 'justify-center px-2 py-2.5' : 'justify-between px-2.5 py-2'
+                      } rounded-lg text-left text-xs transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-slate-800/95 text-white font-semibold shadow-2xs border-l-3 border-amber-400'
+                          : 'text-slate-300 hover:bg-slate-800/50 hover:text-white font-medium'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <Icon
+                          name={item.icon}
+                          className={`w-4 h-4 shrink-0 ${
+                            isActive ? 'text-amber-400' : 'text-slate-400'
+                          }`}
+                        />
+                        {!isSidebarCollapsed && (
+                          <span className="leading-snug line-clamp-1">{item.label}</span>
+                        )}
+                      </div>
+
+                      {!isSidebarCollapsed &&
+                        typeof item.count === 'number' &&
+                        item.count > 0 && (
+                          <span
+                            className={`ml-2 rounded-full px-1.5 py-0.5 text-[10px] font-mono font-bold shrink-0 ${
+                              isActive
+                                ? 'bg-amber-400 text-slate-950'
+                                : 'bg-slate-800 text-slate-300'
+                            }`}
+                          >
+                            {item.count}
+                          </span>
+                        )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        {/* Pie del Sidebar: Estado de Conexión a Base de Datos */}
+        <div className="p-3 border-t border-slate-800/80 bg-slate-950/40 text-[11px] text-slate-400">
+          {isSidebarCollapsed ? (
+            <div className="flex justify-center" title="Conectado a Supabase PostgreSQL (RLS activo)">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 shrink-0" />
+                <span className="font-medium text-slate-300 truncate">Supabase PostgreSQL</span>
+              </div>
+              <span className="font-mono text-[10px] text-slate-400">RLS Activo</span>
             </div>
           )}
         </div>
-      )}
+      </aside>
 
-      {/* MÓDULO I: Promociones */}
-      {activeModule === 'promociones' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
-          <div className="border-b border-slate-800 pb-3">
-            <h2 className="text-base font-bold text-white">Promociones Comerciales y Consentimiento Newsletter</h2>
-            <p className="text-xs text-slate-400">
-              Cupón oficial de bienvenida: <code className="text-cyan-400 font-mono">BIENVENIDO5</code> (5% de descuento en primera compra).
-            </p>
+      {/* Contenedor Derecho: Barra Superior + Área de Contenido */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* B. Barra Superior Compacta y Profesional */}
+        <header className="h-16 bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+          {/* Izquierda: Botón móvil + Breadcrumb contextual */}
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden rounded-lg border border-slate-200 p-2 text-slate-700 hover:bg-slate-100"
+              aria-label="Abrir menú de navegación"
+            >
+              <Icon name="menu" className="w-5 h-5" />
+            </button>
+
+            <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-xs min-w-0">
+              <span className="hidden sm:inline font-medium text-slate-500">
+                {activeContext.groupTitle}
+              </span>
+              <span className="hidden sm:inline text-slate-300">/</span>
+              <span className="font-bold text-slate-900 truncate text-sm">
+                {activeContext.label}
+              </span>
+            </nav>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-2">
-              <h3 className="font-bold text-white">Reglas del Descuento</h3>
-              <ul className="space-y-1 text-slate-400">
-                <li>• Porcentaje: <strong>5% sobre el subtotal</strong></li>
-                <li>• Política de uso: <strong>Un solo uso por correo normalizado</strong></li>
-                <li>• Consentimiento explícito: <strong>v1.0 con fecha y origen auditados</strong></li>
-              </ul>
-            </div>
+          {/* Derecha: Acceso a Tienda Pública + Usuario Autenticado + Rol + Cerrar Sesión */}
+          <div className="flex items-center gap-3 shrink-0">
+            <a
+              href={storefrontUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors"
+              title="Abrir Tienda Pública en nueva pestaña (neroelectricmotors.com)"
+            >
+              <span className="hidden sm:inline">Abrir Tienda Pública</span>
+              <Icon name="external-link" className="w-3.5 h-3.5 text-slate-500" />
+            </a>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-2">
-              <h3 className="font-bold text-white">Suscripciones Registradas ({initialSubscriptions.length})</h3>
-              <div className="max-h-40 overflow-y-auto space-y-1">
-                {initialSubscriptions.map((sub) => (
-                  <div key={sub.id_suscripcion || sub.email} className="text-slate-300 font-mono text-[11px]">
-                    {sub.email} <span className="text-slate-600">({sub.origen})</span>
+            <div className="h-5 w-px bg-slate-200 hidden sm:block" />
+
+            <div className="flex items-center gap-2.5">
+              <div className="hidden md:flex flex-col items-end leading-tight">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-slate-900">{account.fullName}</span>
+                  <span className="rounded bg-[#0B1528] px-1.5 py-0.2 text-[10px] font-mono font-bold uppercase text-amber-400">
+                    {account.role}
+                  </span>
+                </div>
+                <span className="text-[11px] text-slate-500 font-mono">{account.email}</span>
+              </div>
+
+              <Link
+                href="/actualizar-contrasena"
+                className="rounded-lg border border-slate-200 bg-white hover:bg-slate-50 p-2 text-slate-600 hover:text-slate-900 transition-colors"
+                title="Cambiar contraseña administrativa"
+                aria-label="Cambiar contraseña administrativa"
+              >
+                <Icon name="tool" className="w-4 h-4" />
+              </Link>
+
+              <form action={signOutAction}>
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white hover:bg-red-50 hover:border-red-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-red-700 transition-colors cursor-pointer"
+                  title="Cerrar sesión administrativa"
+                >
+                  <Icon name="log-out" className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Salir</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </header>
+
+        {/* C. Área de Contenido Principal */}
+        <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+          {/* Notificación de estado de operación */}
+          {statusFeedback && (
+            <div
+              role="status"
+              className={`rounded-xl border px-4 py-3 text-xs sm:text-sm flex items-center justify-between gap-3 shadow-2xs ${
+                statusFeedback.type === 'success'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
+                  : statusFeedback.type === 'error'
+                  ? 'border-red-200 bg-red-50 text-red-900'
+                  : 'border-amber-200 bg-amber-50 text-amber-900'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Icon
+                  name={statusFeedback.type === 'success' ? 'check-circle' : 'alert-triangle'}
+                  className={`w-4 h-4 shrink-0 ${
+                    statusFeedback.type === 'success'
+                      ? 'text-emerald-600'
+                      : statusFeedback.type === 'error'
+                      ? 'text-red-600'
+                      : 'text-amber-600'
+                  }`}
+                />
+                <span className="font-medium">{statusFeedback.text}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStatusFeedback(null)}
+                className="text-slate-400 hover:text-slate-700 p-1"
+                aria-label="Cerrar aviso"
+              >
+                <Icon name="x" className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
+          {/* ====================================================================
+              1. MÓDULO: RESUMEN OPERATIVO
+             ==================================================================== */}
+          {activeModule === 'resumen' && (
+            <div className="space-y-6">
+              {/* 1. Título, descripción breve y fecha actual */}
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-5">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 capitalize mb-1">
+                    <Icon name="clock" className="w-3.5 h-3.5 text-amber-500" />
+                    <span>{formattedCurrentDate}</span>
                   </div>
-                ))}
+                  <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                    Resumen operativo
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                    Estado general del catálogo eléctrico, atención técnica, facturación e integraciones conectadas a Supabase PostgreSQL.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setActiveModule('catalogo_db')}
+                    className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-800 shadow-2xs transition-colors cursor-pointer"
+                  >
+                    <Icon name="database" className="w-3.5 h-3.5 text-slate-600" />
+                    <span>Gestionar catálogo</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveModule('importador')}
+                    className="inline-flex items-center gap-2 rounded-lg bg-amber-400 hover:bg-amber-500 px-4 py-2 text-xs font-bold text-slate-950 shadow-2xs transition-colors cursor-pointer"
+                  >
+                    <Icon name="upload" className="w-3.5 h-3.5" />
+                    <span>Importar catálogo CSV/JSON</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. Indicadores principales en cuadrícula responsive */}
+              <section aria-label="Indicadores principales">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                  {/* KPI 1: Marcas y modelos eléctricos */}
+                  <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs flex flex-col justify-between">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">
+                          Marcas y modelos eléctricos
+                        </span>
+                        <div className="mt-2 flex items-baseline gap-2">
+                          <span className="text-3xl font-extrabold text-slate-900 font-mono">
+                            {stats.totalMarcas}
+                          </span>
+                          <span className="text-xs font-medium text-slate-500">marcas</span>
+                          <span className="text-slate-300">/</span>
+                          <span className="text-3xl font-extrabold text-slate-900 font-mono">
+                            {stats.totalModelos}
+                          </span>
+                          <span className="text-xs font-medium text-slate-500">modelos</span>
+                        </div>
+                      </div>
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-[#0B1528]">
+                        <Icon name="zap" className="w-5 h-5" />
+                      </span>
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <span className="text-slate-500">Flota registrada en PostgreSQL</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCatalogEntityTab('modelos');
+                          setActiveModule('catalogo_db');
+                        }}
+                        className="font-semibold text-[#0B1528] hover:underline cursor-pointer"
+                      >
+                        Ver modelos →
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* KPI 2: Repuestos y compatibilidades */}
+                  <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs flex flex-col justify-between">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">
+                          Repuestos y compatibilidades
+                        </span>
+                        <div className="mt-2 flex items-baseline gap-2">
+                          <span className="text-3xl font-extrabold text-slate-900 font-mono">
+                            {stats.totalRepuestos}
+                          </span>
+                          <span className="text-xs font-medium text-slate-500">piezas</span>
+                          <span className="text-slate-300">/</span>
+                          <span className="text-3xl font-extrabold text-emerald-700 font-mono">
+                            {stats.totalCompatibilidades}
+                          </span>
+                          <span className="text-xs font-medium text-slate-500">vínculos</span>
+                        </div>
+                      </div>
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                        <Icon name="package" className="w-5 h-5" />
+                      </span>
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <span className="text-slate-500">Sincronizados con tienda pública</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCatalogEntityTab('repuestos');
+                          setActiveModule('catalogo_db');
+                        }}
+                        className="font-semibold text-emerald-700 hover:underline cursor-pointer"
+                      >
+                        Ver matriz →
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* KPI 3: Solicitudes de asistencia */}
+                  <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs flex flex-col justify-between">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">
+                          Solicitudes de asistencia
+                        </span>
+                        <div className="mt-2 flex items-baseline gap-2">
+                          <span className="text-3xl font-extrabold text-slate-900 font-mono">
+                            {initialAssistance.length}
+                          </span>
+                          <span className="text-xs font-medium text-slate-500">
+                            {initialAssistance.length === 1 ? 'caso registrado' : 'casos registrados'}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-700">
+                        <Icon name="headset" className="w-5 h-5" />
+                      </span>
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <span className="text-slate-500">Escalamientos de VoltIA / Taller</span>
+                      <button
+                        type="button"
+                        onClick={() => setActiveModule('voltia')}
+                        className="font-semibold text-amber-800 hover:underline cursor-pointer"
+                      >
+                        Abrir bandeja →
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* KPI 4: Suscripciones comerciales */}
+                  <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs flex flex-col justify-between">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">
+                          Suscripciones comerciales
+                        </span>
+                        <div className="mt-2 flex items-baseline gap-2">
+                          <span className="text-3xl font-extrabold text-slate-900 font-mono">
+                            {initialSubscriptions.length}
+                          </span>
+                          <span className="text-xs font-medium text-slate-500">
+                            consentimientos v1.0
+                          </span>
+                        </div>
+                      </div>
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+                        <Icon name="tag" className="w-5 h-5" />
+                      </span>
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <span className="text-slate-500">Campaña cupón BIENVENIDO5</span>
+                      <button
+                        type="button"
+                        onClick={() => setActiveModule('promociones')}
+                        className="font-semibold text-blue-700 hover:underline cursor-pointer"
+                      >
+                        Ver registros →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* 3. Área de alertas y pendientes operativos + 4. Estado de servicios e integraciones */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* 3. Alertas y pendientes operativos (basados exclusivamente en datos reales) */}
+                <section className="lg:col-span-5 rounded-xl border border-slate-200 bg-white shadow-2xs flex flex-col">
+                  <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-sm font-bold text-slate-900">
+                        Alertas y pendientes operativos
+                      </h2>
+                      <p className="text-xs text-slate-500">
+                        Verificación en tiempo real sobre las tablas operativas
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-5 divide-y divide-slate-100 space-y-3.5 text-xs flex-1">
+                    {/* Pendiente 1: Pedidos por atender */}
+                    <div className="pt-3.5 first:pt-0 flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-2.5">
+                        <span
+                          className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
+                            pendingOrdersCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'
+                          }`}
+                        />
+                        <div>
+                          <p className="font-semibold text-slate-900">
+                            {pendingOrdersCount > 0
+                              ? `${pendingOrdersCount} pedido(s) en cola de preparación o despacho`
+                              : 'Sin pedidos pendientes de despacho'}
+                          </p>
+                          <p className="text-slate-500 mt-0.5">
+                            Total de órdenes registradas en <code className="font-mono">public.pedidos</code>: {orders.length}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveModule('pedidos')}
+                        className="shrink-0 rounded-md border border-slate-200 bg-slate-50 hover:bg-slate-100 px-2.5 py-1 font-semibold text-slate-700 cursor-pointer"
+                      >
+                        Ir a pedidos
+                      </button>
+                    </div>
+
+                    {/* Pendiente 2: Solicitudes de asistencia VoltIA */}
+                    <div className="pt-3.5 flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-2.5">
+                        <span
+                          className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
+                            initialAssistance.length > 0 ? 'bg-amber-500' : 'bg-emerald-500'
+                          }`}
+                        />
+                        <div>
+                          <p className="font-semibold text-slate-900">
+                            {initialAssistance.length > 0
+                              ? `${initialAssistance.length} solicitud(es) de asistencia técnica registradas`
+                              : 'Sin solicitudes de asistencia técnica pendientes'}
+                          </p>
+                          <p className="text-slate-500 mt-0.5">
+                            Bandeja conectada a <code className="font-mono">public.solicitudes_asistencia</code>
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveModule('voltia')}
+                        className="shrink-0 rounded-md border border-slate-200 bg-slate-50 hover:bg-slate-100 px-2.5 py-1 font-semibold text-slate-700 cursor-pointer"
+                      >
+                        Revisar
+                      </button>
+                    </div>
+
+                    {/* Pendiente 3: Auditoría de importaciones CSV/JSON */}
+                    <div className="pt-3.5 flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-2.5">
+                        <span
+                          className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
+                            initialImportHistory.length > 0 ? 'bg-emerald-500' : 'bg-slate-400'
+                          }`}
+                        />
+                        <div>
+                          <p className="font-semibold text-slate-900">
+                            {initialImportHistory.length > 0
+                              ? `${initialImportHistory.length} importación(es) auditadas en historial`
+                              : 'Sin ejecuciones registradas en historial de importación'}
+                          </p>
+                          <p className="text-slate-500 mt-0.5">
+                            Catálogo actual: {stats.totalMarcas} marcas, {stats.totalModelos} modelos y {stats.totalRepuestos} repuestos
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveModule('importador')}
+                        className="shrink-0 rounded-md border border-slate-200 bg-slate-50 hover:bg-slate-100 px-2.5 py-1 font-semibold text-slate-700 cursor-pointer"
+                      >
+                        Importador
+                      </button>
+                    </div>
+                  </div>
+                </section>
+
+                {/* 4. Estado de servicios e integraciones (fiel al estado real del sistema) */}
+                <section className="lg:col-span-7 rounded-xl border border-slate-200 bg-white shadow-2xs">
+                  <div className="px-5 py-4 border-b border-slate-200">
+                    <h2 className="text-sm font-bold text-slate-900">
+                      Estado de servicios e integraciones
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Estado técnico real de los adaptadores de pago, facturación y base de datos
+                    </p>
+                  </div>
+
+                  <div className="p-5 divide-y divide-slate-200 space-y-4">
+                    {/* Culqi 3DS */}
+                    <div className="pt-4 first:pt-0 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      <div className="space-y-1 max-w-xl">
+                        <div className="flex items-center gap-2">
+                          <Icon name="credit-card" className="w-4 h-4 text-slate-700" />
+                          <h3 className="text-xs font-bold text-slate-900">
+                            Adaptador de Pagos Culqi 3DS
+                          </h3>
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          Cálculo de montos en céntimos (PEN) validado en servidor y receptor de webhooks idempotente implementado. Opera con adaptador de simulación 3DS hasta configurar llaves productivas (<code className="font-mono text-[11px]">CULQI_PRIVATE_KEY</code>).
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900 shrink-0 self-start">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                        Adaptador 3DS en Modo Pruebas
+                      </span>
+                    </div>
+
+                    {/* SUNAT SEE-OSE */}
+                    <div className="pt-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      <div className="space-y-1 max-w-xl">
+                        <div className="flex items-center gap-2">
+                          <Icon name="file-text" className="w-4 h-4 text-slate-700" />
+                          <h3 className="text-xs font-bold text-slate-900">
+                            Preparación Fiscal SUNAT (Boletas y Facturas)
+                          </h3>
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          Validación tributaria de DNI (8 dígitos), RUC (11 dígitos) y desglose exacto de IGV (18%) en series <code className="font-mono text-[11px]">B001</code> y <code className="font-mono text-[11px]">F001</code>. Estructura de datos lista en <code className="font-mono text-[11px]">public.documentos_fiscales</code> ({initialDocuments.length} emitidos); requiere credenciales de proveedor SEE-OSE para envío tributario oficial.
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900 shrink-0 self-start">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                        Estructura Lista · Sin Vínculo OSE
+                      </span>
+                    </div>
+
+                    {/* Supabase Auth + PostgreSQL RLS */}
+                    <div className="pt-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      <div className="space-y-1 max-w-xl">
+                        <div className="flex items-center gap-2">
+                          <Icon name="shield" className="w-4 h-4 text-emerald-700" />
+                          <h3 className="text-xs font-bold text-slate-900">
+                            Supabase PostgreSQL & Control de Acceso RBAC
+                          </h3>
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          Base de datos compartida con la tienda pública. Políticas Row Level Security (RLS) activas y verificación de rol <code className="font-mono text-[11px]">admin</code> en servidor (<code className="font-mono text-[11px]">public.user_roles</code>).
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 shrink-0 self-start">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        Operativo y Sincronizado
+                      </span>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              {/* 5. Actividad reciente (únicamente con fuentes de datos reales) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Pedidos recientes reales */}
+                <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                  <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-sm font-bold text-slate-900">Pedidos recientes</h2>
+                      <p className="text-xs text-slate-500">
+                        Últimas órdenes registradas en <code className="font-mono">public.pedidos</code>
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveModule('pedidos')}
+                      className="text-xs font-semibold text-[#0B1528] hover:underline cursor-pointer"
+                    >
+                      Ver todos ({orders.length})
+                    </button>
+                  </div>
+
+                  {orders.length === 0 ? (
+                    <div className="p-8 text-center">
+                      <p className="text-xs font-semibold text-slate-700">
+                        Sin pedidos registrados actualmente
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Cuando los clientes completen compras en la tienda pública, las órdenes aparecerán aquí automáticamente.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                          <tr>
+                            <th className="px-4 py-2.5">Orden</th>
+                            <th className="px-4 py-2.5">Cliente</th>
+                            <th className="px-4 py-2.5 text-right">Total</th>
+                            <th className="px-4 py-2.5">Estado</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 text-slate-700">
+                          {orders.slice(0, 5).map((o) => (
+                            <tr key={o.id_pedido} className="hover:bg-slate-50">
+                              <td className="px-4 py-2.5 font-mono font-bold text-slate-900">
+                                {o.numero_pedido}
+                              </td>
+                              <td className="px-4 py-2.5">
+                                <span className="font-medium text-slate-900 block">
+                                  {o.cliente_nombre}
+                                </span>
+                                <span className="text-[11px] text-slate-500">{o.cliente_email}</span>
+                              </td>
+                              <td className="px-4 py-2.5 text-right font-mono font-semibold text-slate-900">
+                                {formatCurrency(Number(o.total), o.moneda || 'PEN')}
+                              </td>
+                              <td className="px-4 py-2.5">
+                                {renderOrderStatusBadge(o.estado_pedido)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </section>
+
+                {/* Solicitudes de asistencia recientes reales */}
+                <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                  <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-sm font-bold text-slate-900">
+                        Solicitudes de asistencia técnica recientes
+                      </h2>
+                      <p className="text-xs text-slate-500">
+                        Registros reales en <code className="font-mono">public.solicitudes_asistencia</code>
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveModule('voltia')}
+                      className="text-xs font-semibold text-[#0B1528] hover:underline cursor-pointer"
+                    >
+                      Ver bandeja ({initialAssistance.length})
+                    </button>
+                  </div>
+
+                  {initialAssistance.length === 0 ? (
+                    <div className="p-8 text-center">
+                      <p className="text-xs font-semibold text-slate-700">
+                        No hay solicitudes de asistencia registradas
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Los casos derivados por el asistente VoltIA o el formulario técnico se mostrarán en esta lista.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-slate-200">
+                      {initialAssistance.slice(0, 5).map((ast) => (
+                        <div key={ast.id_solicitud} className="px-5 py-3.5 text-xs space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold text-slate-900">
+                              {ast.nombre_contacto}{' '}
+                              <span className="font-normal text-slate-500">({ast.email_contacto})</span>
+                            </span>
+                            <span className="rounded-md bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-900 uppercase">
+                              {ast.tipo_solicitud}
+                            </span>
+                          </div>
+                          <p className="text-slate-600 line-clamp-2">{ast.descripcion}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* MÓDULO J: Importador Central de Catálogos (CSV / JSON) */}
-      {activeModule === 'importador' && (
-        <CatalogImporterView initialHistory={initialImportHistory} />
-      )}
+          {/* ====================================================================
+              2. MÓDULO: MARCAS, MODELOS, REPUESTOS Y COMPATIBILIDADES (catalogo_db)
+             ==================================================================== */}
+          {activeModule === 'catalogo_db' && (
+            <div className="space-y-6">
+              {/* Encabezado del Módulo */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                    Marcas, modelos, repuestos y compatibilidades
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                    Administración directa de las tablas relacionales de catálogo en PostgreSQL compartidas con la tienda pública.
+                  </p>
+                </div>
+
+                {/* Selector de Entidad */}
+                <div className="inline-flex flex-wrap rounded-xl border border-slate-200 bg-white p-1 shadow-2xs gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setCatalogEntityTab('modelos')}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                      catalogEntityTab === 'modelos'
+                        ? 'bg-[#0B1528] text-white'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    Modelos EV ({models.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCatalogEntityTab('repuestos')}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                      catalogEntityTab === 'repuestos'
+                        ? 'bg-[#0B1528] text-white'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    Repuestos ({parts.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCatalogEntityTab('compatibilidades')}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                      catalogEntityTab === 'compatibilidades'
+                        ? 'bg-[#0B1528] text-white'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    Compatibilidades ({compatibilities.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCatalogEntityTab('marcas')}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                      catalogEntityTab === 'marcas'
+                        ? 'bg-[#0B1528] text-white'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    Marcas ({brands.length})
+                  </button>
+                </div>
+              </div>
+
+              {/* Barra de Búsqueda y Filtros + Formulario Contextual de Alta */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Columna Izquierda (4 cols): Formulario de Alta Real conectado a /api/admin/catalog/manage */}
+                <section className="lg:col-span-4 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
+                  {catalogEntityTab === 'modelos' && (
+                    <>
+                      <div className="border-b border-slate-100 pb-3">
+                        <h2 className="text-sm font-bold text-slate-900">
+                          Registrar nuevo modelo eléctrico
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Inserción directa en <code className="font-mono">public.modelos_moto</code>
+                        </p>
+                      </div>
+                      <form onSubmit={handleCreateModel} className="space-y-3.5 text-xs">
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Marca homologada
+                          </label>
+                          <select
+                            value={newModelBrandId}
+                            onChange={(e) => setNewModelBrandId(e.target.value)}
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-slate-900 focus:outline-none"
+                          >
+                            {brands.map((b) => (
+                              <option key={b.id_marca} value={b.id_marca}>
+                                {b.nombre}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Nombre comercial del modelo
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={newModelName}
+                            onChange={(e) => setNewModelName(e.target.value)}
+                            placeholder="Ej. Super Soco TC Max / F55"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block font-semibold text-slate-700 mb-1">
+                              Voltaje nominal (V)
+                            </label>
+                            <input
+                              type="number"
+                              value={newModelVoltage}
+                              onChange={(e) => setNewModelVoltage(e.target.value)}
+                              placeholder="72"
+                              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 font-mono focus:border-slate-900 focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block font-semibold text-slate-700 mb-1">
+                              Potencia motor (W)
+                            </label>
+                            <input
+                              type="number"
+                              value={newModelPower}
+                              onChange={(e) => setNewModelPower(e.target.value)}
+                              placeholder="2000"
+                              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 font-mono focus:border-slate-900 focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={isSubmittingCatalog}
+                          className="w-full rounded-lg bg-amber-400 hover:bg-amber-500 disabled:opacity-50 px-4 py-2.5 text-xs font-bold text-slate-950 shadow-2xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Icon name="plus" className="w-4 h-4" />
+                          <span>{isSubmittingCatalog ? 'Guardando...' : 'Guardar modelo en catálogo'}</span>
+                        </button>
+                      </form>
+                    </>
+                  )}
+
+                  {catalogEntityTab === 'repuestos' && (
+                    <>
+                      <div className="border-b border-slate-100 pb-3">
+                        <h2 className="text-sm font-bold text-slate-900">
+                          Registrar nuevo repuesto
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Inserción directa en <code className="font-mono">public.repuestos</code>
+                        </p>
+                      </div>
+                      <form onSubmit={handleCreatePart} className="space-y-3.5 text-xs">
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Código SKU único
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={newPartSku}
+                            onChange={(e) => setNewPartSku(e.target.value)}
+                            placeholder="Ej. NERO-BAT-72V35"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 font-mono placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Nombre técnico del repuesto
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={newPartName}
+                            onChange={(e) => setNewPartName(e.target.value)}
+                            placeholder="Ej. Controlador Senoidal 72V 55A"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Precio de venta (PEN S/)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            required
+                            value={newPartPrice}
+                            onChange={(e) => setNewPartPrice(e.target.value)}
+                            placeholder="280.00"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 font-mono placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={isSubmittingCatalog}
+                          className="w-full rounded-lg bg-amber-400 hover:bg-amber-500 disabled:opacity-50 px-4 py-2.5 text-xs font-bold text-slate-950 shadow-2xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Icon name="plus" className="w-4 h-4" />
+                          <span>{isSubmittingCatalog ? 'Guardando...' : 'Registrar repuesto'}</span>
+                        </button>
+                      </form>
+                    </>
+                  )}
+
+                  {catalogEntityTab === 'compatibilidades' && (
+                    <>
+                      <div className="border-b border-slate-100 pb-3">
+                        <h2 className="text-sm font-bold text-slate-900">
+                          Vincular compatibilidad técnica
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Inserción directa en <code className="font-mono">public.compatibilidades</code>
+                        </p>
+                      </div>
+                      <form onSubmit={handleCreateCompatibility} className="space-y-3.5 text-xs">
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Repuesto
+                          </label>
+                          <select
+                            required
+                            value={newCompatPartId}
+                            onChange={(e) => setNewCompatPartId(e.target.value)}
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-slate-900 focus:outline-none"
+                          >
+                            <option value="">Seleccionar repuesto...</option>
+                            {parts.map((p) => (
+                              <option key={p.id_repuesto} value={p.id_repuesto}>
+                                [{p.codigo_sku}] {p.nombre}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Modelo de moto eléctrica
+                          </label>
+                          <select
+                            required
+                            value={newCompatModelId}
+                            onChange={(e) => setNewCompatModelId(e.target.value)}
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-slate-900 focus:outline-none"
+                          >
+                            <option value="">Seleccionar modelo...</option>
+                            {models.map((m) => (
+                              <option key={m.id_modelo} value={m.id_modelo}>
+                                {brandNameById.get(m.id_marca) || `Marca #${m.id_marca}`} — {m.nombre}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Nivel de verificación
+                          </label>
+                          <select
+                            value={newCompatLevel}
+                            onChange={(e) => setNewCompatLevel(e.target.value)}
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-slate-900 focus:outline-none"
+                          >
+                            <option value="CONFIRMADA">CONFIRMADA (Calce directo OEM)</option>
+                            <option value="COMPATIBLE_CON_ADAPTACION">COMPATIBLE CON ADAPTACIÓN</option>
+                            <option value="REQUIERE_REVISION">REQUIERE REVISIÓN EN TALLER</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Notas técnicas de montaje (opcional)
+                          </label>
+                          <input
+                            type="text"
+                            value={newCompatNotes}
+                            onChange={(e) => setNewCompatNotes(e.target.value)}
+                            placeholder="Ej. Verificar conector Anderson 50A"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={isSubmittingCatalog}
+                          className="w-full rounded-lg bg-amber-400 hover:bg-amber-500 disabled:opacity-50 px-4 py-2.5 text-xs font-bold text-slate-950 shadow-2xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Icon name="plus" className="w-4 h-4" />
+                          <span>{isSubmittingCatalog ? 'Vinculando...' : 'Guardar compatibilidad'}</span>
+                        </button>
+                      </form>
+                    </>
+                  )}
+
+                  {catalogEntityTab === 'marcas' && (
+                    <>
+                      <div className="border-b border-slate-100 pb-3">
+                        <h2 className="text-sm font-bold text-slate-900">
+                          Registrar nueva marca
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Inserción directa en <code className="font-mono">public.marcas</code>
+                        </p>
+                      </div>
+                      <form onSubmit={handleCreateBrand} className="space-y-3.5 text-xs">
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            Nombre de la marca
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={newBrandName}
+                            onChange={(e) => setNewBrandName(e.target.value)}
+                            placeholder="Ej. NIU / Super Soco"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold text-slate-700 mb-1">
+                            País de origen
+                          </label>
+                          <input
+                            type="text"
+                            value={newBrandOrigin}
+                            onChange={(e) => setNewBrandOrigin(e.target.value)}
+                            placeholder="China"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={isSubmittingCatalog}
+                          className="w-full rounded-lg bg-amber-400 hover:bg-amber-500 disabled:opacity-50 px-4 py-2.5 text-xs font-bold text-slate-950 shadow-2xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Icon name="plus" className="w-4 h-4" />
+                          <span>{isSubmittingCatalog ? 'Guardando...' : 'Agregar marca homologada'}</span>
+                        </button>
+                      </form>
+                    </>
+                  )}
+                </section>
+
+                {/* Columna Derecha (8 cols): Tabla Filtrable de la Entidad Seleccionada */}
+                <section className="lg:col-span-8 rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                  {/* Barra de herramientas de tabla */}
+                  <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="relative flex-1 max-w-md">
+                      <Icon
+                        name="search"
+                        className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                      />
+                      <input
+                        type="search"
+                        value={catalogSearch}
+                        onChange={(e) => setCatalogSearch(e.target.value)}
+                        placeholder="Filtrar registros por nombre, SKU, marca o nota técnica..."
+                        className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                      />
+                    </div>
+
+                    {catalogEntityTab === 'modelos' && (
+                      <select
+                        aria-label="Filtrar modelos por marca"
+                        value={catalogBrandFilter}
+                        onChange={(e) => setCatalogBrandFilter(e.target.value)}
+                        className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 focus:border-slate-900 focus:outline-none"
+                      >
+                        <option value="ALL">Todas las marcas ({brands.length})</option>
+                        {brands.map((b) => (
+                          <option key={b.id_marca} value={String(b.id_marca)}>
+                            {b.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  {/* Tabla: Modelos */}
+                  {catalogEntityTab === 'modelos' && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                          <tr>
+                            <th className="px-4 py-3">ID</th>
+                            <th className="px-4 py-3">Marca</th>
+                            <th className="px-4 py-3">Modelo de Moto Eléctrica</th>
+                            <th className="px-4 py-3">Voltaje Nominal</th>
+                            <th className="px-4 py-3">Potencia Motor</th>
+                            <th className="px-4 py-3">Estado</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 text-slate-700">
+                          {filteredModels.map((m) => (
+                            <tr key={m.id_modelo} className="hover:bg-slate-50/80">
+                              <td className="px-4 py-3 font-mono text-slate-500">#{m.id_modelo}</td>
+                              <td className="px-4 py-3 font-bold text-slate-900">
+                                {brandNameById.get(m.id_marca) || `Marca #${m.id_marca}`}
+                              </td>
+                              <td className="px-4 py-3 font-semibold text-slate-900">{m.nombre}</td>
+                              <td className="px-4 py-3 font-mono">
+                                {m.voltaje_nominal_v ? (
+                                  <span className="rounded bg-blue-50 border border-blue-200 px-2 py-0.5 text-blue-800 font-semibold">
+                                    {m.voltaje_nominal_v}V
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-400">No especificado</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 font-mono">
+                                {m.potencia_motor_w ? `${m.potencia_motor_w} W` : 'No especificado'}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span
+                                  className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase border ${
+                                    m.estado
+                                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                      : 'bg-slate-100 text-slate-600 border-slate-200'
+                                  }`}
+                                >
+                                  {m.estado ? 'Activo' : 'Inactivo'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Tabla: Repuestos */}
+                  {catalogEntityTab === 'repuestos' && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                          <tr>
+                            <th className="px-4 py-3">SKU</th>
+                            <th className="px-4 py-3">Descripción del Repuesto</th>
+                            <th className="px-4 py-3 text-right">Precio Unitario</th>
+                            <th className="px-4 py-3">Estado</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 text-slate-700">
+                          {filteredParts.map((p) => (
+                            <tr key={p.id_repuesto} className="hover:bg-slate-50/80">
+                              <td className="px-4 py-3 font-mono font-bold text-slate-900">
+                                {p.codigo_sku}
+                              </td>
+                              <td className="px-4 py-3 font-medium text-slate-900">{p.nombre}</td>
+                              <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
+                                {formatCurrency(Number(p.precio), p.moneda || 'PEN')}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span
+                                  className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase border ${
+                                    p.estado
+                                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                      : 'bg-slate-100 text-slate-600 border-slate-200'
+                                  }`}
+                                >
+                                  {p.estado ? 'Publicado' : 'Oculto'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Tabla: Compatibilidades */}
+                  {catalogEntityTab === 'compatibilidades' && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                          <tr>
+                            <th className="px-4 py-3">Repuesto</th>
+                            <th className="px-4 py-3">Modelo Compatible</th>
+                            <th className="px-4 py-3">Nivel de Verificación</th>
+                            <th className="px-4 py-3">Notas Técnicas</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 text-slate-700">
+                          {filteredCompatibilities.map((c) => {
+                            const partInfo = partNameById.get(c.id_repuesto);
+                            const modelLabel =
+                              modelNameById.get(c.id_modelo) || `Modelo #${c.id_modelo}`;
+                            return (
+                              <tr key={c.id_compatibilidad} className="hover:bg-slate-50/80">
+                                <td className="px-4 py-3">
+                                  <span className="font-semibold text-slate-900 block">
+                                    {partInfo?.name || `Repuesto #${c.id_repuesto}`}
+                                  </span>
+                                  {partInfo?.sku && (
+                                    <span className="font-mono text-[11px] text-slate-500">
+                                      {partInfo.sku}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 font-medium text-slate-900">
+                                  {modelLabel}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span
+                                    className={`inline-flex rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase ${
+                                      c.nivel_verificacion === 'CONFIRMADA'
+                                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                        : 'bg-amber-50 text-amber-900 border-amber-200'
+                                    }`}
+                                  >
+                                    {c.nivel_verificacion}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-slate-600">
+                                  {c.notas_tecnicas || 'Calce directo verificado'}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Tabla: Marcas */}
+                  {catalogEntityTab === 'marcas' && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                          <tr>
+                            <th className="px-4 py-3">ID Marca</th>
+                            <th className="px-4 py-3">Marca Homologada</th>
+                            <th className="px-4 py-3">País de Origen</th>
+                            <th className="px-4 py-3">Estado</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 text-slate-700">
+                          {filteredBrands.map((b) => (
+                            <tr key={b.id_marca} className="hover:bg-slate-50/80">
+                              <td className="px-4 py-3 font-mono text-slate-500">#{b.id_marca}</td>
+                              <td className="px-4 py-3 font-bold text-slate-900">{b.nombre}</td>
+                              <td className="px-4 py-3 text-slate-600">
+                                {b.pais_origen || 'China'}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span
+                                  className={`inline-flex rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase ${
+                                    b.estado
+                                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                      : 'bg-slate-100 text-slate-600 border-slate-200'
+                                  }`}
+                                >
+                                  {b.estado ? 'Activa' : 'Inactiva'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </section>
+              </div>
+            </div>
+          )}
+
+          {/* ====================================================================
+              3. MÓDULO: INVENTARIO PROPIO VS PROVEEDOR (productos)
+             ==================================================================== */}
+          {activeModule === 'productos' && (
+            <div className="space-y-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                    Inventario propio vs proveedor
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                    Regla comercial activa: únicamente los productos con stock propio verificado habilitan cobro directo en el checkout; las piezas de proveedor operan bajo consulta técnica externa.
+                  </p>
+                </div>
+              </div>
+
+              {/* Resumen comparativo */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
+                    Ítems de Venta Directa (Stock Propio)
+                  </span>
+                  <span className="text-2xl font-extrabold text-slate-900 font-mono mt-1 block">
+                    {ownProducts.length} SKU
+                  </span>
+                  <span className="text-xs text-emerald-700 font-medium mt-0.5 block">
+                    Habilitados para carrito y cobro Culqi
+                  </span>
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
+                    Catálogo Relacional PostgreSQL
+                  </span>
+                  <span className="text-2xl font-extrabold text-slate-900 font-mono mt-1 block">
+                    {stats.totalRepuestos} repuestos
+                  </span>
+                  <span className="text-xs text-slate-500 mt-0.5 block">
+                    TAILG, YADEA, GreenLine y Kayencorp
+                  </span>
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
+                    Política de Despacho
+                  </span>
+                  <span className="text-2xl font-extrabold text-slate-900 font-mono mt-1 block">
+                    24h – 48h
+                  </span>
+                  <span className="text-xs text-slate-500 mt-0.5 block">
+                    Almacén central Lima Metropolitana
+                  </span>
+                </div>
+              </div>
+
+              {/* Tabla de Inventario Propio con búsqueda y filtro */}
+              <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="relative flex-1 max-w-md">
+                    <Icon
+                      name="search"
+                      className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    />
+                    <input
+                      type="search"
+                      value={inventorySearch}
+                      onChange={(e) => setInventorySearch(e.target.value)}
+                      placeholder="Buscar por código SKU o nombre de repuesto..."
+                      className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                    />
+                  </div>
+
+                  <select
+                    aria-label="Filtrar por categoría de inventario"
+                    value={inventoryCategoryFilter}
+                    onChange={(e) => setInventoryCategoryFilter(e.target.value)}
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 focus:border-slate-900 focus:outline-none"
+                  >
+                    <option value="ALL">Todas las categorías</option>
+                    {inventoryCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      <tr>
+                        <th className="px-4 py-3">SKU</th>
+                        <th className="px-4 py-3">Producto</th>
+                        <th className="px-4 py-3">Categoría</th>
+                        <th className="px-4 py-3 text-right">Precio Oficial</th>
+                        <th className="px-4 py-3">Stock Propio</th>
+                        <th className="px-4 py-3">Modalidad Comercial</th>
+                        <th className="px-4 py-3">Garantía</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 text-slate-700">
+                      {filteredOwnProducts.map((p) => (
+                        <tr key={p.sku} className="hover:bg-slate-50/80">
+                          <td className="px-4 py-3 font-mono font-bold text-slate-900">
+                            {p.sku}
+                          </td>
+                          <td className="px-4 py-3 font-semibold text-slate-900">{p.name}</td>
+                          <td className="px-4 py-3 capitalize text-slate-600">{p.categorySlug}</td>
+                          <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
+                            {formatCurrency(p.price, p.currency)}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex rounded-md bg-emerald-50 border border-emerald-200 px-2 py-0.5 font-mono text-[11px] font-bold text-emerald-800">
+                              {p.ownStock} unid.
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex rounded-md bg-blue-50 border border-blue-200 px-2 py-0.5 text-[10px] font-bold uppercase text-blue-800">
+                              Venta Directa
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-slate-600">
+                            {p.warrantyMonths} meses
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+          )}
+
+          {/* ====================================================================
+              4. MÓDULO: PEDIDOS (pedidos)
+             ==================================================================== */}
+          {activeModule === 'pedidos' && (
+            <div className="space-y-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                    Pedidos y ciclo de compra
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                    Gestión de órdenes con máquina de estados validada en servidor: Confirmado → En preparación → Despachado → Entregado.
+                  </p>
+                </div>
+              </div>
+
+              <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="relative flex-1 max-w-md">
+                    <Icon
+                      name="search"
+                      className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    />
+                    <input
+                      type="search"
+                      value={orderSearch}
+                      onChange={(e) => setOrderSearch(e.target.value)}
+                      placeholder="Buscar por número de orden, comprador, correo o DNI/RUC..."
+                      className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                    />
+                  </div>
+
+                  <select
+                    aria-label="Filtrar pedidos por estado"
+                    value={orderStatusFilter}
+                    onChange={(e) => setOrderStatusFilter(e.target.value)}
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 focus:border-slate-900 focus:outline-none"
+                  >
+                    <option value="ALL">Todos los estados ({orders.length})</option>
+                    <option value="confirmado">Confirmado</option>
+                    <option value="en_preparacion">En preparación</option>
+                    <option value="despachado">Despachado</option>
+                    <option value="entregado">Entregado</option>
+                    <option value="cancelado">Cancelado</option>
+                  </select>
+                </div>
+
+                {filteredOrders.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500 mb-3">
+                      <Icon name="shopping-bag" className="w-5 h-5" />
+                    </div>
+                    <p className="text-sm font-bold text-slate-800">
+                      {orders.length === 0
+                        ? 'No existen pedidos registrados en el sistema'
+                        : 'Ningún pedido coincide con los filtros aplicados'}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                      {orders.length === 0
+                        ? 'Las órdenes generadas desde el checkout de la tienda pública se listarán en esta tabla junto con sus controles de avance logístico.'
+                        : 'Intenta limpiar el término de búsqueda o cambiar el filtro de estado.'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                        <tr>
+                          <th className="px-4 py-3">Orden</th>
+                          <th className="px-4 py-3">Comprador</th>
+                          <th className="px-4 py-3">Entrega</th>
+                          <th className="px-4 py-3 text-right">Total</th>
+                          <th className="px-4 py-3">Pago</th>
+                          <th className="px-4 py-3">Estado Pedido</th>
+                          <th className="px-4 py-3">Comprobante</th>
+                          <th className="px-4 py-3 text-right">Acciones de Operador</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 text-slate-700">
+                        {filteredOrders.map((o) => (
+                          <tr key={o.id_pedido} className="hover:bg-slate-50/80">
+                            <td className="px-4 py-3 font-mono font-bold text-slate-900">
+                              {o.numero_pedido}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="font-bold text-slate-900 block">
+                                {o.cliente_nombre}
+                              </span>
+                              <span className="text-[11px] text-slate-500 block">
+                                {o.cliente_email}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-slate-600">{o.modalidad_entrega}</td>
+                            <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
+                              {formatCurrency(Number(o.total), o.moneda || 'PEN')}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="inline-flex rounded-md bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-800">
+                                {o.estado_pago}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              {renderOrderStatusBadge(o.estado_pedido)}
+                            </td>
+                            <td className="px-4 py-3 font-mono text-[11px] uppercase text-slate-600">
+                              {o.tipo_comprobante} ({o.estado_comprobante})
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <div className="inline-flex flex-wrap justify-end gap-1.5">
+                                {o.estado_pedido === 'confirmado' && (
+                                  <button
+                                    type="button"
+                                    disabled={isUpdatingOrder === o.id_pedido}
+                                    onClick={() => handleUpdateOrderStatus(o.id_pedido, 'en_preparacion')}
+                                    className="rounded-lg bg-amber-400 hover:bg-amber-500 text-slate-950 px-2.5 py-1 text-[11px] font-bold transition-colors cursor-pointer disabled:opacity-50"
+                                  >
+                                    Pasar a preparación
+                                  </button>
+                                )}
+                                {o.estado_pedido === 'en_preparacion' && (
+                                  <button
+                                    type="button"
+                                    disabled={isUpdatingOrder === o.id_pedido}
+                                    onClick={() => handleUpdateOrderStatus(o.id_pedido, 'despachado')}
+                                    className="rounded-lg bg-[#0B1528] hover:bg-slate-800 text-white px-2.5 py-1 text-[11px] font-bold transition-colors cursor-pointer disabled:opacity-50"
+                                  >
+                                    Marcar despachado
+                                  </button>
+                                )}
+                                {o.estado_pedido === 'despachado' && (
+                                  <button
+                                    type="button"
+                                    disabled={isUpdatingOrder === o.id_pedido}
+                                    onClick={() => handleUpdateOrderStatus(o.id_pedido, 'entregado')}
+                                    className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 text-[11px] font-bold transition-colors cursor-pointer disabled:opacity-50"
+                                  >
+                                    Confirmar entrega
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+
+          {/* ====================================================================
+              5. MÓDULO: CLIENTES E INVITADOS (clientes)
+             ==================================================================== */}
+          {activeModule === 'clientes' && (
+            <div className="space-y-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                    Clientes e invitados
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                    Directorio de compradores registrados e invitados en órdenes comerciales, protegido por políticas RLS.
+                  </p>
+                </div>
+              </div>
+
+              <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="relative flex-1 max-w-md">
+                    <Icon
+                      name="search"
+                      className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    />
+                    <input
+                      type="search"
+                      value={customerSearch}
+                      onChange={(e) => setCustomerSearch(e.target.value)}
+                      placeholder="Buscar por nombre, correo o documento (DNI / RUC)..."
+                      className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                    />
+                  </div>
+
+                  <select
+                    aria-label="Filtrar por modalidad de comprador"
+                    value={customerTypeFilter}
+                    onChange={(e) =>
+                      setCustomerTypeFilter(e.target.value as 'ALL' | 'REGISTERED' | 'GUEST')
+                    }
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 focus:border-slate-900 focus:outline-none"
+                  >
+                    <option value="ALL">Todos los compradores</option>
+                    <option value="REGISTERED">Clientes con cuenta</option>
+                    <option value="GUEST">Compradores invitados</option>
+                  </select>
+                </div>
+
+                {filteredCustomers.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500 mb-3">
+                      <Icon name="users" className="w-5 h-5" />
+                    </div>
+                    <p className="text-sm font-bold text-slate-800">
+                      Sin registros de compradores en órdenes recientes
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                      Los datos de contacto y documento fiscal de clientes registrados e invitados aparecerán aquí conforme se registren pedidos.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                        <tr>
+                          <th className="px-4 py-3">Nombre / Razón Social</th>
+                          <th className="px-4 py-3">Correo y Teléfono</th>
+                          <th className="px-4 py-3">Documento Fiscal</th>
+                          <th className="px-4 py-3">Tipo de Cuenta</th>
+                          <th className="px-4 py-3">Orden Asociada</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 text-slate-700">
+                        {filteredCustomers.map((o) => (
+                          <tr key={o.id_pedido} className="hover:bg-slate-50/80">
+                            <td className="px-4 py-3 font-bold text-slate-900">
+                              {o.cliente_nombre}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="text-slate-800 block">{o.cliente_email}</span>
+                              <span className="text-[11px] text-slate-500">
+                                {o.cliente_telefono || 'Teléfono no registrado'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 font-mono text-slate-700">
+                              {o.doc_numero} ({o.tipo_comprobante})
+                            </td>
+                            <td className="px-4 py-3">
+                              <span
+                                className={`inline-flex rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase ${
+                                  o.es_invitado
+                                    ? 'bg-slate-100 text-slate-700 border-slate-300'
+                                    : 'bg-blue-50 text-blue-800 border-blue-200'
+                                }`}
+                              >
+                                {o.es_invitado ? 'Comprador Invitado' : 'Cliente con Cuenta'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 font-mono font-semibold text-slate-800">
+                              {o.numero_pedido}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+
+          {/* ====================================================================
+              6. MÓDULO: PROMOCIONES (promociones)
+             ==================================================================== */}
+          {activeModule === 'promociones' && (
+            <div className="space-y-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                    Promociones y suscripciones comerciales
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                    Control del beneficio de primera compra y auditoría de consentimientos en <code className="font-mono">public.suscripciones_newsletter</code>.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Reglas del cupón activo */}
+                <section className="lg:col-span-5 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5">
+                        Regla Activa en Servidor
+                      </span>
+                      <h2 className="text-base font-bold text-slate-900 mt-2">
+                        Cupón primera compra: <code className="font-mono text-[#0B1528]">BIENVENIDO5</code>
+                      </h2>
+                    </div>
+                    <span className="text-2xl font-extrabold font-mono text-amber-600">-5%</span>
+                  </div>
+
+                  <dl className="space-y-2.5 text-xs">
+                    <div className="flex justify-between py-1.5 border-b border-slate-100">
+                      <dt className="text-slate-500">Descuento aplicado</dt>
+                      <dd className="font-semibold text-slate-900">5% sobre subtotal de productos</dd>
+                    </div>
+                    <div className="flex justify-between py-1.5 border-b border-slate-100">
+                      <dt className="text-slate-500">Límite de redención</dt>
+                      <dd className="font-semibold text-slate-900">1 uso por correo normalizado</dd>
+                    </div>
+                    <div className="flex justify-between py-1.5">
+                      <dt className="text-slate-500">Versión de consentimiento</dt>
+                      <dd className="font-mono font-semibold text-slate-900">v1.0 (auditado)</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                {/* Tabla de suscripciones reales */}
+                <section className="lg:col-span-7 rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <h2 className="text-sm font-bold text-slate-900">
+                      Suscripciones registradas ({initialSubscriptions.length})
+                    </h2>
+                    <div className="relative w-full sm:w-64">
+                      <Icon
+                        name="search"
+                        className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                      />
+                      <input
+                        type="search"
+                        value={subscriptionSearch}
+                        onChange={(e) => setSubscriptionSearch(e.target.value)}
+                        placeholder="Filtrar por correo u origen..."
+                        className="w-full rounded-lg border border-slate-300 bg-white pl-8 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {filteredSubscriptions.length === 0 ? (
+                    <div className="p-10 text-center text-xs text-slate-500">
+                      No hay suscripciones comerciales registradas que coincidan con el criterio actual.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                          <tr>
+                            <th className="px-4 py-3">Correo Electrónico</th>
+                            <th className="px-4 py-3">Canal de Origen</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 text-slate-700">
+                          {filteredSubscriptions.map((sub) => (
+                            <tr key={sub.id_suscripcion || sub.email} className="hover:bg-slate-50/80">
+                              <td className="px-4 py-3 font-mono font-medium text-slate-900">
+                                {sub.email}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className="inline-flex rounded-md bg-slate-100 border border-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-700 uppercase">
+                                  {sub.origen || 'web_storefront'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </section>
+              </div>
+            </div>
+          )}
+
+          {/* ====================================================================
+              7. MÓDULO: BOLETAS Y FACTURAS SUNAT (facturacion)
+             ==================================================================== */}
+          {activeModule === 'facturacion' && (
+            <div className="space-y-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                    Boletas y facturas SUNAT
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                    Registro tributario estructurado con desglose de IGV (18%), validación de DNI (8 dígitos) para Boletas y RUC (11 dígitos) para Facturas.
+                  </p>
+                </div>
+              </div>
+
+              {/* Aviso transparente sobre el estado de la integración SEE-OSE */}
+              <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-950">
+                <div className="flex items-start gap-2.5">
+                  <Icon name="alert-triangle" className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="font-bold">Estado de integración SEE-OSE:</strong> Los comprobantes se estructuran y almacenan en <code className="font-mono">public.documentos_fiscales</code> con series correlativas (<code className="font-mono">B001</code> / <code className="font-mono">F001</code>). La emisión electrónica hacia SUNAT requiere vincular el certificado digital y endpoint del operador OSE en producción.
+                  </div>
+                </div>
+              </div>
+
+              <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="relative flex-1 max-w-md">
+                    <Icon
+                      name="search"
+                      className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    />
+                    <input
+                      type="search"
+                      value={documentSearch}
+                      onChange={(e) => setDocumentSearch(e.target.value)}
+                      placeholder="Buscar por serie-número, razón social o DNI/RUC..."
+                      className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                    />
+                  </div>
+
+                  <select
+                    aria-label="Filtrar por tipo de comprobante"
+                    value={documentTypeFilter}
+                    onChange={(e) => setDocumentTypeFilter(e.target.value)}
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 focus:border-slate-900 focus:outline-none"
+                  >
+                    <option value="ALL">Todos los comprobantes ({initialDocuments.length})</option>
+                    <option value="BOLETA">Boletas de Venta (B001)</option>
+                    <option value="FACTURA">Facturas Electrónicas (F001)</option>
+                  </select>
+                </div>
+
+                {filteredDocuments.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500 mb-3">
+                      <Icon name="file-text" className="w-5 h-5" />
+                    </div>
+                    <p className="text-sm font-bold text-slate-800">
+                      No hay documentos fiscales registrados actualmente
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                      Los comprobantes asociados a órdenes pagadas se registrarán automáticamente en <code className="font-mono">public.documentos_fiscales</code>.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                        <tr>
+                          <th className="px-4 py-3">Tipo</th>
+                          <th className="px-4 py-3">Serie y Número</th>
+                          <th className="px-4 py-3">Receptor (DNI / RUC)</th>
+                          <th className="px-4 py-3 text-right">Op. Gravada</th>
+                          <th className="px-4 py-3 text-right">IGV (18%)</th>
+                          <th className="px-4 py-3 text-right">Importe Total</th>
+                          <th className="px-4 py-3">Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 text-slate-700">
+                        {filteredDocuments.map((doc) => (
+                          <tr key={doc.id_documento} className="hover:bg-slate-50/80">
+                            <td className="px-4 py-3 font-bold uppercase text-slate-900">
+                              {doc.tipo}
+                            </td>
+                            <td className="px-4 py-3 font-mono font-semibold text-slate-900">
+                              {doc.serie}-{doc.numero}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="font-medium text-slate-900 block">
+                                {doc.datos_receptor?.businessName || 'Cliente'}
+                              </span>
+                              <span className="font-mono text-[11px] text-slate-500">
+                                Doc: {doc.datos_receptor?.docNumber || 'S/N'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-right font-mono text-slate-700">
+                              {formatCurrency(Number(doc.total_gravada), 'PEN')}
+                            </td>
+                            <td className="px-4 py-3 text-right font-mono text-slate-700">
+                              {formatCurrency(Number(doc.total_igv), 'PEN')}
+                            </td>
+                            <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
+                              {formatCurrency(Number(doc.total_comprobante), 'PEN')}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="inline-flex rounded-md bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-900">
+                                {doc.estado}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+
+          {/* ====================================================================
+              8. MÓDULO: DESPACHOS Y GUÍAS (despacho)
+             ==================================================================== */}
+          {activeModule === 'despacho' && (
+            <div className="space-y-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                    Despachos y guías de remisión
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                    Seguimiento de envíos activos y lineamientos de seguridad para el transporte de baterías de litio y componentes de tracción.
+                  </p>
+                </div>
+              </div>
+
+              {/* Órdenes en etapa logística real */}
+              <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900">
+                      Órdenes en etapa de preparación y despacho
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Pedidos confirmados, en preparación o despachados desde almacén
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-mono font-bold text-slate-700">
+                    {logisticsOrders.length} activos
+                  </span>
+                </div>
+
+                {logisticsOrders.length === 0 ? (
+                  <div className="p-8 text-center text-xs text-slate-500">
+                    No existen órdenes pendientes de empaque o despacho en este momento.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                        <tr>
+                          <th className="px-4 py-3">Orden</th>
+                          <th className="px-4 py-3">Destinatario</th>
+                          <th className="px-4 py-3">Modalidad de Entrega</th>
+                          <th className="px-4 py-3">Estado Actual</th>
+                          <th className="px-4 py-3 text-right">Acción Logística</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 text-slate-700">
+                        {logisticsOrders.map((o) => (
+                          <tr key={o.id_pedido} className="hover:bg-slate-50/80">
+                            <td className="px-4 py-3 font-mono font-bold text-slate-900">
+                              {o.numero_pedido}
+                            </td>
+                            <td className="px-4 py-3 font-medium text-slate-900">
+                              {o.cliente_nombre}
+                            </td>
+                            <td className="px-4 py-3 text-slate-600">{o.modalidad_entrega}</td>
+                            <td className="px-4 py-3">
+                              {renderOrderStatusBadge(o.estado_pedido)}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              {o.estado_pedido === 'confirmado' && (
+                                <button
+                                  type="button"
+                                  disabled={isUpdatingOrder === o.id_pedido}
+                                  onClick={() => handleUpdateOrderStatus(o.id_pedido, 'en_preparacion')}
+                                  className="rounded-lg bg-amber-400 hover:bg-amber-500 text-slate-950 px-3 py-1 text-[11px] font-bold cursor-pointer"
+                                >
+                                  Iniciar empaque
+                                </button>
+                              )}
+                              {o.estado_pedido === 'en_preparacion' && (
+                                <button
+                                  type="button"
+                                  disabled={isUpdatingOrder === o.id_pedido}
+                                  onClick={() => handleUpdateOrderStatus(o.id_pedido, 'despachado')}
+                                  className="rounded-lg bg-[#0B1528] hover:bg-slate-800 text-white px-3 py-1 text-[11px] font-bold cursor-pointer"
+                                >
+                                  Registrar salida
+                                </button>
+                              )}
+                              {o.estado_pedido === 'despachado' && (
+                                <button
+                                  type="button"
+                                  disabled={isUpdatingOrder === o.id_pedido}
+                                  onClick={() => handleUpdateOrderStatus(o.id_pedido, 'entregado')}
+                                  className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 text-[11px] font-bold cursor-pointer"
+                                >
+                                  Confirmar recepción
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+
+              {/* Protocolos normativos de despacho */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Icon name="battery" className="w-4 h-4 text-[#0B1528]" />
+                    <h3 className="text-sm font-bold text-slate-900">
+                      Protocolo de despacho seguro (Baterías EV)
+                    </h3>
+                  </div>
+                  <ul className="space-y-2 text-xs text-slate-600">
+                    <li className="flex items-start gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
+                      <span>Embalaje ignífugo y aislamiento dieléctrico de terminales Anderson / XT90.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
+                      <span>Verificación obligatoria de llave térmica (breaker) en posición OFF antes del sellado.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
+                      <span>Etiquetado normativo de mercancía eléctrica sensible Clase 9 (UN 3480).</span>
+                    </li>
+                  </ul>
+                </section>
+
+                <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Icon name="truck" className="w-4 h-4 text-[#0B1528]" />
+                    <h3 className="text-sm font-bold text-slate-900">
+                      Guía de Remisión Electrónica Remitente (GRE)
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Estructura preparada para numeración correlativa serie <code className="font-mono font-semibold text-slate-800">T001</code> con motivo de traslado «01 - Venta» conforme a la Resolución de Superintendencia N° 000123-2022/SUNAT.
+                  </p>
+                </section>
+              </div>
+            </div>
+          )}
+
+          {/* ====================================================================
+              9. MÓDULO: VOLTIA Y ASISTENCIA TÉCNICA (voltia)
+             ==================================================================== */}
+          {activeModule === 'voltia' && (
+            <div className="space-y-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                    VoltIA y asistencia técnica
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                    Casos derivados por diagnósticos de riesgo eléctrico, consultas de compatibilidad o requerimientos de taller especializado.
+                  </p>
+                </div>
+              </div>
+
+              <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="relative flex-1 max-w-md">
+                    <Icon
+                      name="search"
+                      className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    />
+                    <input
+                      type="search"
+                      value={assistanceSearch}
+                      onChange={(e) => setAssistanceSearch(e.target.value)}
+                      placeholder="Buscar por nombre de contacto, correo, tipo o síntoma..."
+                      className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                    />
+                  </div>
+                  <span className="text-xs font-mono font-semibold text-slate-600">
+                    {filteredAssistance.length} de {initialAssistance.length} solicitudes
+                  </span>
+                </div>
+
+                {filteredAssistance.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500 mb-3">
+                      <Icon name="headset" className="w-5 h-5" />
+                    </div>
+                    <p className="text-sm font-bold text-slate-800">
+                      No hay solicitudes de asistencia técnica registradas
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                      Cuando un usuario envíe una consulta desde el asistente VoltIA o solicite soporte de compatibilidad, el registro aparecerá aquí.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-200">
+                    {filteredAssistance.map((ast) => (
+                      <div key={ast.id_solicitud} className="p-5 hover:bg-slate-50/70 transition-colors space-y-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2.5">
+                            <span className="font-bold text-sm text-slate-900">
+                              {ast.nombre_contacto}
+                            </span>
+                            <a
+                              href={`mailto:${ast.email_contacto}`}
+                              className="font-mono text-xs text-blue-700 hover:underline"
+                            >
+                              {ast.email_contacto}
+                            </a>
+                          </div>
+                          <span className="inline-flex self-start sm:self-auto rounded-md bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-bold uppercase text-amber-900">
+                            {ast.tipo_solicitud}
+                          </span>
+                        </div>
+                        <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                          {ast.descripcion}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+
+          {/* ====================================================================
+              10. MÓDULO: IMPORTADOR DE CATÁLOGOS CSV/JSON (importador)
+             ==================================================================== */}
+          {activeModule === 'importador' && (
+            <CatalogImporterView initialHistory={initialImportHistory} />
+          )}
+        </main>
+      </div>
     </div>
   );
 }

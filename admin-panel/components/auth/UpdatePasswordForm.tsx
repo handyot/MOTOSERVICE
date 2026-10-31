@@ -58,15 +58,15 @@ export function UpdatePasswordForm() {
       {errorMessage && (
         <div
           role="alert"
-          className="rounded-lg border border-rose-500/40 bg-rose-950/50 p-3.5 text-xs text-rose-300 flex items-start gap-2.5"
+          className="rounded-lg border border-red-200 bg-red-50 p-3.5 text-xs text-red-800 flex items-start gap-2.5"
         >
-          <Icon name="alert-triangle" className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-          <span>{errorMessage}</span>
+          <Icon name="alert-triangle" className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+          <span className="font-medium">{errorMessage}</span>
         </div>
       )}
 
       <div>
-        <label htmlFor="new-pass" className="block text-xs font-semibold text-slate-300 mb-1.5">
+        <label htmlFor="new-pass" className="block text-xs font-semibold text-slate-800 mb-1.5">
           Nueva Contraseña Administrativa
         </label>
         <div className="relative">
@@ -79,20 +79,21 @@ export function UpdatePasswordForm() {
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
             placeholder="Mínimo 8 caracteres (letras y números)"
-            className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2.5 pr-10 text-xs text-white placeholder-slate-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 pr-10 text-xs text-slate-900 placeholder-slate-400 focus:border-[#0B1528] focus:outline-none focus:ring-1 focus:ring-[#0B1528]"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-200"
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-700 cursor-pointer"
+            aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
           >
-            <Icon name={showPassword ? 'x' : 'zap'} className="w-4 h-4" />
+            <Icon name={showPassword ? 'eye-off' : 'eye'} className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       <div>
-        <label htmlFor="confirm-new-pass" className="block text-xs font-semibold text-slate-300 mb-1.5">
+        <label htmlFor="confirm-new-pass" className="block text-xs font-semibold text-slate-800 mb-1.5">
           Confirmar Nueva Contraseña
         </label>
         <input
@@ -104,14 +105,14 @@ export function UpdatePasswordForm() {
           onChange={(e) => setConfirmPassword(e.target.value)}
           disabled={isLoading}
           placeholder="Repite la nueva contraseña"
-          className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:border-[#0B1528] focus:outline-none focus:ring-1 focus:ring-[#0B1528]"
         />
       </div>
 
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full mt-2 rounded-lg bg-amber-500 hover:bg-amber-400 px-4 py-2.5 text-xs font-bold text-slate-950 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+        className="w-full mt-2 rounded-lg bg-[#0B1528] hover:bg-slate-800 px-4 py-2.5 text-xs font-bold text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
       >
         {isLoading ? 'Guardando...' : 'Establecer Nueva Contraseña'}
       </button>

@@ -190,7 +190,7 @@ export function ProfileCard({ account }: ProfileCardProps) {
               </div>
             </div>
             <a
-              href={process.env.NEXT_PUBLIC_ADMIN_PANEL_URL || 'https://panel.neroelectric.com'}
+              href={process.env.NEXT_PUBLIC_ADMIN_PANEL_URL || 'https://panel.neroelectricmotors.com'}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-amber-500 px-3.5 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400 transition-colors shrink-0"
