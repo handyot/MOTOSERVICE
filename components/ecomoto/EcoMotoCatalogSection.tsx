@@ -196,6 +196,7 @@ export function EcoMotoCatalogSection() {
                             src={moto.imageUrl || "/images/motos/placeholder-ev-moto.svg"}
                             alt={`Moto eléctrica ${moto.brand} ${moto.model}`}
                             fill
+                            unoptimized={Boolean(moto.imageUrl?.startsWith('http'))}
                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
                           />

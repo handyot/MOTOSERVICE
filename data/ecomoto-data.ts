@@ -106,7 +106,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/producto/motos-electricas/urbano-vintage/moto-electrica-tailg-m1-plus/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "La ficha resumida indica motor 1000 W y batería 72 V; capacidad Ah, velocidad y autonomía no estaban explícitas en el extracto.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/MOTO-ELECTRICA-M1-PLUS.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/03/TAILG-M1-Plus-Rosado-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -150,7 +150,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/producto/motos-electricas/mecha-deportiva/moto-electrica-tailg-f52/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "La ficha describe autonomía de hasta 75 km.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/MOTO-ELECTRICA-F52.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/06/TAILG-F52-Mecha-G1-Verde-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -173,7 +173,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/motos-electricas/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Modelo F52 NEO en el listado oficial; autonomía publicada hasta 70 km.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/10/F52-NEO.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/03/TAILG-F52-NEO-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -196,7 +196,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/producto/motos-electricas/mecha-deportiva/moto-electrica-tailg-x9/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Ficha publica autonomía aproximada de 80–90 km; compatibilidad de repuestos debe validarse aparte.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/MOTO-ELECTRICA-X9.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/06/TAILG-X9-Negro-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -219,7 +219,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/producto/motos-electricas/mecha-deportiva/moto-electrica-litio-extraible-tailg-f55l/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "La ficha detalla batería GREENWAY LiFePO4 64V30Ah; autonomía estándar 65–70 km y uso urbano 60–65 km.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/02/F55L.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/03/TAILG-F55L-Negro-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -242,7 +242,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/producto/bicimotos-electricas/bicimotos-litio/tailg-t7/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "25 km/h se especifica en modo limitado; no comparar directamente con motos homologadas a mayor velocidad.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/08/tailg-t7.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/02/TAILG-T7-Gris-1-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -264,7 +264,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/bicimotos-electricas/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "La página enumera motor 600 W y autonomía 80–90 km; velocidad no explicitada en el extracto consultado.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/10/Tailg-V10.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/02/TAILG-V10-Litio-Extraible-LMFP-Verde-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -287,7 +287,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/producto/bicimotos-electricas/bicimotos-litio/tailg-x51-litio-extraible-48v24ah/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Velocidad descrita en modo limitado de 25 km/h.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/10/Tailg-X51.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/07/TAILG-X51-NEGRO-litio-extraible-lifepo4-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -307,7 +307,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/serie-de-litio/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "La fuente oficial confirma motor 400 W y batería extraíble LMFP 48V12Ah; velocidad/autonomía no indicadas en el extracto.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/02/Tailg-LEDO.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/08/TAILG-LEDO-litio-extraible-negro-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -330,7 +330,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/motos-electricas/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Se agrega también porque aparece expresamente en la compatibilidad publicada de espejos TAILG.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/MOTO-ELECTRICA-A1-PLUS.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/01/TAILG-A1-Plus-2026-Negro-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -377,7 +377,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/motos-electricas/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Se agrega por catálogo y por las compatibilidades de espejos.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/MOTO-ELECTRICA-POLARIS.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/03/TAILG-POLARIS-morado-x-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -399,7 +399,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/motos-electricas/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Se agrega por aparecer como compatible con espejo HJ-182.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/MOTO-ELECTRICA-LEOPARD-PRO.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/06/TAILG-LEOPARD-PRO-NEGRO-nv-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -412,7 +412,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/producto/repuestos-y-accesorios-originales/espejos-retrovisores/espejo-tailg-8mm/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Modelo citado en compatibilidad de espejo, sin ficha de moto validada en esta recopilación.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/MOTO-ELECTRICA-M1-PLUS.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/03/TAILG-F72-MASTER-verde-FB-x-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -425,7 +425,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/repuestos-y-accesorios-originales/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Citado como modelo compatible con una batería de litio 48V24Ah; ficha propia pendiente.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/MOTO-ELECTRICA-F52.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2024/12/TAILG-P30-verde-1-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -438,7 +438,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/repuestos-y-accesorios-originales/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Citado como modelo compatible con una batería de litio 48V24Ah; ficha propia pendiente.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/MOTO-ELECTRICA-A1-PLUS.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/03/TAILG-M2-verde-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -451,7 +451,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/repuestos-y-accesorios-originales/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Citado como modelo compatible con una batería de litio 48V24Ah; ficha propia pendiente.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/MOTO-ELECTRICA-POLARIS.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2024/12/TAILG-F52-plata-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -464,7 +464,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/repuestos-y-accesorios-originales/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Citado en compatibilidad de batería LMFP 48V12Ah; validar denominación exacta/modelo antes de publicar.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/10/Tailg-V10.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/TAILG-N10L-litio-extraible-rosado-430x430.webp"
   },
   {
     "brand": "TAILG",
@@ -477,7 +477,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/repuestos-y-accesorios-originales/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Citado en compatibilidad de batería LMFP 48V12Ah; validar denominación exacta/modelo antes de publicar.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/02/Tailg-LEDO.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/08/TAILG-LEDO-LITIO-EXTRAIBLE-LMFP.webp"
   },
   {
     "brand": "TAILG",
@@ -490,7 +490,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/repuestos-y-accesorios-originales/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Citado en compatibilidad de batería LMFP 48V12Ah; validar denominación exacta/modelo antes de publicar.",
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/10/Tailg-X51.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/TAILG-X51-BICIMOTO-DE-LTIO-1000W.webp"
   },
   {
     "brand": "YADEA",
@@ -656,7 +656,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://kayencorp.com/producto/moto-scooter-time/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "La ficha indica batería no extraíble; garantía publicada: motor 12 meses, batería 3 meses.",
-    "imageUrl": "https://kayencorp.com/wp-content/uploads/2026/02/portada19.webp"
+    "imageUrl": "https://kayencorp.com/wp-content/uploads/2026/06/moto-electrica-time-con-servicio-postventa-600x600.webp"
   },
   {
     "brand": "KAYENCORP",
@@ -679,7 +679,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://kayencorp.com/producto/moto-scooter-hawk/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "La ficha indica batería no extraíble; garantía publicada: motor 12 meses, batería 3 meses.",
-    "imageUrl": "https://kayencorp.com/wp-content/uploads/2026/02/portada21.webp"
+    "imageUrl": "https://kayencorp.com/wp-content/uploads/2025/09/moto-scooter-hawk-deportiva-600x600.webp"
   },
   {
     "brand": "KAYENCORP",
@@ -701,7 +701,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://kayencorp.com/producto/moto-scooter-kuaishan/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "No cargar potencia como dato definitivo: descripción corta indica motor 2000 W, pero tabla técnica de la misma página indica 20000 W. Confirmar con Kayencorp antes de mostrar en comparador.",
-    "imageUrl": "https://kayencorp.com/wp-content/uploads/2026/02/portada20.webp"
+    "imageUrl": "https://kayencorp.com/wp-content/uploads/2026/02/moto-scooter-kuashian-con-bateria-electrica-600x600.webp"
   },
   {
     "brand": "KAYENCORP",
@@ -714,7 +714,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://kayencorp.com/producto/guardafango-posterior-bicimoto-ido/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Modelo referenciado específicamente por un guardafango; ficha técnica de vehículo no recopilada.",
-    "imageUrl": "https://kayencorp.com/wp-content/uploads/2026/02/portada17.webp"
+    "imageUrl": "https://kayencorp.com/wp-content/uploads/2026/02/bicimoto-electrica-leshi-color-negro-600x600.webp"
   },
   {
     "brand": "KAYENCORP",
@@ -727,7 +727,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://kayencorp.com/producto/pastillas-de-freno-moto-mnk2/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Modelo referenciado por pastillas de freno SKU 1020; la página consultada no muestra precio en el resultado.",
-    "imageUrl": "https://kayencorp.com/wp-content/uploads/2026/02/portada18.webp"
+    "imageUrl": "https://kayencorp.com/wp-content/uploads/2026/02/Moto-deportiva-Street-hunter-1536x1536.webp"
   },
   {
     "brand": "GREENLINE",
@@ -752,7 +752,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://www.glperu.com/tienda/greenline-h5/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Faro LED, alarma, llanta 3.00-10. Autonomía bajo condiciones publicadas por GreenLine.",
-    "imageUrl": "https://www.glperu.com/wp-content/uploads/2026/01/h5.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/motos/h5/h5_rojo_costado.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -776,7 +776,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://glperu.com/tienda/greenline-x3/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Conflicto interno de velocidad: resumen y ficha dicen 60 km/h, descripción dice 50 km/h. Dejar max_speed_kmh vacío hasta confirmar versión.",
-    "imageUrl": "https://www.glperu.com/wp-content/uploads/2025/09/Greenline-X3.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/motos/x3/X3-BLANCO-e1735316531528.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -801,7 +801,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://glperu.com/tienda/greenline-x6-pro/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "La ficha publica batería 72V26Ah, doble disco y llantas 90/90-12 y 90/80-12.",
-    "imageUrl": "https://www.glperu.com/wp-content/uploads/2026/02/x6pro-portada.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/motos/x6_pro/x6pro_azul_costado.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -822,7 +822,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://www.glperu.com/tienda/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "El catálogo general da precio, motor, química de batería y autonomía; no copiar voltaje/capacidad ni velocidad no mostrados.",
-    "imageUrl": "https://www.glperu.com/wp-content/uploads/2025/09/H3-PRO-2025.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/motos/h3%20pro/h3_pro_rosado_costado.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -843,7 +843,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://www.glperu.com/tienda/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "El catálogo general da precio, motor, química de batería y autonomía; ficha detallada pendiente.",
-    "imageUrl": "https://www.glperu.com/wp-content/uploads/2025/05/Greenline-Y5.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/motos/Y5/y5_gris_costado.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -864,7 +864,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://www.glperu.com/tienda/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "El catálogo general da precio, motor, química de batería y autonomía; ficha detallada pendiente.",
-    "imageUrl": "https://www.glperu.com/wp-content/uploads/2025/05/V9-PRO-2025.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/motos/v9_pro/v9_pro_negro_costado.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -881,7 +881,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://www.glperu.com/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "La página de inicio lo presenta como nuevo modelo 2026 con motor 1200W y batería litio 60V30Ah; precio, velocidad y autonomía no visibles en el extracto.",
-    "imageUrl": "https://www.glperu.com/wp-content/uploads/2026/03/t8-portada.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/motos/t8/t8_blanca_costado.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -902,7 +902,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://glperu.com/tienda/greenline-v8/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "La ficha resumida indica motor 1200W, batería 72V20Ah y velocidad 45 km/h; autonomía no indicada en el extracto.",
-    "imageUrl": "https://www.glperu.com/wp-content/uploads/2026/02/v8-portada.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/motos/sr/sr_blanca_costado.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -916,7 +916,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/repuestos-y-accesorios-originales/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "TAILG indica que un cargador de puerto TAILG aplica a modelos GreenLine M6 si usan batería 60V20/22Ah y puerto compatible. Confirmar variante.",
-    "imageUrl": "/images/motos/greenline-m3.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/motos/t6/t6_negro_costado.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -930,7 +930,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/repuestos-y-accesorios-originales/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "TAILG indica que un cargador de puerto TAILG aplica a modelos GreenLine M5 si usan batería 60V20/22Ah y puerto compatible. Confirmar variante.",
-    "imageUrl": "/images/motos/greenline-m3.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/vmp/S9/vmp_s9_blanco.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -944,7 +944,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/repuestos-y-accesorios-originales/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "TAILG indica que un cargador de puerto TAILG aplica a modelos GreenLine E3 si usan batería 60V20/22Ah y puerto compatible. Confirmar variante.",
-    "imageUrl": "https://www.glperu.com/wp-content/uploads/2025/09/Greenline-X3.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/vmp/l3pro/l3_negro_costado.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -958,7 +958,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://tailg.com.pe/motos/repuestos-y-accesorios-originales/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "TAILG indica que un cargador de puerto TAILG aplica a modelos GreenLine E5 si usan batería 60V20/22Ah y puerto compatible. No confundir con TAILG E5.",
-    "imageUrl": "https://www.glperu.com/wp-content/uploads/2025/05/Greenline-Y5.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/vmp/S6_Pro/s6pro_verde_costado.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -972,7 +972,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://glperu.com/tienda/cargador-72v-3a-greenline/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Modelo listado como compatible con cargador GreenLine 72V3A; ficha de vehículo pendiente.",
-    "imageUrl": "/images/motos/greenline-f4-pro.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/motos/f4%20pro/f4pro_azul_costado.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -986,7 +986,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://glperu.com/tienda/cargador-72v-3a-greenline/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Modelo listado como compatible con cargador GreenLine 72V3A; ficha de vehículo pendiente.",
-    "imageUrl": "https://www.glperu.com/wp-content/uploads/2025/09/H3-PRO-2025.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/vmp/T4/t4_crema_costado.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -1001,7 +1001,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://glperu.com/tienda/cargador-60v-3a-modelo-tm8x-tm6x-h2/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Citado en la ficha de cargador GreenLine 60V3A; no se importan especificaciones de vehículo sin ficha.",
-    "imageUrl": "https://www.glperu.com/wp-content/uploads/2026/03/t8-portada.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/trimotos/tm9/tm9_blanco_costado_izq.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -1016,7 +1016,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://glperu.com/tienda/cargador-60v-3a-modelo-tm8x-tm6x-h2/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Citado en la ficha de cargador GreenLine 60V3A; no se importan especificaciones de vehículo sin ficha.",
-    "imageUrl": "/images/motos/greenline-mx6.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/cargueros/tm6/TM6V24-ROJA.webp?v=20261030-222626"
   },
   {
     "brand": "GREENLINE",
@@ -1031,7 +1031,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://glperu.com/tienda/cargador-60v-3a-modelo-tm8x-tm6x-h2/",
     "sourceCheckedOn": "2026-10-30",
     "notes": "Citado en la ficha de cargador GreenLine 60V3A; no se importan especificaciones de vehículo sin ficha.",
-    "imageUrl": "https://www.glperu.com/wp-content/uploads/2026/01/h5.webp"
+    "imageUrl": "https://www.glperu.com/assets/imagenes/productos/trimotos/tm7_2026/tmt7_crema_costado.webp?v=20261030-222626"
   }
 ];
 
@@ -1055,7 +1055,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "La fuente también enumera GreenLine M6, M5, E3, E5. Antes de mostrar compra confirmada, validar el puerto y la variante exacta. Precio publicado sin instalación.",
     "ownStock": 0,
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/08/CARGADOR-DE-BATERIA-60V-3A-CONECTOR-MACHO-TAILG.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/04/60V3A-cargador-tailg-hg-430x430.webp"
   },
   {
     "partKey": "TAILG-BAT-PHYLION-48V12-LMFP",
@@ -1077,7 +1077,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "La fuente declara compatibilidad con bicimotos/VMP TAILG LEDO, VMP S4, VMP S2 y VMP S2X, entre otros.",
     "ownStock": 0,
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/03/BATERIA-PHYLION-48V12AH.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/bateria-de-tailg-ledo-litio-extraible-PHYLION-430x430.webp"
   },
   {
     "partKey": "TAILG-BAT-AMPACE-48V24",
@@ -1099,7 +1099,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICAR_VARIANTE",
     "notes": "La fuente enumera T7, V10, X51, T5, T3 y T24; incluye advertencia de verificar compatibilidad para otros modelos/marcas.",
     "ownStock": 0,
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/09/Bateria-Ampace.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/Bateria-Litio-48V24AH-Extraible-Ampace-430x430.webp"
   },
   {
     "partKey": "TAILG-BAT-GREENWAY-64V30",
@@ -1122,7 +1122,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "La fuente indica que está equipada en TAILG F55L. No asumir compatibilidad en cualquier batería de tensión nominal similar.",
     "ownStock": 0,
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/02/Bateria-Greenway-64v30ah.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/Bateria-Litio-Extraible-64V30AH-GreenWay-LMFP-H-430x430.webp"
   },
   {
     "partKey": "TAILG-CHG-48V3A-54V6",
@@ -1145,7 +1145,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Compatible según la fuente con bicimotos TAILG T7, V10 y X51.",
     "ownStock": 0,
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/10/Cargador-48v3a.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/06/Cargador-de-Litio-48V-3A-Output-54.6V-frontal-430x430.webp"
   },
   {
     "partKey": "TAILG-CHG-LEDO-48V3A-59V",
@@ -1168,7 +1168,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "No reemplazar por un cargador 48V genérico: salida y adaptador difieren.",
     "ownStock": 0,
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/03/Cargador-48v3a-Ledo.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/cargador-de-litio-output-59.0V-3V-430x430.webp"
   },
   {
     "partKey": "TAILG-CHG-F55L-60V5A-73V",
@@ -1192,7 +1192,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "La fuente declara 365 W y uso diseñado para la batería de TAILG F55L.",
     "ownStock": 0,
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/02/Cargador-F55L.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/TAILG-Cargador-de-litio-60V-5A-LiFEPO4-73V-430x430.webp"
   },
   {
     "partKey": "TAILG-BOX-45L",
@@ -1212,7 +1212,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "La fuente dice que precios no incluyen instalación.",
     "ownStock": 0,
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/CAJUELA-CUADRADA.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/04/cajuela-cuadra-iw-blanco-430x430.webp"
   },
   {
     "partKey": "TAILG-MIRROR-WY261-8MM",
@@ -1230,7 +1230,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "El proveedor muestra rango de precio S/30–60 según variante. Verificar sentido de rosca y lado antes de venta.",
     "ownStock": 0,
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/ESPEJO-DEPORTIVO-WY-261.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/10/Espejo-Deportivo-8mm-Original-TAILG-WY-261-430x430.webp"
   },
   {
     "partKey": "TAILG-MIRROR-HJ182-8MM",
@@ -1248,7 +1248,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Rango de precio publicado S/35–70 según variante.",
     "ownStock": 0,
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/08/ESPEJO-DEPORTIVO-HJ-182-CON-PERNO-DE-8MM-PAR.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2024/12/espejos-deportivos-TAILG-HJ-182-430x430.webp"
   },
   {
     "partKey": "TAILG-MIRROR-XC603",
@@ -1266,7 +1266,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Rango de precio publicado S/40–80 según variante.",
     "ownStock": 0,
-    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/08/ESPEJO-DEPORTIVO-TAILG-XC-603.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/Espejo-Deportivo-TAILG-XC-603-430x430.webp"
   },
   {
     "partKey": "GREENLINE-CHG-72V3A",
@@ -1288,7 +1288,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "La página marca sin existencias; mostrar como agotado o para consultar, no permitir checkout como stock disponible.",
     "ownStock": 0,
-    "imageUrl": "https://glperu.com/wp-content/uploads/2025/03/Cargador-72v-3a.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/04/Cargador-tailg-72V3A-v-430x430.webp"
   },
   {
     "partKey": "GREENLINE-BAT-12V20AH-6DZF20",
@@ -1311,7 +1311,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "PARCIAL",
     "notes": "No hay un modelo compatible específico indicado en la ficha consultada. No asignar compatibilidad automática por voltaje solamente.",
     "ownStock": 0,
-    "imageUrl": "https://glperu.com/wp-content/uploads/2024/11/BATERIA-12V20AH.webp"
+    "imageUrl": "https://electrica.pe/wp-content/uploads/bateria-plomo-acido-12v-20ah.webp"
   },
   {
     "partKey": "GREENLINE-CHG-60V3A-TM8X",
@@ -1334,7 +1334,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Página marcada sin existencias; la ficha lo describe como cargador genérico para pack de 5 celdas de plomo ácido (equivalente 60V).",
     "ownStock": 0,
-    "imageUrl": "https://glperu.com/wp-content/uploads/2025/03/Cargador-60v-3a.webp"
+    "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/04/60V3A-cargador-tailg-hg-430x430.webp"
   },
   {
     "partKey": "KAYEN-BAT-LIFEPO4-72V30AH",
@@ -1356,7 +1356,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "PENDIENTE_DE_COMPATIBILIDAD",
     "notes": "La ficha no identifica modelos concretos de motos compatibles. No asociar automáticamente a todos los modelos de 72V.",
     "ownStock": 0,
-    "imageUrl": "https://kayencorp.com/wp-content/uploads/2025/07/bateria-de-litio-72v30ah.webp"
+    "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/07/bateria-lifepo4-72V30AH-con-mayor-tiempo-de-vida.webp"
   },
   {
     "partKey": "KAYEN-BAT-LIFEPO4-72V24AH",
@@ -1378,7 +1378,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "PENDIENTE_DE_COMPATIBILIDAD",
     "notes": "La ficha no identifica modelos concretos de motos compatibles. No asociar automáticamente a todos los modelos de 72V.",
     "ownStock": 0,
-    "imageUrl": "https://kayencorp.com/wp-content/uploads/2025/07/bateria-litio-72v24ah.webp"
+    "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/07/bateria-lifepo4-72V24AH-con-mayor-ciclos-de-carga.webp"
   },
   {
     "partKey": "KAYEN-FENDER-IDO",
@@ -1397,7 +1397,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "El proveedor identifica el modelo compatible de forma explícita.",
     "ownStock": 0,
-    "imageUrl": "https://kayencorp.com/wp-content/uploads/2025/04/guardafango-posterior-bicimoto-ido.webp"
+    "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/guardafango-posterior-bicimoto-ido_3-scaled.webp"
   },
   {
     "partKey": "KAYEN-BRAKE-PADS-MNK2",
@@ -1413,7 +1413,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Precio no visible en el resultado consultado; no inventar precio.",
     "ownStock": 0,
-    "imageUrl": "https://kayencorp.com/wp-content/uploads/2025/04/pastilla-de-freno-mnk2.webp"
+    "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/pastilla-de-freno-motor-mnk2-scaled-300x300.webp"
   },
   {
     "partKey": "KAYEN-CHG-48V3A-LITHIUM-BICIMOTO",
@@ -1434,7 +1434,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "dataStatus": "PENDIENTE_DE_COMPATIBILIDAD",
     "notes": "No se atribuye compatibilidad a un modelo específico porque la ficha de producto no lo identifica.",
     "ownStock": 0,
-    "imageUrl": "https://kayencorp.com/wp-content/uploads/2025/07/cargador-de-litio-48v3a.webp"
+    "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/cargador-48v20ah-litio-bicimoto-scaled-300x300.webp"
   }
 ];
 

@@ -71,6 +71,7 @@ export function MotoDetailModal({ moto, onClose, onSelectPart }: MotoDetailModal
                 src={moto.imageUrl || "/images/motos/placeholder-ev-moto.svg"}
                 alt={`Moto eléctrica ${moto.brand} ${moto.model}`}
                 fill
+                unoptimized={Boolean(moto.imageUrl?.startsWith('http'))}
                 sizes="224px"
                 className="object-contain p-2"
               />

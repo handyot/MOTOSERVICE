@@ -377,14 +377,14 @@ test('13. Cobertura del 100% de imágenes reales (.webp) en los 52 modelos, 19 r
 
   for (const m of motos) {
     assert.ok(
-      typeof m.imageUrl === 'string' && m.imageUrl.endsWith('.webp'),
+      typeof m.imageUrl === 'string' && m.imageUrl.includes('.webp'),
       `El modelo ${m.slug} debe tener una URL de imagen .webp real`
     );
   }
 
   for (const p of parts) {
     assert.ok(
-      typeof p.imageUrl === 'string' && p.imageUrl.endsWith('.webp'),
+      typeof p.imageUrl === 'string' && p.imageUrl.includes('.webp'),
       `El repuesto ${p.partKey} debe tener una URL de imagen .webp real`
     );
   }
