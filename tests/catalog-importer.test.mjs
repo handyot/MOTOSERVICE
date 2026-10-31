@@ -20,6 +20,8 @@ import {
   normalizeRecord,
   deduplicateItems,
   generateImportPreview,
+  validateRubro,
+  detectBrandFromUrl,
 } from '../lib/importers/importer-core.mjs';
 
 test('1. CSV: Soporte de UTF-8 con BOM, separadores (, ;) y celdas multilínea entre comillas', () => {
@@ -372,10 +374,10 @@ test('13. Cobertura del 100% de imágenes reales en los 52 modelos, 173 repuesto
   const motos = JSON.parse(motosMatch[1]);
   const parts = JSON.parse(partsMatch[1]);
 
-  assert.equal(motos.length, 52);
-  assert.equal(parts.length, 173);
-  assert.equal(new Set(parts.map((p) => p.partKey)).size, 173, 'partKey único en OFFICIAL_PARTS');
-  assert.equal(new Set(parts.map((p) => p.sku)).size, 173, 'sku único en OFFICIAL_PARTS');
+  assert.ok(motos.length >= 52, 'Debe haber al menos 52 modelos oficiales');
+  assert.ok(parts.length >= 173, 'Debe haber al menos 173 repuestos oficiales');
+  assert.equal(new Set(parts.map((p) => p.partKey)).size, parts.length, 'partKey único en OFFICIAL_PARTS');
+  assert.equal(new Set(parts.map((p) => p.sku)).size, parts.length, 'sku único en OFFICIAL_PARTS');
 
   for (const m of motos) {
     assert.ok(
@@ -441,4 +443,47 @@ test('14. Migración de ampliación de repuestos: integridad con OFFICIAL_PARTS 
     assert.ok(seedModels.has(`${brand}:::${model}`), `Modelo inexistente en seed: ${brand} ${model}`);
   }
   assert.ok(!/DELETE|DROP TABLE|TRUNCATE/i.test(sql), 'La migración debe ser aditiva');
+});
+
+test('15. Verificación de Rubro y Detección de Marca para escaneo de URLs externas', () => {
+  // 1. Caso positivo: Tienda de movilidad eléctrica (motos, bicimotos, repuestos, litio)
+  const evHtml = `
+    <!DOCTYPE html>
+    <html>
+      <head><title>Motos Eléctricas Perú | Repuestos y Baterías de Litio</title></head>
+      <body>
+        <h1>Catálogo de Motos Eléctricas y Bicimotos</h1>
+        <p>Batería de litio 60V 20Ah, cargador inteligente y repuestos originales.</p>
+      </body>
+    </html>
+  `;
+  const evValidation = validateRubro(evHtml, 'https://super-soco.pe/tienda');
+  assert.equal(evValidation.isValid, true, 'Debe validar positivamente tienda de movilidad eléctrica');
+  assert.ok(evValidation.score >= 6, 'Puntuación debe ser suficiente para certificar rubro');
+  assert.ok(evValidation.matchedKeywords.length >= 3, 'Debe encontrar múltiples palabras clave del rubro');
+
+  // 2. Caso negativo: Sitio de ropa/moda o farmacia
+  const fashionHtml = `
+    <!DOCTYPE html>
+    <html>
+      <head><title>Boutique de Vestidos y Ropa de Mujer</title></head>
+      <body>
+        <h1>Vestidos de fiesta, zapatos y carteras elegantes</h1>
+      </body>
+    </html>
+  `;
+  const fashionValidation = validateRubro(fashionHtml, 'https://modaboutique.pe');
+  assert.equal(fashionValidation.isValid, false, 'Debe rechazar sitios ajenos al rubro');
+  assert.equal(fashionValidation.score, 0, 'Sitio ajeno debe tener score 0 o insuficiente');
+
+  // 3. Detección de marca desde URL y metadata
+  const detected1 = detectBrandFromUrl('https://super-soco.pe/productos/', '<meta property="og:site_name" content="Super Soco Perú">');
+  assert.equal(detected1.brandName, 'SUPER SOCO');
+  assert.equal(detected1.supplierName, 'SUPER SOCO Perú');
+
+  const detected2 = detectBrandFromUrl('https://niu.pe/motos/', '<title>NIU Oficial - Movilidad Eléctrica</title>');
+  assert.equal(detected2.brandName, 'NIU');
+
+  const detected3 = detectBrandFromUrl('https://otra-tienda.pe', '', 'SUR-RON');
+  assert.equal(detected3.brandName, 'SUR-RON');
 });

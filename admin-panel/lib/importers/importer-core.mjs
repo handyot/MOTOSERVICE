@@ -971,3 +971,252 @@ export function generateImportPreview(files) {
     missingFields: ['precio_compra', 'costo_envio'],
   };
 }
+
+/**
+ * Valida si un contenido web (HTML o texto) pertenece al rubro de
+ * vehículos eléctricos ligeros (motos, bicimotos, scooters) o repuestos asociados.
+ *
+ * @param {string} textOrHtml - Texto o HTML de la página inspeccionada.
+ * @param {string} [url] - URL opcional para contexto adicional de dominio o ruta.
+ * @returns {{
+ *   isValid: boolean;
+ *   score: number;
+ *   matchedKeywords: string[];
+ *   reason: string;
+ * }}
+ */
+export function validateRubro(textOrHtml, url = '') {
+  if (!textOrHtml || typeof textOrHtml !== 'string') {
+    return {
+      isValid: false,
+      score: 0,
+      matchedKeywords: [],
+      reason: 'El contenido analizado está vacío o es inválido.',
+    };
+  }
+
+  // Normalizar a minúsculas sin acentos
+  const clean = (textOrHtml + ' ' + (url || ''))
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  // 1. Términos principales de vehículos eléctricos (peso alto: 5 pts)
+  const coreTerms = [
+    { key: 'moto electrica', weight: 5 },
+    { key: 'motos electricas', weight: 5 },
+    { key: 'bicimoto', weight: 5 },
+    { key: 'bicimotos', weight: 5 },
+    { key: 'scooter electrico', weight: 5 },
+    { key: 'scooters electricos', weight: 5 },
+    { key: 'electromovilidad', weight: 5 },
+    { key: 'movilidad electrica', weight: 5 },
+    { key: 'vehiculo electrico', weight: 5 },
+    { key: 'vehiculos electricos', weight: 5 },
+    { key: 'ebike', weight: 4 },
+    { key: 'e-bike', weight: 4 },
+    { key: 'trimoto', weight: 4 },
+    { key: 'ciclomotor', weight: 4 },
+    { key: 'cuadrimoto electrica', weight: 5 },
+    { key: 'patineta electrica', weight: 4 },
+  ];
+
+  // 2. Componentes técnicos eléctricos (peso medio: 3 pts)
+  const technicalTerms = [
+    { key: 'bateria de litio', weight: 4 },
+    { key: 'bateria de grafeno', weight: 4 },
+    { key: 'bateria plomo', weight: 3 },
+    { key: 'baterias', weight: 2 },
+    { key: 'cargador', weight: 3 },
+    { key: 'controlador', weight: 3 },
+    { key: 'motor hub', weight: 4 },
+    { key: 'motor brushless', weight: 4 },
+    { key: 'bms', weight: 3 },
+    { key: 'voltios', weight: 2 },
+    { key: 'amperios', weight: 2 },
+    { key: '48v', weight: 3 },
+    { key: '60v', weight: 3 },
+    { key: '72v', weight: 3 },
+    { key: '84v', weight: 3 },
+    { key: '96v', weight: 3 },
+    { key: '20ah', weight: 2 },
+    { key: '12ah', weight: 2 },
+    { key: '30ah', weight: 2 },
+    { key: '38ah', weight: 2 },
+    { key: '45ah', weight: 2 },
+    { key: 'celdas de litio', weight: 3 },
+    { key: 'puerto de carga', weight: 3 },
+    { key: 'convertidor dc', weight: 3 },
+    { key: 'acelerador', weight: 2 },
+    { key: 'display lcd', weight: 3 },
+  ];
+
+  // 3. Repuestos de desgaste y ciclo (peso 2 pts)
+  const partTerms = [
+    { key: 'repuestos', weight: 3 },
+    { key: 'repuesto', weight: 2 },
+    { key: 'llanta', weight: 2 },
+    { key: 'llantas', weight: 2 },
+    { key: 'neumatico', weight: 2 },
+    { key: 'camara de moto', weight: 3 },
+    { key: 'pastilla de freno', weight: 3 },
+    { key: 'pastillas de freno', weight: 3 },
+    { key: 'disco de freno', weight: 3 },
+    { key: 'zapata', weight: 2 },
+    { key: 'amortiguador', weight: 2 },
+    { key: 'suspension', weight: 2 },
+    { key: 'espejos retrovisores', weight: 2 },
+    { key: 'cajuela', weight: 2 },
+    { key: 'chasis', weight: 2 },
+  ];
+
+  // 4. Indicadores de sitios ajenos al rubro (penalización)
+  const negativeTerms = [
+    { key: 'ropa de mujer', penalty: 8 },
+    { key: 'vestidos de fiesta', penalty: 8 },
+    { key: 'farmacia y medicamentos', penalty: 8 },
+    { key: 'recetas de cocina', penalty: 8 },
+    { key: 'casino online', penalty: 12 },
+    { key: 'apuestas deportivas', penalty: 12 },
+    { key: 'inmobiliaria departamentos', penalty: 8 },
+    { key: 'vuelos y hoteles', penalty: 8 },
+  ];
+
+  const matchedKeywords = [];
+  let score = 0;
+  let hasCore = false;
+  let hasTechnical = false;
+
+  for (const item of coreTerms) {
+    if (clean.includes(item.key)) {
+      matchedKeywords.push(item.key);
+      score += item.weight;
+      hasCore = true;
+    }
+  }
+
+  for (const item of technicalTerms) {
+    if (clean.includes(item.key)) {
+      matchedKeywords.push(item.key);
+      score += item.weight;
+      hasTechnical = true;
+    }
+  }
+
+  for (const item of partTerms) {
+    if (clean.includes(item.key)) {
+      matchedKeywords.push(item.key);
+      score += item.weight;
+    }
+  }
+
+  let penalty = 0;
+  for (const item of negativeTerms) {
+    if (clean.includes(item.key)) {
+      penalty += item.penalty;
+    }
+  }
+
+  const finalScore = Math.max(0, Math.min(100, score - penalty));
+  // Criterio de aceptación:
+  // finalScore >= 6 O (ha encontrado término core de vehículo + término técnico o repuesto)
+  const isValid = finalScore >= 6 || (hasCore && hasTechnical);
+
+  let reason = '';
+  if (isValid) {
+    reason = `Página verificada como perteneciente al rubro de movilidad eléctrica y repuestos (Relevancia: ${finalScore}/100, Coincidencias: ${matchedKeywords.slice(0, 5).join(', ')}).`;
+  } else {
+    reason = `La URL no corresponde al rubro de motos eléctricas, movilidad eléctrica o repuestos (Puntuación de relevancia: ${finalScore}/100). Operación cancelada para preservar la integridad del catálogo.`;
+  }
+
+  return {
+    isValid,
+    score: finalScore,
+    matchedKeywords,
+    reason,
+  };
+}
+
+/**
+ * Detecta o infiere la marca a partir de la URL y el HTML.
+ *
+ * @param {string} url - URL del sitio a inspeccionar.
+ * @param {string} [html] - HTML descargado.
+ * @param {string} [explicitBrand] - Marca proporcionada explícitamente por el usuario.
+ * @returns {{ brandName: string; supplierName: string }}
+ */
+export function detectBrandFromUrl(url, html = '', explicitBrand = '') {
+  if (explicitBrand && explicitBrand.trim()) {
+    const cleanBrand = explicitBrand
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9_\-\s]/g, '')
+      .slice(0, 30);
+    return {
+      brandName: cleanBrand,
+      supplierName: `${cleanBrand} Oficial`,
+    };
+  }
+
+  let detected = '';
+
+  if (html) {
+    // 1. OpenGraph site_name
+    const ogSite = html.match(/<meta\s+property=["']og:site_name["']\s+content=["']([^"']+)["']/i);
+    if (ogSite && ogSite[1]) {
+      detected = ogSite[1].trim();
+    }
+
+    // 2. Schema.org Organization o Brand
+    if (!detected) {
+      const orgMatch = html.match(/"@type":\s*"(?:Organization|Brand)"[\s\S]*?"name":\s*"([^"]+)"/i);
+      if (orgMatch && orgMatch[1]) {
+        detected = orgMatch[1].trim();
+      }
+    }
+
+    // 3. Meta application-name
+    if (!detected) {
+      const appMatch = html.match(/<meta\s+name=["']application-name["']\s+content=["']([^"']+)["']/i);
+      if (appMatch && appMatch[1]) {
+        detected = appMatch[1].trim();
+      }
+    }
+  }
+
+  // 4. Fallback al hostname de la URL
+  if (!detected && url) {
+    try {
+      const parsed = new URL(url.startsWith('http') ? url : `https://${url}`);
+      let host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+      host = host.replace(/\.(com\.pe|pe|com|net|org|store|lat|io|co)$/, '');
+      detected = host;
+    } catch {
+      detected = 'GENERICA';
+    }
+  }
+
+  let cleanBrand = (detected || 'MARCA_DESCONOCIDA')
+    .toUpperCase()
+    .replace(/(PERÚ|PERU|OFICIAL|TIENDA|STORE|ONLINE|\.PE|\.COM)/gi, '')
+    .replace(/[^A-Z0-9\s-]/g, '')
+    .trim();
+
+  if (cleanBrand.length < 2) {
+    cleanBrand = 'NUEVA_MARCA';
+  }
+
+  if (cleanBrand.includes('ELECTRICA')) cleanBrand = 'ELECTRICA';
+  else if (cleanBrand.includes('TAILG')) cleanBrand = 'TAILG';
+  else if (cleanBrand.includes('YADEA')) cleanBrand = 'YADEA';
+  else if (cleanBrand.includes('GREENLINE') || cleanBrand === 'GL') cleanBrand = 'GREENLINE';
+  else if (cleanBrand.includes('KAYEN')) cleanBrand = 'KAYENCORP';
+  else if (cleanBrand.includes('SUPER SOCO') || cleanBrand.includes('SOCO')) cleanBrand = 'SUPER SOCO';
+  else if (cleanBrand.includes('NIU')) cleanBrand = 'NIU';
+  else if (cleanBrand.includes('SUR-RON') || cleanBrand.includes('SURRON')) cleanBrand = 'SUR-RON';
+
+  return {
+    brandName: cleanBrand,
+    supplierName: `${cleanBrand} Perú`,
+  };
+}

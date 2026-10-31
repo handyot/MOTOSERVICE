@@ -14,7 +14,11 @@ import {
   generateImportPreview,
   executeCatalogImport,
 } from '@/lib/importers/import-service';
-import { runLiveScrape, SCRAPE_STORES } from '@/lib/importers/scraper-service';
+import {
+  runLiveScrape,
+  scrapeCustomUrl,
+  SCRAPE_STORES,
+} from '@/lib/importers/scraper-service';
 
 export async function GET() {
   const auth = await requireAdminApi();
@@ -95,6 +99,65 @@ export async function POST(request: Request) {
           });
         } catch (dbErr) {
           console.warn('[ADMIN SCRAPE] Advertencia en persistencia DB:', dbErr);
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        scrape: scrapeResult,
+        preview,
+        dbExecution,
+      });
+    }
+
+    if (action === 'scrape_custom_url') {
+      const url = String(body.url || '').trim();
+      const brandName = body.brandName ? String(body.brandName).trim() : undefined;
+      const syncCatalog = body.syncCatalog !== false;
+      const syncDatabase = Boolean(body.syncDatabase);
+
+      if (!url) {
+        return NextResponse.json(
+          { success: false, error: 'Debes ingresar una URL válida para escanear.' },
+          { status: 400 }
+        );
+      }
+
+      const scrapeResult = await scrapeCustomUrl({
+        url,
+        brandName,
+        saveToDisk: true,
+        syncCatalog,
+        syncDatabase,
+      });
+
+      if (!scrapeResult.success) {
+        return NextResponse.json({
+          success: false,
+          error:
+            scrapeResult.error ||
+            'La página web no corresponde al rubro de motos eléctricas o no se pudieron extraer repuestos.',
+          scrape: scrapeResult,
+        });
+      }
+
+      const preview = await generateImportPreview([
+        {
+          filename: scrapeResult.filename,
+          content: scrapeResult.content,
+          filepath: scrapeResult.filepath,
+        },
+      ]);
+
+      let dbExecution = null;
+      if (syncDatabase) {
+        try {
+          dbExecution = await executeCatalogImport(preview, {
+            dryRun: false,
+            adminEmail: auth.account.email,
+          });
+        } catch (dbErr) {
+          console.warn('[ADMIN SCRAPE CUSTOM URL] Error al persistir en base de datos:', dbErr);
         }
       }
 

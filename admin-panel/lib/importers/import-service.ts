@@ -133,13 +133,33 @@ export async function executeCatalogImport(
       try {
         const d = op.data as Record<string, unknown>;
         const marcaStr = String(d.marca || '').trim();
+        const marcaUpper = marcaStr.toUpperCase();
         const nombreStr = String(d.nombre || '').trim();
         const skuStr = d.codigo_sku ? String(d.codigo_sku).trim() : null;
         const catStr = String(d.categoria || '').trim();
 
+        // Autocreación de marca si es nueva en la base de datos
+        let brandId = brandMap.get(marcaUpper);
+        if (!brandId && marcaUpper) {
+          try {
+            const { data: newMarca, error: insMarcaErr } = await supabase
+              .from('marcas')
+              .insert({ nombre: marcaUpper, estado: true })
+              .select('id_marca')
+              .single();
+            if (!insMarcaErr && newMarca && 'id_marca' in newMarca && typeof (newMarca as { id_marca: number }).id_marca === 'number') {
+              const createdId = (newMarca as { id_marca: number }).id_marca;
+              brandId = createdId;
+              brandMap.set(marcaUpper, createdId);
+            }
+          } catch {
+            // Continuar con fallback si la base de datos es de solo lectura o simulación
+          }
+        }
+        const resolvedBrandId = brandId || 1;
+
         if (op.entity === 'modelos_moto') {
-          const brandId = brandMap.get(marcaStr.toUpperCase()) || 1;
-          const modelKey = `${brandId}:${nombreStr.toUpperCase()}`;
+          const modelKey = `${resolvedBrandId}:${nombreStr.toUpperCase()}`;
 
           if (existingModelSet.has(modelKey)) {
             skippedCount++;
@@ -147,7 +167,7 @@ export async function executeCatalogImport(
           }
 
           const { error: insErr } = await supabase.from('modelos_moto').insert({
-            id_marca: brandId,
+            id_marca: resolvedBrandId,
             nombre: nombreStr,
             voltaje_nominal_v: typeof d.voltaje_nominal_v === 'number' ? d.voltaje_nominal_v : null,
             potencia_motor_w: typeof d.potencia_motor_w === 'number' ? d.potencia_motor_w : null,

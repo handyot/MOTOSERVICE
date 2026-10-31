@@ -72,6 +72,107 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
     };
   } | null>(null);
 
+  // Estado del escáner de nueva URL externa (rubro y autocreación de marcas)
+  const [customUrl, setCustomUrl] = useState('');
+  const [customBrandOverride, setCustomBrandOverride] = useState('');
+  const [isScanningUrl, setIsScanningUrl] = useState(false);
+  const [urlScanResult, setUrlScanResult] = useState<{
+    url: string;
+    rubroValidation: {
+      isValid: boolean;
+      score: number;
+      matchedKeywords: string[];
+      reason: string;
+    };
+    detectedBrand: string;
+    detectedSupplier: string;
+    isNewBrand: boolean;
+    totalFound: number;
+    vehiclesCount: number;
+    partsCount: number;
+    syncResult?: {
+      success: boolean;
+      brandAdded?: boolean;
+      supplierAdded?: boolean;
+      modelsAdded?: number;
+      compatibilitiesAdded?: number;
+      totalParts: number;
+      totalCompatibilities: number;
+      newPartsAdded: number;
+    };
+  } | null>(null);
+
+  const handleScanCustomUrl = async () => {
+    if (!customUrl.trim()) {
+      setFeedback({ type: 'error', message: 'Ingresa una URL de tienda o catálogo para escanear.' });
+      return;
+    }
+
+    setIsScanningUrl(true);
+    setFeedback(null);
+    setUrlScanResult(null);
+
+    try {
+      const res = await fetch('/api/admin/catalog/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'scrape_custom_url',
+          url: customUrl.trim(),
+          brandName: customBrandOverride.trim() || undefined,
+          syncCatalog: autoSyncArchitecture,
+          syncDatabase: autoSyncDatabase,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.scrape) {
+        setUrlScanResult(data.scrape);
+        setSelectedFiles([
+          {
+            filename: data.scrape.filename,
+            sizeBytes: data.scrape.content ? data.scrape.content.length : 1024,
+            format: 'json',
+            content: data.scrape.content,
+            filepath: data.scrape.filepath,
+          },
+        ]);
+        if (data.preview) {
+          setPreview(data.preview);
+        }
+
+        const brandStatus = data.scrape.isNewBrand
+          ? `Se registró la nueva marca "${data.scrape.detectedBrand}" y su proveedor oficial.`
+          : `Asociado a la marca "${data.scrape.detectedBrand}".`;
+
+        const syncMsg = data.scrape.syncResult?.success
+          ? ` Catálogo público y arquitectura actualizados (${data.scrape.syncResult.totalParts} repuestos activos, ${data.scrape.syncResult.totalCompatibilities} compatibilidades vinculadas).`
+          : '';
+
+        setFeedback({
+          type: 'success',
+          message: `¡URL verificada con éxito! ${brandStatus} Se extrajeron ${data.scrape.totalFound} productos (${data.scrape.vehiclesCount} motos, ${data.scrape.partsCount} repuestos).${syncMsg}`,
+        });
+      } else {
+        const errReason = data.error || data.scrape?.rubroValidation?.reason || 'Error al escanear la URL.';
+        setFeedback({
+          type: 'error',
+          message: errReason,
+        });
+        if (data.scrape?.rubroValidation) {
+          setUrlScanResult(data.scrape);
+        }
+      }
+    } catch {
+      setFeedback({
+        type: 'error',
+        message: 'Error de comunicación al intentar escanear la URL. Verifica tu conexión de red.',
+      });
+    } finally {
+      setIsScanningUrl(false);
+    }
+  };
+
   const handleRunLiveScrape = async () => {
     setIsScraping(true);
     setFeedback(null);
@@ -491,6 +592,117 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
                 </span>
               )}
             </div>
+          </div>
+        )}
+      </section>
+
+      {/* MÓDULO NUEVA URL: ESCÁNER DE PÁGINAS EXTERNAS DEL RUBRO */}
+      <section className="rounded-xl border border-indigo-200 bg-gradient-to-br from-indigo-50/50 via-white to-slate-50 p-5 shadow-2xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-100/90 border border-indigo-300 text-indigo-900 text-[11px] font-bold uppercase tracking-wider mb-2">
+              <Icon name="search" className="w-3 h-3 text-indigo-600" />
+              <span>Escaneo y Fusión de Nueva URL del Rubro</span>
+            </div>
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span>Escanear Tienda Externa y Auto-crear Marca en Tablas</span>
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 border border-indigo-200">
+                ● Auto-fusión segura
+              </span>
+            </h3>
+            <p className="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">
+              Introduce la URL de cualquier tienda o página web de movilidad eléctrica. El sistema verificará de forma estricta si corresponde al rubro de motos eléctricas y repuestos, extraerá los productos, auto-creará la nueva marca en las tablas correspondientes y fusionará el catálogo sin romper la arquitectura existente.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
+            <input
+              type="url"
+              placeholder="https://tienda-motos.pe/repuestos"
+              value={customUrl}
+              onChange={(e) => setCustomUrl(e.target.value)}
+              disabled={isScanningUrl}
+              className="bg-white border border-slate-300 text-xs text-slate-800 rounded-lg px-3 py-2 w-full sm:w-64 focus:ring-2 focus:ring-indigo-600 shadow-2xs"
+            />
+            <input
+              type="text"
+              placeholder="Marca (opcional)"
+              value={customBrandOverride}
+              onChange={(e) => setCustomBrandOverride(e.target.value)}
+              disabled={isScanningUrl}
+              className="bg-white border border-slate-300 text-xs text-slate-800 rounded-lg px-3 py-2 w-full sm:w-32 focus:ring-2 focus:ring-indigo-600 shadow-2xs"
+            />
+            <button
+              type="button"
+              onClick={handleScanCustomUrl}
+              disabled={isScanningUrl || !customUrl.trim()}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-xs font-bold text-white shadow-2xs transition-colors disabled:opacity-50 cursor-pointer shrink-0"
+            >
+              <Icon name={isScanningUrl ? "clock" : "search"} className={`w-3.5 h-3.5 ${isScanningUrl ? 'animate-spin' : ''}`} />
+              <span>{isScanningUrl ? 'Verificando y fusionando...' : 'Escanear y Fusionar Nueva URL'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Resumen del escaneo de URL si ya se realizó */}
+        {urlScanResult && (
+          <div className="mt-4 pt-4 border-t border-indigo-100 flex flex-col gap-2.5 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold border ${
+                    urlScanResult.rubroValidation.isValid
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                      : 'bg-red-50 text-red-800 border-red-300'
+                  }`}
+                >
+                  <Icon
+                    name={urlScanResult.rubroValidation.isValid ? 'check-circle' : 'alert-circle'}
+                    className="w-3.5 h-3.5"
+                  />
+                  <span>
+                    {urlScanResult.rubroValidation.isValid
+                      ? `Rubro Verificado (Puntuación: ${urlScanResult.rubroValidation.score}/100)`
+                      : `Rubro No Coincide (Puntuación: ${urlScanResult.rubroValidation.score}/100)`}
+                  </span>
+                </span>
+
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-700 font-medium text-[11px]">
+                  <span className="font-bold">Marca:</span>
+                  <span className="text-indigo-600 font-bold">{urlScanResult.detectedBrand}</span>
+                  {urlScanResult.isNewBrand && (
+                    <span className="ml-1 text-[10px] bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded font-semibold">
+                      Nueva Marca
+                    </span>
+                  )}
+                </span>
+
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-700 font-medium text-[11px]">
+                  <span className="font-bold">Extraídos:</span>
+                  <span>{urlScanResult.totalFound} productos ({urlScanResult.vehiclesCount} vehículos, {urlScanResult.partsCount} repuestos)</span>
+                </span>
+              </div>
+
+              {urlScanResult.syncResult?.success && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300 font-semibold text-[11px]">
+                  <Icon name="check-circle" className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>
+                    Arquitectura actualizada ({urlScanResult.syncResult.totalParts} repuestos activos)
+                  </span>
+                </span>
+              )}
+            </div>
+
+            {urlScanResult.rubroValidation.matchedKeywords?.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1 text-[11px] text-slate-600">
+                <span className="font-semibold text-slate-500">Palabras clave detectadas:</span>
+                {urlScanResult.rubroValidation.matchedKeywords.slice(0, 8).map((kw, i) => (
+                  <span key={i} className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-mono text-[10px]">
+                    {kw}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </section>
