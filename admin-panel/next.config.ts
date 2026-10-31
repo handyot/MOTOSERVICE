@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "tailg.com.pe",
+      },
+      {
+        protocol: "https",
+        hostname: "www.tailg.com.pe",
+      },
+      {
+        protocol: "https",
         hostname: "www.tailg.pe",
       },
       {
@@ -25,11 +33,35 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "glperu.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.glperu.com",
+      },
+      {
+        protocol: "https",
+        hostname: "electrica.pe",
+      },
+      {
+        protocol: "https",
+        hostname: "www.electrica.pe",
+      },
+      {
+        protocol: "https",
         hostname: "yadea.com.pe",
       },
       {
         protocol: "https",
         hostname: "www.yadea.com.pe",
+      },
+      {
+        protocol: "https",
+        hostname: "yadea.pe",
+      },
+      {
+        protocol: "https",
+        hostname: "www.yadea.pe",
       },
       {
         protocol: "https",

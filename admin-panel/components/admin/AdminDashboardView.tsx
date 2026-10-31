@@ -85,6 +85,7 @@ export interface AdminModelRecord {
   nombre: string;
   voltaje_nominal_v?: number | null;
   potencia_motor_w?: number | null;
+  imagen_url?: string | null;
   estado: boolean;
 }
 
@@ -95,6 +96,7 @@ export interface AdminPartRecord {
   nombre: string;
   precio: number | string;
   moneda: string;
+  imagen_url?: string | null;
   estado: boolean;
 }
 
@@ -1976,6 +1978,7 @@ export function AdminDashboardView({
                         <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                           <tr>
                             <th className="px-4 py-3">ID</th>
+                            <th className="px-4 py-3">Imagen</th>
                             <th className="px-4 py-3">Marca</th>
                             <th className="px-4 py-3">Modelo de Moto Eléctrica</th>
                             <th className="px-4 py-3">Voltaje Nominal</th>
@@ -1987,6 +1990,21 @@ export function AdminDashboardView({
                           {filteredModels.map((m) => (
                             <tr key={m.id_modelo} className="hover:bg-slate-50/80">
                               <td className="px-4 py-3 font-mono text-slate-500">#{m.id_modelo}</td>
+                              <td className="px-4 py-2.5">
+                                {m.imagen_url ? (
+                                  <div className="h-10 w-14 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center p-1">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={m.imagen_url}
+                                      alt={m.nombre}
+                                      className="h-full w-full object-contain"
+                                      loading="lazy"
+                                    />
+                                  </div>
+                                ) : (
+                                  <span className="text-[11px] text-slate-400">Sin foto</span>
+                                )}
+                              </td>
                               <td className="px-4 py-3 font-bold text-slate-900">
                                 {brandNameById.get(m.id_marca) || `Marca #${m.id_marca}`}
                               </td>
@@ -2027,6 +2045,7 @@ export function AdminDashboardView({
                       <table className="w-full text-left text-xs">
                         <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                           <tr>
+                            <th className="px-4 py-3">Imagen</th>
                             <th className="px-4 py-3">SKU</th>
                             <th className="px-4 py-3">Descripción del Repuesto</th>
                             <th className="px-4 py-3 text-right">Precio Unitario</th>
@@ -2036,6 +2055,21 @@ export function AdminDashboardView({
                         <tbody className="divide-y divide-slate-200 text-slate-700">
                           {filteredParts.map((p) => (
                             <tr key={p.id_repuesto} className="hover:bg-slate-50/80">
+                              <td className="px-4 py-2.5">
+                                {p.imagen_url ? (
+                                  <div className="h-10 w-14 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center p-1">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={p.imagen_url}
+                                      alt={p.nombre}
+                                      className="h-full w-full object-contain"
+                                      loading="lazy"
+                                    />
+                                  </div>
+                                ) : (
+                                  <span className="text-[11px] text-slate-400">Sin foto</span>
+                                )}
+                              </td>
                               <td className="px-4 py-3 font-mono font-bold text-slate-900">
                                 {p.codigo_sku}
                               </td>

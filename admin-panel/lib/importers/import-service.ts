@@ -151,6 +151,7 @@ export async function executeCatalogImport(
             nombre: nombreStr,
             voltaje_nominal_v: typeof d.voltaje_nominal_v === 'number' ? d.voltaje_nominal_v : null,
             potencia_motor_w: typeof d.potencia_motor_w === 'number' ? d.potencia_motor_w : null,
+            imagen_url: typeof d.imagen_url === 'string' ? d.imagen_url : null,
             estado: true,
           });
 

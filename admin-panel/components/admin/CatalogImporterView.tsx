@@ -636,6 +636,7 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                       <tr>
+                        <th className="px-4 py-3">Imagen</th>
                         <th className="px-4 py-3">Entidad</th>
                         <th className="px-4 py-3">Marca</th>
                         <th className="px-4 py-3">Nombre Comercial</th>
@@ -648,6 +649,21 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
                     <tbody className="divide-y divide-slate-200 text-slate-700">
                       {filteredPreviewItems.map((item: NormalizedItem) => (
                         <tr key={item.id} className="hover:bg-slate-50/80">
+                          <td className="px-4 py-2">
+                            {item.imageUrl ? (
+                              <div className="h-9 w-12 rounded-md border border-slate-200 bg-white overflow-hidden flex items-center justify-center p-0.5">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={item.imageUrl}
+                                  alt={item.name}
+                                  className="h-full w-full object-contain"
+                                  loading="lazy"
+                                />
+                              </div>
+                            ) : (
+                              <span className="text-[10px] text-slate-400">N/D</span>
+                            )}
+                          </td>
                           <td className="px-4 py-2.5">
                             <span
                               className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-bold uppercase border ${
