@@ -793,6 +793,8 @@ export function syncCustomArchitecture(params: {
         item.category?.includes('Motos') ||
         item.category?.includes('Bicimotos') ||
         item.category?.includes('Scooters') ||
+        item.category?.includes('Trimotos') ||
+        item.category?.includes('Cuatrimotos') ||
         item.category === 'VEHICULO';
 
       if (isVehicle) {
@@ -888,6 +890,8 @@ export function syncCustomArchitecture(params: {
         item.category?.includes('Motos') ||
         item.category?.includes('Bicimotos') ||
         item.category?.includes('Scooters') ||
+        item.category?.includes('Trimotos') ||
+        item.category?.includes('Cuatrimotos') ||
         item.category === 'VEHICULO';
       if (isVehicle) continue;
 
@@ -927,13 +931,19 @@ export function syncCustomArchitecture(params: {
           .slice(0, 35);
 
         let partKey = `${brandName}-${cleanKeyName}-${item.id}`;
-        if (partsByKey.has(partKey)) {
-          partKey = `${partKey}-${Math.floor(Math.random() * 1000)}`;
+        let counter = 1;
+        while (partsByKey.has(partKey)) {
+          partKey = `${brandName}-${cleanKeyName}-${item.id}-${counter++}`;
         }
 
         let sku = item.sku;
         if (!sku || usedSkus.has(sku.toUpperCase())) {
-          sku = `${brandName.slice(0, 4)}-${item.id}-${Math.floor(Math.random() * 1000)}`;
+          let skuCandidate = `${brandName.slice(0, 4)}-${item.id}`;
+          let skuCounter = 1;
+          while (usedSkus.has(skuCandidate.toUpperCase())) {
+            skuCandidate = `${brandName.slice(0, 4)}-${item.id}-${skuCounter++}`;
+          }
+          sku = skuCandidate;
         }
         usedSkus.add(sku.toUpperCase());
 
@@ -1161,7 +1171,9 @@ export async function scrapeCustomUrl(
       }
 
       const descText = `${item.short_description || ''} ${item.description || ''}`;
-      const category = categorizeProduct(name, item.permalink || '', false);
+      const isComponentWord = /llanta|neumatico|neumático|parrilla|batería|bateria|cargador|controlador|acelerador|freno|disco|pastilla|cajuela|parachoques|aro\s*\d+|repuesto|accesorio|espejo|faro|amortiguador|cable|manubrio/i.test(name.toLowerCase());
+      const isVehicle = !isComponentWord && /(?:moto\s*el[eé]ctrica|bicimoto|scooter\s*el[eé]ctrico|trimoto|cuatrimoto|carrito|ciclomotor|veh[ií]culo)/i.test(name.toLowerCase());
+      const category = categorizeProduct(name, item.permalink || '', isVehicle);
 
       const vMatch = name.match(/(\d{2,3})\s*V/i) || descText.match(/(\d{2,3})\s*V/i);
       const ahMatch = name.match(/(\d{1,3}(?:\.\d+)?)\s*AH/i) || descText.match(/(\d{1,3}(?:\.\d+)?)\s*AH/i);
@@ -1223,7 +1235,9 @@ export async function scrapeCustomUrl(
             const name = String(node.name).trim();
             const price = node.offers?.price ? parseNumericPrice(node.offers.price) : 150;
             const itemUrl = node.url || targetUrl;
-            const category = categorizeProduct(name, itemUrl, false);
+            const isComponentWord = /llanta|neumatico|neumático|parrilla|batería|bateria|cargador|controlador|acelerador|freno|disco|pastilla|cajuela|parachoques|aro\s*\d+|repuesto|accesorio|espejo|faro|amortiguador|cable|manubrio/i.test(name.toLowerCase());
+            const isVehicle = !isComponentWord && /(?:moto\s*el[eé]ctrica|bicimoto|scooter\s*el[eé]ctrico|trimoto|cuatrimoto|carrito|ciclomotor|veh[ií]culo)/i.test(name.toLowerCase());
+            const category = categorizeProduct(name, itemUrl, isVehicle);
             let img = typeof node.image === 'string' ? node.image : node.image?.url || '';
             if (img && !img.endsWith('.webp') && !img.endsWith('.png')) {
               img = img.replace(/\.(jpe?g)$/i, '.webp');

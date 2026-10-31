@@ -1207,6 +1207,7 @@ export function detectBrandFromUrl(url, html = '', explicitBrand = '') {
   }
 
   if (cleanBrand.includes('ELECTRICA')) cleanBrand = 'ELECTRICA';
+  else if (cleanBrand.includes('CENTURYMOTORS') || cleanBrand.includes('CENTURY MOTORS') || cleanBrand.includes('CENTURY')) cleanBrand = 'CENTURY MOTORS';
   else if (cleanBrand.includes('TAILG')) cleanBrand = 'TAILG';
   else if (cleanBrand.includes('YADEA')) cleanBrand = 'YADEA';
   else if (cleanBrand.includes('GREENLINE') || cleanBrand === 'GL') cleanBrand = 'GREENLINE';
