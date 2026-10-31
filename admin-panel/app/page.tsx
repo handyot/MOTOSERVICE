@@ -4,7 +4,7 @@ import { createClient } from '../lib/supabase/server';
 import { AdminDashboardView } from '../components/admin/AdminDashboardView';
 
 export const metadata: Metadata = {
-  title: 'Centro de Control | Portal Administrativo NeroElectric Motors',
+  title: 'Resumen Operativo | ERP NeroElectric Motors',
   description: 'Gestión integral de catálogo, inventario, pedidos, facturación SUNAT, VoltIA e importaciones CSV/JSON.',
 };
 
@@ -59,20 +59,18 @@ export default async function AdminHomePage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <AdminDashboardView
-        account={account}
-        stats={stats}
-        initialOrders={ordersData || []}
-        initialAssistance={assistanceData || []}
-        initialDocuments={documentsData || []}
-        initialSubscriptions={subscriptionsData || []}
-        initialImportHistory={importHistoryData || []}
-        initialBrands={brandsData || []}
-        initialModels={modelsData || []}
-        initialParts={partsData || []}
-        initialCompatibilities={compatData || []}
-      />
-    </div>
+    <AdminDashboardView
+      account={account}
+      stats={stats}
+      initialOrders={ordersData || []}
+      initialAssistance={assistanceData || []}
+      initialDocuments={documentsData || []}
+      initialSubscriptions={subscriptionsData || []}
+      initialImportHistory={importHistoryData || []}
+      initialBrands={brandsData || []}
+      initialModels={modelsData || []}
+      initialParts={partsData || []}
+      initialCompatibilities={compatData || []}
+    />
   );
 }

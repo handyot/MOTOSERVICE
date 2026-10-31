@@ -137,8 +137,12 @@ test('Sincronización de contratos compartidos entre Tienda Pública y Panel Adm
   ];
 
   for (const [storeFile, adminFile] of sharedPairs) {
-    const storeContent = fs.readFileSync(path.join(ROOT_DIR, storeFile), 'utf8');
-    const adminContent = fs.readFileSync(path.join(ROOT_DIR, adminFile), 'utf8');
+    const storeContent = fs
+      .readFileSync(path.join(ROOT_DIR, storeFile), 'utf8')
+      .replace(/[ \t]+$/gm, '');
+    const adminContent = fs
+      .readFileSync(path.join(ROOT_DIR, adminFile), 'utf8')
+      .replace(/[ \t]+$/gm, '');
     assert.strictEqual(
       storeContent,
       adminContent,
@@ -179,30 +183,51 @@ test('Configuración de dominios definitivos y ausencia de placeholders DOMINIO_
   const adminEnvExample = fs.readFileSync(path.join(ADMIN_DIR, '.env.example'), 'utf8');
   const storeLayout = fs.readFileSync(path.join(ROOT_DIR, 'app', 'layout.tsx'), 'utf8');
   const adminLayout = fs.readFileSync(path.join(ADMIN_DIR, 'app', 'layout.tsx'), 'utf8');
+  const adminDashboard = fs.readFileSync(
+    path.join(ADMIN_DIR, 'components', 'admin', 'AdminDashboardView.tsx'),
+    'utf8'
+  );
+  const adminLogin = fs.readFileSync(path.join(ADMIN_DIR, 'app', 'login', 'page.tsx'), 'utf8');
+  const adminDenied = fs.readFileSync(
+    path.join(ADMIN_DIR, 'app', 'acceso-denegado', 'page.tsx'),
+    'utf8'
+  );
 
   assert.ok(
-    storeEnvExample.includes('NEXT_PUBLIC_SITE_URL=https://neroelectric.com'),
-    '.env.example raíz debe definir NEXT_PUBLIC_SITE_URL=https://neroelectric.com'
+    storeEnvExample.includes('NEXT_PUBLIC_SITE_URL=https://neroelectricmotors.com'),
+    '.env.example raíz debe definir NEXT_PUBLIC_SITE_URL=https://neroelectricmotors.com'
   );
   assert.ok(
-    storeEnvExample.includes('NEXT_PUBLIC_ADMIN_PANEL_URL=https://panel.neroelectric.com'),
-    '.env.example raíz debe definir NEXT_PUBLIC_ADMIN_PANEL_URL=https://panel.neroelectric.com'
+    storeEnvExample.includes('NEXT_PUBLIC_ADMIN_PANEL_URL=https://panel.neroelectricmotors.com'),
+    '.env.example raíz debe definir NEXT_PUBLIC_ADMIN_PANEL_URL=https://panel.neroelectricmotors.com'
   );
   assert.ok(
-    adminEnvExample.includes('NEXT_PUBLIC_SITE_URL=https://panel.neroelectric.com'),
-    'admin-panel/.env.example debe definir NEXT_PUBLIC_SITE_URL=https://panel.neroelectric.com'
+    adminEnvExample.includes('NEXT_PUBLIC_SITE_URL=https://panel.neroelectricmotors.com'),
+    'admin-panel/.env.example debe definir NEXT_PUBLIC_SITE_URL=https://panel.neroelectricmotors.com'
   );
   assert.ok(
-    adminEnvExample.includes('NEXT_PUBLIC_STOREFRONT_URL=https://neroelectric.com'),
-    'admin-panel/.env.example debe definir NEXT_PUBLIC_STOREFRONT_URL=https://neroelectric.com'
+    adminEnvExample.includes('NEXT_PUBLIC_STOREFRONT_URL=https://neroelectricmotors.com'),
+    'admin-panel/.env.example debe definir NEXT_PUBLIC_STOREFRONT_URL=https://neroelectricmotors.com'
   );
   assert.ok(
-    storeLayout.includes('https://neroelectric.com'),
-    'app/layout.tsx debe tener https://neroelectric.com como metadataBase de respaldo'
+    storeLayout.includes('https://neroelectricmotors.com'),
+    'app/layout.tsx debe tener https://neroelectricmotors.com como metadataBase de respaldo'
   );
   assert.ok(
-    adminLayout.includes('https://panel.neroelectric.com'),
-    'admin-panel/app/layout.tsx debe tener https://panel.neroelectric.com como metadataBase de respaldo'
+    adminLayout.includes('https://panel.neroelectricmotors.com'),
+    'admin-panel/app/layout.tsx debe tener https://panel.neroelectricmotors.com como metadataBase de respaldo'
+  );
+  assert.ok(
+    adminDashboard.includes("process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://neroelectricmotors.com'"),
+    'AdminDashboardView.tsx debe apuntar a https://neroelectricmotors.com mediante NEXT_PUBLIC_STOREFRONT_URL'
+  );
+  assert.ok(
+    adminLogin.includes("process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://neroelectricmotors.com'"),
+    'admin-panel/app/login/page.tsx debe apuntar a https://neroelectricmotors.com mediante NEXT_PUBLIC_STOREFRONT_URL'
+  );
+  assert.ok(
+    adminDenied.includes("process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://neroelectricmotors.com'"),
+    'admin-panel/app/acceso-denegado/page.tsx debe apuntar a https://neroelectricmotors.com mediante NEXT_PUBLIC_STOREFRONT_URL'
   );
 
   for (const content of [storeEnvExample, adminEnvExample, storeLayout, adminLayout]) {
@@ -246,5 +271,55 @@ test('Independencia de compilación de admin-panel/ para Vercel (Root Directory 
         `El archivo ${path.relative(ROOT_DIR, file)} importa "${relImport}" que escapa de admin-panel/ hacia ${resolvedTarget}`
       );
     }
+  }
+});
+
+test('Arquitectura visual ERP en Web 2: Sidebar agrupado, Topbar y 10 módulos operativos sin fila de pestañas A-J', () => {
+  const dashboardView = fs.readFileSync(
+    path.join(ADMIN_DIR, 'components', 'admin', 'AdminDashboardView.tsx'),
+    'utf8'
+  );
+
+  // Verificar que desapareció la antigua fila horizontal de pestañas A-J
+  assert.strictEqual(
+    dashboardView.includes('A. Resumen Operativo'),
+    false,
+    'La antigua fila horizontal de pestañas A-J no debe existir'
+  );
+
+  // Verificar presencia de los 6 grupos de navegación en el Sidebar
+  const requiredGroups = [
+    'General',
+    'Catálogo e inventario',
+    'Operaciones comerciales',
+    'Administración y logística',
+    'Servicio y asistencia',
+    'Herramientas',
+  ];
+  for (const group of requiredGroups) {
+    assert.ok(
+      dashboardView.includes(group),
+      `El sidebar del ERP debe incluir el grupo de navegación "${group}"`
+    );
+  }
+
+  // Verificar que los 10 módulos administrativos siguen accesibles y conectados
+  const requiredModuleIds = [
+    'resumen',
+    'catalogo_db',
+    'productos',
+    'pedidos',
+    'clientes',
+    'promociones',
+    'facturacion',
+    'despacho',
+    'voltia',
+    'importador',
+  ];
+  for (const modId of requiredModuleIds) {
+    assert.ok(
+      dashboardView.includes(`'${modId}'`),
+      `El módulo administrativo "${modId}" debe estar presente y accesible`
+    );
   }
 });

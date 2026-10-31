@@ -112,25 +112,25 @@ export function AdminLoginForm() {
       {infoNotice && (
         <div
           role="status"
-          className="rounded-lg border border-emerald-500/40 bg-emerald-950/40 p-3.5 text-xs text-emerald-300 flex items-start gap-2.5"
+          className="rounded-lg border border-emerald-200 bg-emerald-50 p-3.5 text-xs text-emerald-800 flex items-start gap-2.5"
         >
-          <Icon name="check-circle" className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-          <span>{infoNotice}</span>
+          <Icon name="check-circle" className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <span className="font-medium">{infoNotice}</span>
         </div>
       )}
 
       {(errorMessage || urlErrorNotice) && (
         <div
           role="alert"
-          className="rounded-lg border border-rose-500/40 bg-rose-950/50 p-3.5 text-xs text-rose-300 flex items-start gap-2.5"
+          className="rounded-lg border border-red-200 bg-red-50 p-3.5 text-xs text-red-800 flex items-start gap-2.5"
         >
-          <Icon name="alert-triangle" className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-          <span>{errorMessage || urlErrorNotice}</span>
+          <Icon name="alert-triangle" className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+          <span className="font-medium">{errorMessage || urlErrorNotice}</span>
         </div>
       )}
 
       <div>
-        <label htmlFor="admin-email" className="block text-xs font-semibold text-slate-300 mb-1.5">
+        <label htmlFor="admin-email" className="block text-xs font-semibold text-slate-800 mb-1.5">
           Correo del Operador / Administrador
         </label>
         <input
@@ -141,19 +141,19 @@ export function AdminLoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isLoading}
-          placeholder="admin@motoservice.pe"
-          className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors disabled:opacity-50"
+          placeholder="admin@neroelectric.com"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:border-[#0B1528] focus:outline-none focus:ring-1 focus:ring-[#0B1528] transition-colors disabled:opacity-50"
         />
       </div>
 
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <label htmlFor="admin-password" className="block text-xs font-semibold text-slate-300">
+          <label htmlFor="admin-password" className="block text-xs font-semibold text-slate-800">
             Contraseña
           </label>
           <Link
             href="/recuperar-contrasena"
-            className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
+            className="text-xs font-semibold text-[#0B1528] hover:underline transition-colors"
           >
             ¿Olvidaste tu contraseña?
           </Link>
@@ -168,15 +168,15 @@ export function AdminLoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
             placeholder="••••••••"
-            className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2.5 pr-10 text-xs text-white placeholder-slate-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors disabled:opacity-50"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 pr-10 text-xs text-slate-900 placeholder-slate-400 focus:border-[#0B1528] focus:outline-none focus:ring-1 focus:ring-[#0B1528] transition-colors disabled:opacity-50"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-200"
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-700 cursor-pointer"
             aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
           >
-            <Icon name={showPassword ? 'x' : 'zap'} className="w-4 h-4" />
+            <Icon name={showPassword ? 'eye-off' : 'eye'} className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -184,16 +184,16 @@ export function AdminLoginForm() {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full mt-2 rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-[0.99] px-4 py-2.5 text-xs font-bold text-slate-950 shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+        className="w-full mt-2 rounded-lg bg-[#0B1528] hover:bg-slate-800 active:scale-[0.99] px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
       >
         {isLoading ? (
           <>
-            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-slate-950 border-t-transparent" />
+            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
             <span>Verificando credenciales y rol admin...</span>
           </>
         ) : (
           <>
-            <Icon name="shield" className="w-4 h-4 text-slate-950" />
+            <Icon name="shield" className="w-4 h-4 text-amber-400" />
             <span>Ingresar al Panel Administrativo</span>
           </>
         )}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Icon } from '../ui/Icons';
 import type { EcoMotoBrand } from '@/types';
 import type {
@@ -46,6 +46,8 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
   const [executionResult, setExecutionResult] = useState<ImportExecutionResult | null>(null);
   const [confirmedExecution, setConfirmedExecution] = useState(false);
   const [activeTab, setActiveTab] = useState<'preview' | 'conflicts' | 'skipped' | 'operaciones'>('preview');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [brandFilter, setBrandFilter] = useState<string>('ALL');
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
   const handleScanLocalFolder = async () => {
@@ -70,8 +72,8 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
           type: mapped.length > 0 ? 'success' : 'info',
           message:
             mapped.length > 0
-              ? `Se detectaron ${mapped.length} archivos en la carpeta oficial «JSON DEL SCRAPS».`
-              : 'Carpeta local vacía o entorno remoto (Vercel). Usa «Subir Archivos» desde tu navegador.',
+              ? `Se detectaron ${mapped.length} archivos en la carpeta local «JSON DEL SCRAPS».`
+              : 'Carpeta local vacía o entorno remoto (Vercel). Utiliza «Subir Archivos CSV / JSON» desde tu navegador.',
         });
       } else {
         setFeedback({
@@ -181,7 +183,6 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
           type: 'success',
           message: `Importación completada: ${data.result.insertedCount} creados, ${data.result.skippedCount} omitidos por existencia.`,
         });
-        // Refrescar historial
         const histRes = await fetch('/api/admin/catalog/import');
         if (histRes.ok) {
           const histData = await histRes.json();
@@ -216,120 +217,194 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
     URL.revokeObjectURL(url);
   };
 
+  const filteredPreviewItems = useMemo(() => {
+    if (!preview) return [];
+    const q = searchQuery.trim().toLowerCase();
+    return preview.sampleItems.filter((item: NormalizedItem) => {
+      const matchesBrand = brandFilter === 'ALL' || item.brand === brandFilter;
+      const matchesSearch =
+        !q ||
+        item.name.toLowerCase().includes(q) ||
+        (item.sku && item.sku.toLowerCase().includes(q)) ||
+        item.category.toLowerCase().includes(q);
+      return matchesBrand && matchesSearch;
+    });
+  }, [preview, searchQuery, brandFilter]);
+
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 shadow-xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                <Icon name="zap" className="w-4 h-4" />
-              </span>
-              <h2 className="text-xl font-bold text-white">Importador Central de Catálogos (CSV / JSON)</h2>
+      {/* Encabezado de Sección y Acciones Primarias */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+        <div>
+          <h2 className="text-xl font-bold tracking-tight text-slate-900">
+            Importador de Catálogos (CSV / JSON)
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl">
+            Normalización técnica, deduplicación cruzada e importación idempotente de catálogos para{' '}
+            <strong className="font-semibold text-slate-800">TAILG, GreenLine, YADEA y Kayencorp</strong> hacia PostgreSQL.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <button
+            type="button"
+            onClick={handleScanLocalFolder}
+            disabled={isScanning}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            <Icon name="search" className="w-3.5 h-3.5 text-slate-500" />
+            <span>{isScanning ? 'Escaneando carpeta...' : 'Escanear carpeta local'}</span>
+          </button>
+
+          <label className="inline-flex items-center gap-2 rounded-lg bg-[#0B1528] hover:bg-slate-800 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer">
+            <Icon name="upload" className="w-3.5 h-3.5 text-amber-400" />
+            <span>Subir archivos (CSV / JSON)</span>
+            <input
+              type="file"
+              multiple
+              accept=".csv,.json"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+          </label>
+        </div>
+      </div>
+
+      {/* Notificación contextual */}
+      {feedback && (
+        <div
+          role="status"
+          className={`rounded-xl border px-4 py-3 text-xs sm:text-sm flex items-center justify-between gap-3 ${
+            feedback.type === 'success'
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+              : feedback.type === 'error'
+              ? 'border-red-200 bg-red-50 text-red-800'
+              : 'border-amber-200 bg-amber-50 text-amber-900'
+          }`}
+        >
+          <div className="flex items-center gap-2.5">
+            <Icon
+              name={
+                feedback.type === 'success'
+                  ? 'check-circle'
+                  : feedback.type === 'error'
+                  ? 'alert-triangle'
+                  : 'zap'
+              }
+              className={`w-4 h-4 shrink-0 ${
+                feedback.type === 'success'
+                  ? 'text-emerald-600'
+                  : feedback.type === 'error'
+                  ? 'text-red-600'
+                  : 'text-amber-600'
+              }`}
+            />
+            <span className="font-medium">{feedback.message}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFeedback(null)}
+            className="text-slate-400 hover:text-slate-700 p-1 rounded"
+            aria-label="Cerrar notificación"
+          >
+            <Icon name="x" className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* Paso 1: Bandeja de Archivos Seleccionados */}
+      <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-[#0B1528] text-amber-400 text-xs font-bold">
+              1
+            </span>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span>Archivos en Cola de Procesamiento</span>
+                <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-mono font-bold text-slate-700">
+                  {selectedFiles.length}
+                </span>
+              </h3>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
-              Normalización, deduplicación e importación idempotente de TAILG, GreenLine, YADEA y Kayencorp a PostgreSQL. Compatible con carga directa desde navegador en Vercel.
-            </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleScanLocalFolder}
-              disabled={isScanning}
-              className="inline-flex items-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3.5 py-2 text-xs font-semibold text-white transition-colors disabled:opacity-50"
-            >
-              <Icon name="search" className="w-3.5 h-3.5 text-blue-400" />
-              {isScanning ? 'Escaneando...' : 'Escanear Carpeta Local'}
-            </button>
-
-            <label className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-500 px-3.5 py-2 text-xs font-semibold text-white transition-colors cursor-pointer shadow-md">
-              <Icon name="plus" className="w-3.5 h-3.5" />
-              <span>Subir Archivos (CSV / JSON)</span>
-              <input
-                type="file"
-                multiple
-                accept=".csv,.json"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </label>
+            {selectedFiles.length > 0 && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedFiles([]);
+                    setPreview(null);
+                    setExecutionResult(null);
+                  }}
+                  className="rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors cursor-pointer"
+                >
+                  Limpiar lista
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGeneratePreview}
+                  disabled={isPreviewing}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-amber-400 hover:bg-amber-500 px-4 py-1.5 text-xs font-bold text-slate-950 shadow-2xs transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  <Icon name="check" className="w-3.5 h-3.5" />
+                  <span>{isPreviewing ? 'Ejecutando simulación...' : 'Simular Importación (Dry-Run)'}</span>
+                </button>
+              </>
+            )}
           </div>
-        </div>
-
-        {feedback && (
-          <div
-            className={`mt-4 rounded-xl border p-3 text-xs flex items-center justify-between ${
-              feedback.type === 'success'
-                ? 'border-emerald-500/30 bg-emerald-950/30 text-emerald-300'
-                : feedback.type === 'error'
-                ? 'border-rose-500/30 bg-rose-950/30 text-rose-300'
-                : 'border-blue-500/30 bg-blue-950/30 text-blue-300'
-            }`}
-          >
-            <span>{feedback.message}</span>
-            <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-white ml-2">
-              ✕
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Lista de Archivos Seleccionados */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-            <span>Archivos para Procesar</span>
-            <span className="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-300 font-mono">
-              {selectedFiles.length}
-            </span>
-          </h3>
-
-          {selectedFiles.length > 0 && (
-            <button
-              onClick={handleGeneratePreview}
-              disabled={isPreviewing}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white transition-colors disabled:opacity-50"
-            >
-              <Icon name="check" className="w-3.5 h-3.5" />
-              {isPreviewing ? 'Analizando...' : 'Simular Importación (Dry-Run)'}
-            </button>
-          )}
         </div>
 
         {selectedFiles.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-800 p-8 text-center text-slate-500 text-xs">
-            Sube tus archivos CSV o JSON directamente desde tu navegador con el botón «Subir Archivos» o escanea la carpeta local en entorno de desarrollo.
+          <div className="p-10 text-center">
+            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500 mb-3">
+              <Icon name="upload" className="w-5 h-5" />
+            </div>
+            <p className="text-sm font-semibold text-slate-800">
+              No hay archivos seleccionados para procesar
+            </p>
+            <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+              Carga archivos <code className="font-mono text-slate-700">.csv</code> o{' '}
+              <code className="font-mono text-slate-700">.json</code> desde tu equipo o utiliza el botón «Escanear carpeta local» si trabajas en el servidor de desarrollo.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-800/80 text-[11px] uppercase tracking-wider text-slate-400">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 <tr>
-                  <th className="px-3 py-2 rounded-l-lg">Archivo</th>
-                  <th className="px-3 py-2">Formato</th>
-                  <th className="px-3 py-2">Tamaño</th>
-                  <th className="px-3 py-2">Marca Asignada</th>
-                  <th className="px-3 py-2 text-right rounded-r-lg">Acción</th>
+                  <th className="px-4 py-3">Nombre del Archivo</th>
+                  <th className="px-4 py-3">Formato</th>
+                  <th className="px-4 py-3">Tamaño</th>
+                  <th className="px-4 py-3">Regla de Marca</th>
+                  <th className="px-4 py-3 text-right">Acción</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-slate-200 text-slate-700">
                 {selectedFiles.map((file, idx) => (
-                  <tr key={idx} className="hover:bg-slate-800/30">
-                    <td className="px-3 py-2 font-mono text-[11px] text-slate-200">{file.filename}</td>
-                    <td className="px-3 py-2">
+                  <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-4 py-3 font-mono text-xs font-medium text-slate-900">
+                      {file.filename}
+                    </td>
+                    <td className="px-4 py-3">
                       <span
-                        className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
+                        className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase border ${
                           file.format === 'csv'
-                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                            : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                            ? 'bg-amber-50 text-amber-800 border-amber-200'
+                            : 'bg-blue-50 text-blue-800 border-blue-200'
                         }`}
                       >
                         {file.format}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-slate-400">{(file.sizeBytes / 1024).toFixed(1)} KB</td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-3 font-mono text-slate-500">
+                      {(file.sizeBytes / 1024).toFixed(1)} KB
+                    </td>
+                    <td className="px-4 py-3">
                       <select
+                        aria-label={`Marca para ${file.filename}`}
                         value={file.brandOverride || ''}
                         onChange={(e) => {
                           const val = (e.target.value as EcoMotoBrand) || undefined;
@@ -337,21 +412,23 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
                             prev.map((f, i) => (i === idx ? { ...f, brandOverride: val } : f))
                           );
                         }}
-                        className="rounded bg-slate-800 border border-slate-700 px-2 py-1 text-xs text-white"
+                        className="rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-800 focus:border-slate-900 focus:outline-none"
                       >
-                        <option value="">Auto-detectar</option>
+                        <option value="">Auto-detectar por origen/contenido</option>
                         <option value="TAILG">TAILG</option>
                         <option value="KAYENCORP">Kayencorp</option>
                         <option value="YADEA">YADEA</option>
                         <option value="GREENLINE">GreenLine</option>
                       </select>
                     </td>
-                    <td className="px-3 py-2 text-right">
+                    <td className="px-4 py-3 text-right">
                       <button
+                        type="button"
                         onClick={() => setSelectedFiles((prev) => prev.filter((_, i) => i !== idx))}
-                        className="text-rose-400 hover:text-rose-300 text-xs"
+                        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                       >
-                        Quitar
+                        <Icon name="trash" className="w-3.5 h-3.5" />
+                        <span>Quitar</span>
                       </button>
                     </td>
                   </tr>
@@ -360,136 +437,238 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
             </table>
           </div>
         )}
-      </div>
+      </section>
 
-      {/* Resultados de la Simulación (Dry-Run) */}
+      {/* Paso 2: Resultados de la Simulación (Dry-Run) */}
       {preview && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3.5">
-              <span className="text-[11px] text-slate-400 uppercase font-medium">Registros Leídos</span>
-              <span className="text-xl font-bold text-white block mt-0.5">{preview.totalRawRecords}</span>
-              <span className="text-[10px] text-slate-500">{preview.totalFiles} archivos</span>
+        <section className="space-y-6">
+          {/* Métricas de Simulación */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
+                Registros Brutos
+              </span>
+              <span className="text-2xl font-bold text-slate-900 mt-1 block font-mono">
+                {preview.totalRawRecords}
+              </span>
+              <span className="text-[11px] text-slate-500 mt-0.5 block">
+                En {preview.totalFiles} archivos
+              </span>
             </div>
 
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3.5">
-              <span className="text-[11px] text-emerald-400 uppercase font-medium">Productos Válidos</span>
-              <span className="text-xl font-bold text-emerald-300 block mt-0.5">{preview.validProducts}</span>
-              <span className="text-[10px] text-emerald-500/80">Normalizados</span>
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 shadow-2xs">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-800 block">
+                Productos Válidos
+              </span>
+              <span className="text-2xl font-bold text-emerald-700 mt-1 block font-mono">
+                {preview.validProducts}
+              </span>
+              <span className="text-[11px] text-emerald-700 mt-0.5 block">
+                Normalizados
+              </span>
             </div>
 
-            <div className="rounded-xl border border-blue-500/30 bg-blue-950/20 p-3.5">
-              <span className="text-[11px] text-blue-400 uppercase font-medium">Motos / Vehículos</span>
-              <span className="text-xl font-bold text-blue-300 block mt-0.5">{preview.vehiclesCount}</span>
-              <span className="text-[10px] text-blue-500/80">Fichas con specs</span>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
+                Modelos de Motos
+              </span>
+              <span className="text-2xl font-bold text-slate-900 mt-1 block font-mono">
+                {preview.vehiclesCount}
+              </span>
+              <span className="text-[11px] text-slate-500 mt-0.5 block">
+                Tabla <code className="font-mono">modelos_moto</code>
+              </span>
             </div>
 
-            <div className="rounded-xl border border-purple-500/30 bg-purple-950/20 p-3.5">
-              <span className="text-[11px] text-purple-400 uppercase font-medium">Repuestos / Partes</span>
-              <span className="text-xl font-bold text-purple-300 block mt-0.5">{preview.partsCount}</span>
-              <span className="text-[10px] text-purple-500/80">Baterías, llantas, etc.</span>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
+                Repuestos y Partes
+              </span>
+              <span className="text-2xl font-bold text-slate-900 mt-1 block font-mono">
+                {preview.partsCount}
+              </span>
+              <span className="text-[11px] text-slate-500 mt-0.5 block">
+                Tabla <code className="font-mono">repuestos</code>
+              </span>
             </div>
 
-            <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5">
-              <span className="text-[11px] text-amber-400 uppercase font-medium">Duplicados Fusionados</span>
-              <span className="text-xl font-bold text-amber-300 block mt-0.5">{preview.duplicatesIdentified}</span>
-              <span className="text-[10px] text-amber-500/80">Cruce CSV + JSON</span>
+            <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-4 shadow-2xs">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-800 block">
+                Duplicados Fusionados
+              </span>
+              <span className="text-2xl font-bold text-amber-700 mt-1 block font-mono">
+                {preview.duplicatesIdentified}
+              </span>
+              <span className="text-[11px] text-amber-700 mt-0.5 block">
+                Cruce CSV + JSON
+              </span>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3.5">
-              <span className="text-[11px] text-slate-400 uppercase font-medium">Páginas Omitidas</span>
-              <span className="text-xl font-bold text-slate-300 block mt-0.5">{preview.invalidOrSkippedRecords.length}</span>
-              <span className="text-[10px] text-slate-500">Blogs, carritos, etc.</span>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
+                No-Productos Omitidos
+              </span>
+              <span className="text-2xl font-bold text-slate-700 mt-1 block font-mono">
+                {preview.invalidOrSkippedRecords.length}
+              </span>
+              <span className="text-[11px] text-slate-500 mt-0.5 block">
+                Carritos, blogs, sedes
+              </span>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-              Distribución por Marca Reconocida
-            </h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {Object.entries(preview.productsByBrand).map(([brand, count]) => (
-                <div key={brand} className="flex items-center justify-between rounded-lg bg-slate-800/60 border border-slate-700/60 px-3 py-2 text-xs">
-                  <span className="font-semibold text-white">{brand}</span>
-                  <span className="font-mono text-cyan-400 font-bold">{count} prod.</span>
+          {/* Distribución por Marca */}
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                Distribución por Marca Reconocida (clic para filtrar)
+              </h4>
+              {brandFilter !== 'ALL' && (
+                <button
+                  type="button"
+                  onClick={() => setBrandFilter('ALL')}
+                  className="text-xs font-semibold text-blue-700 hover:underline self-start sm:self-auto cursor-pointer"
+                >
+                  Mostrar todas las marcas
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {Object.entries(preview.productsByBrand).map(([brand, count]) => {
+                const isSelected = brandFilter === brand;
+                return (
+                  <button
+                    type="button"
+                    key={brand}
+                    onClick={() => setBrandFilter(isSelected ? 'ALL' : brand)}
+                    className={`flex items-center justify-between rounded-lg border px-3.5 py-2.5 text-xs transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-[#0B1528] bg-[#0B1528] text-white shadow-2xs'
+                        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800'
+                    }`}
+                  >
+                    <span className="font-bold">{brand}</span>
+                    <span
+                      className={`font-mono font-bold px-2 py-0.5 rounded text-[11px] ${
+                        isSelected
+                          ? 'bg-amber-400 text-slate-950'
+                          : 'bg-white border border-slate-200 text-slate-700'
+                      }`}
+                    >
+                      {count} prod.
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Tabla de Inspección de Simulación */}
+          <div className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 bg-slate-50/70 px-4 pt-3 md:py-0 gap-3">
+              <div className="flex flex-wrap gap-1 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('preview')}
+                  className={`px-3.5 py-3 font-semibold border-b-2 transition-colors cursor-pointer ${
+                    activeTab === 'preview'
+                      ? 'border-[#0B1528] text-[#0B1528] bg-white'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Productos Normalizados ({preview.sampleItems.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('operaciones')}
+                  className={`px-3.5 py-3 font-semibold border-b-2 transition-colors cursor-pointer ${
+                    activeTab === 'operaciones'
+                      ? 'border-[#0B1528] text-[#0B1528] bg-white'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Operaciones SQL Propuestas ({preview.proposedOperations.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('conflicts')}
+                  className={`px-3.5 py-3 font-semibold border-b-2 transition-colors cursor-pointer ${
+                    activeTab === 'conflicts'
+                      ? 'border-[#0B1528] text-[#0B1528] bg-white'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Discrepancias ({preview.conflicts.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('skipped')}
+                  className={`px-3.5 py-3 font-semibold border-b-2 transition-colors cursor-pointer ${
+                    activeTab === 'skipped'
+                      ? 'border-[#0B1528] text-[#0B1528] bg-white'
+                      : 'border-transparent text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  URLs Omitidas ({preview.invalidOrSkippedRecords.length})
+                </button>
+              </div>
+
+              {activeTab === 'preview' && (
+                <div className="relative pb-3 md:pb-0 w-full md:w-64">
+                  <Icon
+                    name="search"
+                    className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  />
+                  <input
+                    type="search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Buscar producto, SKU o categoría..."
+                    className="w-full rounded-lg border border-slate-300 bg-white pl-8 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                  />
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 overflow-hidden">
-            <div className="flex border-b border-slate-800 bg-slate-950/40 text-xs">
-              <button
-                onClick={() => setActiveTab('preview')}
-                className={`px-4 py-2.5 font-semibold transition-colors ${
-                  activeTab === 'preview' ? 'border-b-2 border-blue-500 text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Muestra de Productos ({preview.sampleItems.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('operaciones')}
-                className={`px-4 py-2.5 font-semibold transition-colors ${
-                  activeTab === 'operaciones' ? 'border-b-2 border-blue-500 text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Operaciones Propuestas ({preview.proposedOperations.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('conflicts')}
-                className={`px-4 py-2.5 font-semibold transition-colors ${
-                  activeTab === 'conflicts' ? 'border-b-2 border-blue-500 text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Discrepancias ({preview.conflicts.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('skipped')}
-                className={`px-4 py-2.5 font-semibold transition-colors ${
-                  activeTab === 'skipped' ? 'border-b-2 border-blue-500 text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Omitidos ({preview.invalidOrSkippedRecords.length})
-              </button>
+              )}
             </div>
 
-            <div className="p-4">
+            <div className="p-0">
               {activeTab === 'preview' && (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs text-slate-300">
-                    <thead className="bg-slate-800 text-[10px] uppercase tracking-wider text-slate-400">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                       <tr>
-                        <th className="px-3 py-2 rounded-l">Tipo</th>
-                        <th className="px-3 py-2">Marca</th>
-                        <th className="px-3 py-2">Nombre Comercial</th>
-                        <th className="px-3 py-2">SKU</th>
-                        <th className="px-3 py-2">Categoría</th>
-                        <th className="px-3 py-2">Precio</th>
-                        <th className="px-3 py-2 rounded-r">Especificaciones</th>
+                        <th className="px-4 py-3">Entidad</th>
+                        <th className="px-4 py-3">Marca</th>
+                        <th className="px-4 py-3">Nombre Comercial</th>
+                        <th className="px-4 py-3">SKU</th>
+                        <th className="px-4 py-3">Categoría</th>
+                        <th className="px-4 py-3 text-right">Precio (PEN)</th>
+                        <th className="px-4 py-3">Especificaciones Detectadas</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800/50">
-                      {preview.sampleItems.map((item: NormalizedItem) => (
-                        <tr key={item.id} className="hover:bg-slate-800/30">
-                          <td className="px-3 py-2">
+                    <tbody className="divide-y divide-slate-200 text-slate-700">
+                      {filteredPreviewItems.map((item: NormalizedItem) => (
+                        <tr key={item.id} className="hover:bg-slate-50/80">
+                          <td className="px-4 py-2.5">
                             <span
-                              className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
+                              className={`inline-flex rounded-md px-2 py-0.5 text-[10px] font-bold uppercase border ${
                                 item.entityType === 'VEHICULO'
-                                  ? 'bg-blue-500/20 text-blue-400'
-                                  : 'bg-emerald-500/20 text-emerald-400'
+                                  ? 'bg-blue-50 text-blue-800 border-blue-200'
+                                  : 'bg-emerald-50 text-emerald-800 border-emerald-200'
                               }`}
                             >
                               {item.entityType}
                             </span>
                           </td>
-                          <td className="px-3 py-2 font-bold text-white">{item.brand}</td>
-                          <td className="px-3 py-2 text-slate-200">{item.name}</td>
-                          <td className="px-3 py-2 font-mono text-[11px] text-slate-400">{item.sku || 'S/N'}</td>
-                          <td className="px-3 py-2 text-slate-400">{item.category}</td>
-                          <td className="px-3 py-2 font-semibold text-emerald-400">
-                            {item.pricePen !== null ? `PEN ${item.pricePen.toFixed(2)}` : 'N/D'}
+                          <td className="px-4 py-2.5 font-bold text-slate-900">{item.brand}</td>
+                          <td className="px-4 py-2.5 font-medium text-slate-900">{item.name}</td>
+                          <td className="px-4 py-2.5 font-mono text-[11px] text-slate-600">
+                            {item.sku || 'S/N'}
                           </td>
-                          <td className="px-3 py-2 text-[11px] text-slate-400">
+                          <td className="px-4 py-2.5 text-slate-600">{item.category}</td>
+                          <td className="px-4 py-2.5 text-right font-mono font-semibold text-slate-900">
+                            {item.pricePen !== null ? `S/ ${item.pricePen.toFixed(2)}` : 'Por cotizar'}
+                          </td>
+                          <td className="px-4 py-2.5 font-mono text-[11px] text-slate-600">
                             {[
                               item.specs.voltageV ? `${item.specs.voltageV}V` : null,
                               item.specs.batteryCapacityAh ? `${item.specs.batteryCapacityAh}Ah` : null,
@@ -497,7 +676,7 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
                               item.specs.maxSpeedKmh ? `${item.specs.maxSpeedKmh}km/h` : null,
                             ]
                               .filter(Boolean)
-                              .join(' | ') || 'Estándar'}
+                              .join(' · ') || 'Estándar'}
                           </td>
                         </tr>
                       ))}
@@ -507,15 +686,15 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
               )}
 
               {activeTab === 'operaciones' && (
-                <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                <div className="p-4 space-y-2 max-h-80 overflow-y-auto divide-y divide-slate-100">
                   {preview.proposedOperations.map((op, i) => (
-                    <div key={i} className="flex items-center justify-between rounded-lg bg-slate-800/50 border border-slate-700/50 p-2 text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="rounded bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 text-[10px] font-bold uppercase">
+                    <div key={i} className="pt-2 first:pt-0 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2.5">
+                        <span className="rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 px-2 py-0.5 text-[10px] font-bold uppercase">
                           {op.action}
                         </span>
-                        <span className="font-mono text-cyan-400">{op.entity}</span>
-                        <span className="text-slate-300">{op.summary}</span>
+                        <span className="font-mono font-semibold text-slate-800">{op.entity}</span>
+                        <span className="text-slate-600">{op.summary}</span>
                       </div>
                     </div>
                   ))}
@@ -523,13 +702,19 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
               )}
 
               {activeTab === 'conflicts' && (
-                <div>
+                <div className="p-6">
                   {preview.conflicts.length === 0 ? (
-                    <p className="text-xs text-slate-400">No se detectaron discrepancias entre archivos CSV y JSON.</p>
+                    <div className="flex items-center gap-2 text-xs text-emerald-700 font-medium">
+                      <Icon name="check-circle" className="w-4 h-4 text-emerald-600" />
+                      <span>No se detectaron discrepancias de precios ni atributos entre archivos CSV y JSON.</span>
+                    </div>
                   ) : (
                     <div className="space-y-2">
                       {preview.conflicts.map((c, i) => (
-                        <div key={i} className="rounded-lg border border-amber-500/30 bg-amber-950/20 p-2.5 text-xs text-amber-200">
+                        <div
+                          key={i}
+                          className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900"
+                        >
                           <span className="font-bold">[{c.type}]</span> {c.resolution}
                         </div>
                       ))}
@@ -539,11 +724,16 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
               )}
 
               {activeTab === 'skipped' && (
-                <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
-                  {preview.invalidOrSkippedRecords.slice(0, 30).map((s, i) => (
-                    <div key={i} className="flex items-center justify-between rounded bg-slate-800/40 p-1.5 text-[11px] text-slate-400">
-                      <span className="font-mono truncate max-w-md">{s.url || 'Sin URL'}</span>
-                      <span className="text-slate-500 italic">{s.reason}</span>
+                <div className="p-4 space-y-1.5 max-h-80 overflow-y-auto divide-y divide-slate-100">
+                  {preview.invalidOrSkippedRecords.slice(0, 40).map((s, i) => (
+                    <div
+                      key={i}
+                      className="pt-1.5 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs"
+                    >
+                      <span className="font-mono text-slate-700 truncate max-w-xl">
+                        {s.url || 'Registro sin URL'}
+                      </span>
+                      <span className="text-slate-500 text-[11px]">{s.reason}</span>
                     </div>
                   ))}
                 </div>
@@ -551,106 +741,152 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
             </div>
           </div>
 
-          <div className="rounded-2xl border border-blue-500/30 bg-slate-900/90 p-5 shadow-xl">
-            <h4 className="text-sm font-bold text-white mb-2">Persistencia en PostgreSQL / Supabase</h4>
-            <p className="text-xs text-slate-400 mb-4">
-              La importación utiliza inserción idempotente. Si un producto ya existe con el mismo SKU o marca/nombre, no será duplicado.
-            </p>
+          {/* Paso 3: Confirmación y Ejecución en PostgreSQL */}
+          <div className="rounded-xl border border-slate-300 bg-white p-5 shadow-xs">
+            <div className="flex items-start gap-3">
+              <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#0B1528] text-amber-400 text-xs font-bold mt-0.5">
+                2
+              </span>
+              <div className="flex-1">
+                <h4 className="text-sm font-bold text-slate-900">
+                  Persistencia Idempotente en PostgreSQL / Supabase
+                </h4>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  Los registros existentes con el mismo código SKU o par Marca/Modelo se omitirán automáticamente para evitar duplicidad.
+                </p>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={confirmedExecution}
-                  onChange={(e) => setConfirmedExecution(e.target.checked)}
-                  className="rounded border-slate-700 bg-slate-800 text-blue-600 focus:ring-blue-500 w-4 h-4"
-                />
-                <span>Confirmo que deseo aplicar los cambios en la base de datos PostgreSQL</span>
-              </label>
+                <div className="mt-4 pt-4 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <label className="flex items-center gap-2.5 text-xs font-medium text-slate-800 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={confirmedExecution}
+                      onChange={(e) => setConfirmedExecution(e.target.checked)}
+                      className="rounded border-slate-300 text-[#0B1528] focus:ring-slate-900 w-4 h-4"
+                    />
+                    <span>
+                      Confirmo que revisé la simulación y autorizo la sincronización con PostgreSQL
+                    </span>
+                  </label>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleDownloadReport}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 px-3.5 py-2 text-xs font-semibold text-white transition-colors"
-                >
-                  <span>Descargar Informe JSON</span>
-                </button>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={handleDownloadReport}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
+                    >
+                      <Icon name="download" className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Descargar reporte JSON</span>
+                    </button>
 
-                <button
-                  onClick={handleExecuteImport}
-                  disabled={!confirmedExecution || isExecuting}
-                  className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 text-xs font-bold text-white transition-colors shadow-lg"
-                >
-                  {isExecuting ? 'Importando...' : 'Ejecutar Importación Idempotente'}
-                </button>
+                    <button
+                      type="button"
+                      onClick={handleExecuteImport}
+                      disabled={!confirmedExecution || isExecuting}
+                      className="inline-flex items-center gap-2 rounded-lg bg-amber-400 hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 text-xs font-bold text-slate-950 shadow-2xs transition-colors cursor-pointer"
+                    >
+                      <Icon name="database" className="w-3.5 h-3.5" />
+                      <span>
+                        {isExecuting ? 'Sincronizando en PostgreSQL...' : 'Ejecutar Importación en Base de Datos'}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {executionResult && (
+                  <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
+                    <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs">
+                      <Icon name="check-circle" className="w-4 h-4 text-emerald-600" />
+                      <span>Resumen de ejecución en PostgreSQL:</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 mt-2.5 text-xs">
+                      <div className="rounded-lg bg-white border border-emerald-200 p-2.5">
+                        <span className="text-slate-500 text-[10px] font-semibold uppercase block">
+                          Nuevos Insertados
+                        </span>
+                        <span className="text-emerald-700 font-bold text-base font-mono">
+                          {executionResult.insertedCount}
+                        </span>
+                      </div>
+                      <div className="rounded-lg bg-white border border-slate-200 p-2.5">
+                        <span className="text-slate-500 text-[10px] font-semibold uppercase block">
+                          Omitidos (Preexistentes)
+                        </span>
+                        <span className="text-slate-800 font-bold text-base font-mono">
+                          {executionResult.skippedCount}
+                        </span>
+                      </div>
+                      <div className="rounded-lg bg-white border border-slate-200 p-2.5">
+                        <span className="text-slate-500 text-[10px] font-semibold uppercase block">
+                          Errores
+                        </span>
+                        <span className="text-red-600 font-bold text-base font-mono">
+                          {executionResult.errorCount}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-
-            {executionResult && (
-              <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4">
-                <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs">
-                  <Icon name="check" className="w-4 h-4" />
-                  <span>Resultado de la ejecución:</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2 mt-2 text-xs">
-                  <div className="rounded bg-slate-900/60 p-2">
-                    <span className="text-slate-400 text-[10px] uppercase block">Insertados</span>
-                    <span className="text-emerald-400 font-bold text-sm">{executionResult.insertedCount}</span>
-                  </div>
-                  <div className="rounded bg-slate-900/60 p-2">
-                    <span className="text-slate-400 text-[10px] uppercase block">Omitidos (Existentes)</span>
-                    <span className="text-amber-400 font-bold text-sm">{executionResult.skippedCount}</span>
-                  </div>
-                  <div className="rounded bg-slate-900/60 p-2">
-                    <span className="text-slate-400 text-[10px] uppercase block">Errores</span>
-                    <span className="text-rose-400 font-bold text-sm">{executionResult.errorCount}</span>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Historial de Importaciones (catalogo_importaciones) */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-white">
-            Historial Auditado de Importaciones (<code className="text-cyan-400 font-mono text-xs">public.catalogo_importaciones</code>)
-          </h3>
-          <span className="text-xs text-slate-400">{history.length} registros</span>
+      {/* Historial Auditado de Importaciones */}
+      <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">
+              Historial Auditado de Importaciones
+            </h3>
+            <p className="text-xs text-slate-500">
+              Registros almacenados en <code className="font-mono text-slate-700">public.catalogo_importaciones</code>
+            </p>
+          </div>
+          <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-mono font-semibold text-slate-700">
+            {history.length} ejecuciones
+          </span>
         </div>
 
         {history.length === 0 ? (
-          <p className="text-xs text-slate-500">
-            No se han registrado ejecuciones de importación en el historial todavía.
-          </p>
+          <div className="p-8 text-center text-xs text-slate-500">
+            Aún no se han registrado ejecuciones de importación en la tabla de auditoría{' '}
+            <code className="font-mono text-slate-700">public.catalogo_importaciones</code>.
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-800 text-[10px] uppercase text-slate-400">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 <tr>
-                  <th className="p-2.5">ID</th>
-                  <th className="p-2.5">Modo</th>
-                  <th className="p-2.5">Archivos</th>
-                  <th className="p-2.5">Válidos (Motos / Repuestos)</th>
-                  <th className="p-2.5">Omitidos</th>
-                  <th className="p-2.5">Operador</th>
-                  <th className="p-2.5">Fecha</th>
+                  <th className="px-4 py-3">ID</th>
+                  <th className="px-4 py-3">Modo</th>
+                  <th className="px-4 py-3">Archivos</th>
+                  <th className="px-4 py-3">Válidos (Motos / Repuestos)</th>
+                  <th className="px-4 py-3">Omitidos</th>
+                  <th className="px-4 py-3">Operador</th>
+                  <th className="px-4 py-3">Fecha y Hora</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 text-slate-700">
                 {history.map((h) => (
-                  <tr key={h.id_importacion}>
-                    <td className="p-2.5 font-mono text-cyan-400">#{h.id_importacion}</td>
-                    <td className="p-2.5 font-bold text-emerald-400">{h.modo}</td>
-                    <td className="p-2.5">{h.total_archivos}</td>
-                    <td className="p-2.5">
+                  <tr key={h.id_importacion} className="hover:bg-slate-50/80">
+                    <td className="px-4 py-3 font-mono font-bold text-slate-900">
+                      #{h.id_importacion}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex rounded-md bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-800 uppercase">
+                        {h.modo}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 font-mono">{h.total_archivos}</td>
+                    <td className="px-4 py-3 font-medium text-slate-900">
                       {h.productos_validos} ({h.motos_procesadas} motos / {h.repuestos_procesados} rep.)
                     </td>
-                    <td className="p-2.5">{h.registros_omitidos}</td>
-                    <td className="p-2.5 font-mono text-[11px]">{h.admin_email || 'admin'}</td>
-                    <td className="p-2.5 text-slate-400">
+                    <td className="px-4 py-3 font-mono text-slate-600">{h.registros_omitidos}</td>
+                    <td className="px-4 py-3 font-mono text-[11px] text-slate-600">
+                      {h.admin_email || 'admin'}
+                    </td>
+                    <td className="px-4 py-3 text-slate-500">
                       {new Date(h.created_at).toLocaleString('es-PE')}
                     </td>
                   </tr>
@@ -659,7 +895,7 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
             </table>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }
