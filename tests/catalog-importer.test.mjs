@@ -381,15 +381,15 @@ test('13. Cobertura del 100% de imágenes reales en los 52 modelos, 173 repuesto
 
   for (const m of motos) {
     assert.ok(
-      typeof m.imageUrl === 'string' && (m.imageUrl.includes('.webp') || m.imageUrl.includes('.png')),
-      `El modelo ${m.slug} debe tener una URL de imagen real (.webp o .png)`
+      typeof m.imageUrl === 'string' && (m.imageUrl.includes('.webp') || m.imageUrl.includes('.png') || m.imageUrl.includes('.jpg') || m.imageUrl.includes('.jpeg')),
+      `El modelo ${m.slug} debe tener una URL de imagen real (.webp, .png, .jpg)`
     );
   }
 
   for (const p of parts) {
     assert.ok(
-      typeof p.imageUrl === 'string' && /^https:\/\/.+\.(webp|png)$/.test(p.imageUrl),
-      `El repuesto ${p.partKey} debe tener una URL de imagen real (webp/png) del proveedor`
+      typeof p.imageUrl === 'string' && /^https:\/\/.+\.(webp|png|jpe?g)$/i.test(p.imageUrl),
+      `El repuesto ${p.partKey} debe tener una URL de imagen real (webp/png/jpg) del proveedor`
     );
     assert.ok(p.sourceUrl && p.sourceUrl.startsWith('https://'), `El repuesto ${p.partKey} debe tener URL de origen`);
   }

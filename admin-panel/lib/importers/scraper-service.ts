@@ -546,7 +546,7 @@ export async function runLiveScrape(options: {
           name.match(/(\d{1,3}(?:\.\d+)?)\s*AH/i) || descText.match(/(\d{1,3}(?:\.\d+)?)\s*AH/i);
 
         let imageUrl = item.images?.[0]?.src || '';
-        if (imageUrl && !imageUrl.endsWith('.webp') && !imageUrl.endsWith('.png')) {
+        if (imageUrl && !imageUrl.endsWith('.webp') && !imageUrl.endsWith('.png') && !imageUrl.endsWith('.jpg') && !imageUrl.endsWith('.jpeg')) {
           imageUrl = imageUrl.replace(/\.(jpe?g)$/i, '.webp');
         }
 
@@ -822,7 +822,7 @@ export function syncCustomArchitecture(params: {
             sourceUrl: item.sourceUrl,
             sourceCheckedOn: new Date().toISOString().slice(0, 10),
             notes: `Importado automáticamente desde ${siteUrl}`,
-            imageUrl: item.imageUrl && item.imageUrl.includes('.webp') ? item.imageUrl : `/images/motos/${slug}.webp`,
+            imageUrl: item.imageUrl && (item.imageUrl.startsWith('http') || item.imageUrl.startsWith('/')) ? item.imageUrl : `/images/motos/${slug}.webp`,
           });
           existingModelNames.add(modelKey);
           existingModelSlugs.add(slug);
@@ -899,7 +899,7 @@ export function syncCustomArchitecture(params: {
       const existing = partsByName.get(nameKey);
 
       let imageUrl = item.imageUrl || '';
-      if (imageUrl && !imageUrl.endsWith('.webp') && !imageUrl.endsWith('.png')) {
+      if (imageUrl && !imageUrl.endsWith('.webp') && !imageUrl.endsWith('.png') && !imageUrl.endsWith('.jpg') && !imageUrl.endsWith('.jpeg')) {
         imageUrl = imageUrl.replace(/\.(jpe?g)$/i, '.webp');
       }
       if (!imageUrl || !imageUrl.startsWith('https://')) {
@@ -1179,7 +1179,7 @@ export async function scrapeCustomUrl(
       const ahMatch = name.match(/(\d{1,3}(?:\.\d+)?)\s*AH/i) || descText.match(/(\d{1,3}(?:\.\d+)?)\s*AH/i);
 
       let imageUrl = item.images?.[0]?.src || '';
-      if (imageUrl && !imageUrl.endsWith('.webp') && !imageUrl.endsWith('.png')) {
+      if (imageUrl && !imageUrl.endsWith('.webp') && !imageUrl.endsWith('.png') && !imageUrl.endsWith('.jpg') && !imageUrl.endsWith('.jpeg')) {
         imageUrl = imageUrl.replace(/\.(jpe?g)$/i, '.webp');
       }
       if (!imageUrl || !imageUrl.startsWith('https://')) {
@@ -1239,7 +1239,7 @@ export async function scrapeCustomUrl(
             const isVehicle = !isComponentWord && /(?:moto\s*el[eé]ctrica|bicimoto|scooter\s*el[eé]ctrico|trimoto|cuatrimoto|carrito|ciclomotor|veh[ií]culo)/i.test(name.toLowerCase());
             const category = categorizeProduct(name, itemUrl, isVehicle);
             let img = typeof node.image === 'string' ? node.image : node.image?.url || '';
-            if (img && !img.endsWith('.webp') && !img.endsWith('.png')) {
+            if (img && !img.endsWith('.webp') && !img.endsWith('.png') && !img.endsWith('.jpg') && !img.endsWith('.jpeg')) {
               img = img.replace(/\.(jpe?g)$/i, '.webp');
             }
             if (!img || !img.startsWith('https://')) {

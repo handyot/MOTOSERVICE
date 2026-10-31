@@ -231,7 +231,7 @@ export function normalizeRawPart(item, storeConfig) {
   const sku = item.sku && item.sku.trim() ? item.sku.trim() : `${brand.slice(0, 3)}-${item.id}`;
 
   let imageUrl = item.images?.[0]?.src || '';
-  if (imageUrl && !imageUrl.endsWith('.webp') && !imageUrl.endsWith('.png')) {
+  if (imageUrl && !imageUrl.endsWith('.webp') && !imageUrl.endsWith('.png') && !imageUrl.endsWith('.jpg') && !imageUrl.endsWith('.jpeg')) {
     imageUrl = imageUrl.replace(/\.(jpe?g)$/i, '.webp');
   }
 
@@ -363,7 +363,7 @@ export async function runScraper(options = {}) {
               existing.priceMinPen = item.pricePen;
               existing.priceMaxPen = item.pricePen;
             }
-            if (item.imageUrl && /^https:\/\/.+\.(webp|png)$/.test(item.imageUrl)) {
+            if (item.imageUrl && /^https:\/\/.+\.(webp|png|jpe?g)$/i.test(item.imageUrl)) {
               existing.imageUrl = item.imageUrl;
             }
             existing.stockStatus = item.stockStatus || 'DISPONIBLE';

@@ -2,12 +2,14 @@
   "name": "motoservice-admin-panel",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Portal Administrativo Independiente — NeroElectric Motors / MOTOSERVICE",
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

@@ -135,7 +135,7 @@ export async function scanAndFuseUrl(options = {}) {
       const ahMatch = name.match(/(\d{1,3}(?:\.\d+)?)\s*AH/i) || descText.match(/(\d{1,3}(?:\.\d+)?)\s*AH/i);
 
       let imageUrl = item.images?.[0]?.src || '';
-      if (imageUrl && !imageUrl.endsWith('.webp') && !imageUrl.endsWith('.png')) {
+      if (imageUrl && !imageUrl.endsWith('.webp') && !imageUrl.endsWith('.png') && !imageUrl.endsWith('.jpg') && !imageUrl.endsWith('.jpeg')) {
         imageUrl = imageUrl.replace(/\.(jpe?g)$/i, '.webp');
       }
       if (!imageUrl || !imageUrl.startsWith('https://')) {
@@ -290,7 +290,7 @@ export async function scanAndFuseUrl(options = {}) {
             sourceUrl: item.sourceUrl,
             sourceCheckedOn: new Date().toISOString().slice(0, 10),
             notes: `Importado automáticamente desde ${targetUrl}`,
-            imageUrl: item.imageUrl && item.imageUrl.includes('.webp') ? item.imageUrl : `/images/motos/${slug}.webp`,
+            imageUrl: item.imageUrl && (item.imageUrl.startsWith('http') || item.imageUrl.startsWith('/')) ? item.imageUrl : `/images/motos/${slug}.webp`,
           });
           existingModelNames.add(modelKey);
           existingModelSlugs.add(slug);
@@ -356,7 +356,7 @@ export async function scanAndFuseUrl(options = {}) {
       const existing = partsByName.get(nameKey);
 
       let imageUrl = item.imageUrl || '';
-      if (imageUrl && !imageUrl.endsWith('.webp') && !imageUrl.endsWith('.png')) {
+      if (imageUrl && !imageUrl.endsWith('.webp') && !imageUrl.endsWith('.png') && !imageUrl.endsWith('.jpg') && !imageUrl.endsWith('.jpeg')) {
         imageUrl = imageUrl.replace(/\.(jpe?g)$/i, '.webp');
       }
       if (!imageUrl || !imageUrl.startsWith('https://')) {
