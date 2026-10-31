@@ -6,6 +6,7 @@ export interface ServerUserResult {
   user: {
     id: string;
     email?: string;
+    user_metadata?: Record<string, unknown>;
   } | null;
   error?: string | null;
 }
@@ -30,6 +31,7 @@ export async function getServerAuthUser(): Promise<ServerUserResult> {
       user: {
         id: user.id,
         email: user.email,
+        user_metadata: user.user_metadata,
       },
     };
   } catch (err: unknown) {
@@ -68,10 +70,30 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 }
 
 /**
+ * Verifica si un correo está explícitamente configurado como administrador del sistema
+ * mediante variables de entorno del servidor (fallback para mantenimiento o migración).
+ */
+export function isConfiguredAdminEmail(email?: string | null): boolean {
+  if (!email) return false;
+  const adminEmailsEnv = process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '';
+  if (!adminEmailsEnv.trim()) return false;
+  const adminList = adminEmailsEnv
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return adminList.includes(email.trim().toLowerCase());
+}
+
+/**
  * Obtiene de forma confiable el rol del usuario desde la tabla public.user_roles.
  * Nunca confía en metadatos del cliente ni cookies no firmadas.
  */
-export async function getUserRole(userId: string): Promise<AppRole | null> {
+export async function getUserRole(userId: string, userEmail?: string | null): Promise<AppRole | null> {
+  // Verificación preliminar por variable de entorno de administrador del sistema
+  if (isConfiguredAdminEmail(userEmail)) {
+    return 'admin';
+  }
+
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -80,7 +102,14 @@ export async function getUserRole(userId: string): Promise<AppRole | null> {
       .eq('user_id', userId)
       .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
+      console.warn(
+        `[MOTOSERVICE Auth Warning] No se pudo consultar la tabla user_roles para userId ${userId}: [${error.code}] ${error.message}`
+      );
+      return null;
+    }
+
+    if (!data) {
       return null;
     }
 
@@ -106,15 +135,26 @@ export async function getAuthenticatedAccount(): Promise<AuthAccount | null> {
 
   const [profile, role] = await Promise.all([
     getUserProfile(user.id),
-    getUserRole(user.id),
+    getUserRole(user.id, user.email),
   ]);
+
+  const metaFullName =
+    typeof user.user_metadata?.full_name === 'string' && user.user_metadata.full_name.trim()
+      ? (user.user_metadata.full_name.trim() as string)
+      : null;
+  const metaPhone =
+    typeof user.user_metadata?.phone === 'string' && user.user_metadata.phone.trim()
+      ? (user.user_metadata.phone.trim() as string)
+      : null;
+
+  const resolvedRole = role || (isConfiguredAdminEmail(user.email) ? 'admin' : 'customer');
 
   return {
     id: user.id,
     email: user.email || '',
-    fullName: profile?.fullName || user.email?.split('@')[0] || 'Cliente',
-    phone: profile?.phone || null,
-    role: role || 'customer',
+    fullName: profile?.fullName || metaFullName || user.email?.split('@')[0] || 'Cliente',
+    phone: profile?.phone || metaPhone || null,
+    role: resolvedRole,
     createdAt: profile?.createdAt || new Date().toISOString(),
   };
 }
@@ -132,13 +172,12 @@ export async function requireAuth(redirectTo = '/cuenta'): Promise<AuthAccount> 
 }
 
 /**
- * Guardián de servidor para rutas administrativas (/admin).
- * Redirige a /login si no hay sesión, o a /cuenta?error=unauthorized si no es admin.
+ * Verifica permisos de administrador en el servidor (para comprobaciones internas como visualización de pedidos).
  */
 export async function requireAdmin(): Promise<AuthAccount> {
   const account = await getAuthenticatedAccount();
   if (!account) {
-    redirect('/login?redirectTo=/admin');
+    redirect('/login');
   }
 
   if (account.role !== 'admin') {

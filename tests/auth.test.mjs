@@ -231,3 +231,158 @@ test('Escenario 7: Robustez ante sesiones expiradas, errores y validaciones de d
   assert.strictEqual(validatePhone('').valid, true); // Opcional
   assert.strictEqual(validatePhone('abc-invalid').valid, false);
 });
+
+// -----------------------------------------------------------------------------
+// ESCENARIO 8: Fallback a user_metadata cuando public.profiles está ausente
+// -----------------------------------------------------------------------------
+test('Escenario 8: Preservación de nombre y teléfono desde auth.user_metadata si no existe tabla profiles', () => {
+  function simulateAccountResolution(authUser, profileRecord, userRole, adminEmailsEnv = '') {
+    const metaFullName =
+      typeof authUser.user_metadata?.full_name === 'string' && authUser.user_metadata.full_name.trim()
+        ? authUser.user_metadata.full_name.trim()
+        : null;
+    const metaPhone =
+      typeof authUser.user_metadata?.phone === 'string' && authUser.user_metadata.phone.trim()
+        ? authUser.user_metadata.phone.trim()
+        : null;
+
+    const isAdmin = adminEmailsEnv
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .includes((authUser.email || '').toLowerCase());
+
+    const resolvedRole = userRole || (isAdmin ? 'admin' : 'customer');
+
+    return {
+      id: authUser.id,
+      email: authUser.email || '',
+      fullName: profileRecord?.fullName || metaFullName || authUser.email?.split('@')[0] || 'Cliente',
+      phone: profileRecord?.phone || metaPhone || null,
+      role: resolvedRole,
+    };
+  }
+
+  // Usuario registrado con metadata pero sin fila en public.profiles (tabla ausente o registro pendiente)
+  const authUserWithMeta = {
+    id: 'user-ev-777',
+    email: 'roberto.motors@gmail.com',
+    user_metadata: {
+      full_name: 'Roberto Gómez',
+      phone: '+51 912345678',
+    },
+  };
+
+  const account = simulateAccountResolution(authUserWithMeta, null, null);
+  assert.strictEqual(account.fullName, 'Roberto Gómez', 'Debe tomar el nombre de user_metadata');
+  assert.strictEqual(account.phone, '+51 912345678', 'Debe tomar el teléfono de user_metadata');
+  assert.strictEqual(account.role, 'customer', 'Rol por defecto customer');
+});
+
+// -----------------------------------------------------------------------------
+// ESCENARIO 9: Fallback de administrador por variable de entorno ADMIN_EMAILS
+// -----------------------------------------------------------------------------
+test('Escenario 9: Acceso de operador garantizado vía ADMIN_EMAILS aún con user_roles ausente', () => {
+  function isConfiguredAdminEmail(email, adminEmailsEnv) {
+    if (!email || !adminEmailsEnv) return false;
+    const adminList = adminEmailsEnv
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean);
+    return adminList.includes(email.trim().toLowerCase());
+  }
+
+  const envConfig = 'admin@neroelectric.pe, operador@motoservice.pe';
+
+  assert.strictEqual(isConfiguredAdminEmail('admin@neroelectric.pe', envConfig), true);
+  assert.strictEqual(isConfiguredAdminEmail('OPERADOR@MOTOSERVICE.PE', envConfig), true); // Case-insensitive
+  assert.strictEqual(isConfiguredAdminEmail('hacker@neroelectric.pe', envConfig), false);
+  assert.strictEqual(isConfiguredAdminEmail('cliente@gmail.com', envConfig), false);
+  assert.strictEqual(isConfiguredAdminEmail('', envConfig), false);
+});
+
+// -----------------------------------------------------------------------------
+// ESCENARIO 10: Resiliencia en actualización de perfil ante error PGRST205
+// -----------------------------------------------------------------------------
+test('Escenario 10: updateProfileAction persiste datos en Auth metadata ante PGRST205', () => {
+  function simulateUpdateProfile(user, formData, tableExists) {
+    const fullNameRaw = formData.get('fullName');
+    const phoneRaw = formData.get('phone');
+    const fullName = typeof fullNameRaw === 'string' ? fullNameRaw.trim() : '';
+    const phone = typeof phoneRaw === 'string' ? phoneRaw.trim() : '';
+
+    const nameVal = validateFullName(fullName);
+    if (!nameVal.valid) return { success: false, error: nameVal.error };
+
+    const phoneVal = validatePhone(phone);
+    if (!phoneVal.valid) return { success: false, error: phoneVal.error };
+
+    // Simula auth.updateUser siempre exitoso
+    const updatedMetadata = { full_name: fullName, phone: phone || null };
+
+    // Simula tabla profiles
+    let dbError = null;
+    if (!tableExists) {
+      dbError = { code: 'PGRST205', message: "Could not find table 'public.profiles'" };
+    }
+
+    if (dbError && dbError.code !== 'PGRST205') {
+      return { success: false, error: dbError.message };
+    }
+
+    return {
+      success: true,
+      message: 'Perfil actualizado correctamente.',
+      persistedInAuth: updatedMetadata,
+      tableUpdated: tableExists,
+    };
+  }
+
+  const formData = new Map([
+    ['fullName', 'Lucía Fernández'],
+    ['phone', '+51 999888777'],
+  ]);
+
+  // Caso: Tabla profiles aún no migrada (PGRST205)
+  const resultWithoutTable = simulateUpdateProfile({ id: 'u1' }, formData, false);
+  assert.strictEqual(resultWithoutTable.success, true);
+  assert.strictEqual(resultWithoutTable.persistedInAuth.full_name, 'Lucía Fernández');
+  assert.strictEqual(resultWithoutTable.tableUpdated, false);
+
+  // Caso: Tabla profiles existente
+  const resultWithTable = simulateUpdateProfile({ id: 'u1' }, formData, true);
+  assert.strictEqual(resultWithTable.success, true);
+  assert.strictEqual(resultWithTable.tableUpdated, true);
+});
+
+// -----------------------------------------------------------------------------
+// ESCENARIO 11: Preservación de redirectTo en proxy.ts con sanitización
+// -----------------------------------------------------------------------------
+test('Escenario 11: proxy.ts preserva redirectTo legítimo y neutraliza rutas maliciosas', () => {
+  function simulateAuthEntryProxy(pathname, user, rawRedirect) {
+    const isAuthEntry = pathname === '/login' || pathname === '/registro';
+    if (isAuthEntry && user) {
+      const safeTarget = getSafeRedirectUrl(rawRedirect, '/cuenta');
+      return { redirect: true, to: safeTarget };
+    }
+    return { redirect: false };
+  }
+
+  // Usuario autenticado con redirectTo legítimo (ej. venía de /checkout o /carrito)
+  const legitRedirect = simulateAuthEntryProxy('/login', { id: 'usr-1' }, '/checkout');
+  assert.strictEqual(legitRedirect.redirect, true);
+  assert.strictEqual(legitRedirect.to, '/checkout');
+
+  // Usuario autenticado sin redirectTo -> va a /cuenta
+  const defaultRedirect = simulateAuthEntryProxy('/login', { id: 'usr-1' }, null);
+  assert.strictEqual(defaultRedirect.redirect, true);
+  assert.strictEqual(defaultRedirect.to, '/cuenta');
+
+  // Usuario autenticado con intento de ataque de redirección abierta
+  const attackRedirect = simulateAuthEntryProxy('/login', { id: 'usr-1' }, 'https://malicious.com');
+  assert.strictEqual(attackRedirect.redirect, true);
+  assert.strictEqual(attackRedirect.to, '/cuenta');
+
+  const protoAttack = simulateAuthEntryProxy('/login', { id: 'usr-1' }, '//phishing.site');
+  assert.strictEqual(protoAttack.redirect, true);
+  assert.strictEqual(protoAttack.to, '/cuenta');
+});

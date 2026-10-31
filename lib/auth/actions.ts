@@ -50,6 +50,19 @@ export async function updateProfileAction(
     return { success: false, error: phoneValidation.error };
   }
 
+  // 1. Sincronizar metadatos en Supabase Auth de forma segura
+  try {
+    await supabase.auth.updateUser({
+      data: {
+        full_name: fullName,
+        phone: phone || null,
+      },
+    });
+  } catch (authMetaErr) {
+    console.warn('[MOTOSERVICE Profile] No se pudo actualizar metadatos de auth:', authMetaErr);
+  }
+
+  // 2. Sincronizar en la tabla public.profiles si existe
   const { error: updateError } = await supabase
     .from('profiles')
     .update({
@@ -60,14 +73,21 @@ export async function updateProfileAction(
     .eq('id', user.id);
 
   if (updateError) {
-    return {
-      success: false,
-      error: `No se pudo actualizar el perfil: ${updateError.message}`,
-    };
+    // Si la tabla profiles aún no existe en el esquema remoto (PGRST205),
+    // no bloqueamos la experiencia ya que los datos quedaron preservados en auth.user_metadata
+    if (updateError.code === 'PGRST205') {
+      console.warn(
+        '[MOTOSERVICE Profile Warning] Tabla profiles no existe en el esquema actual. Datos preservados en auth.user_metadata.'
+      );
+    } else {
+      return {
+        success: false,
+        error: `No se pudo actualizar el perfil en la base de datos: ${updateError.message}`,
+      };
+    }
   }
 
   revalidatePath('/cuenta');
-  revalidatePath('/admin');
 
   return {
     success: true,

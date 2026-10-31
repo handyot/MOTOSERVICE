@@ -17,6 +17,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://neroelectric.com"
+  ),
   title: "NeroElectric Motors | Repuestos y Soluciones para Motos Eléctricas",
   description:
     "Tienda técnica especializada en repuestos originales y homologados, mantenimiento y soluciones para motos eléctricas en Perú. Baterías de litio, controladores senoidales, motores y asesoría de compatibilidad.",

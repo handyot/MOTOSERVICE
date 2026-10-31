@@ -4,10 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:admin": "npm --prefix admin-panel run dev",
     "build": "next build",
+    "build:admin": "npm --prefix admin-panel run build",
+    "build:all": "next build && npm --prefix admin-panel run build",
     "start": "next start",
+    "start:admin": "npm --prefix admin-panel run start",
     "lint": "eslint",
-    "test": "node --test tests/**/*.test.mjs"
+    "lint:admin": "npm --prefix admin-panel run lint",
+    "test": "node --test tests/**/*.test.mjs",
+    "import:catalogs": "node scripts/import-catalogs.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

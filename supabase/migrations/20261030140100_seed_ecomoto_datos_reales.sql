@@ -8,14 +8,35 @@
 BEGIN;
 
 -- 1. MARCAS OFICIALES
-INSERT INTO marcas (nombre, sitio_web, estado) VALUES
-('TAILG', 'https://tailg.com.pe/', true),
-('YADEA', 'https://yadea.pe/', true),
-('KAYENCORP', 'https://kayencorp.com/', true),
-('GREENLINE', 'https://glperu.com/', true)
-ON CONFLICT (nombre) DO UPDATE SET
-    sitio_web = EXCLUDED.sitio_web,
-    estado = EXCLUDED.estado;
+-- Identificación normalizada con UPPER(TRIM(nombre)): reutiliza las marcas existentes
+-- en producción ('Tailg', 'Yadea', 'GreenLine') preservando sus nombres de presentación
+-- y sin crear registros duplicados; inserta únicamente las marcas ausentes.
+DO $$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN
+        SELECT * FROM (VALUES
+            ('Tailg', 'TAILG', 'https://tailg.com.pe/'),
+            ('Yadea', 'YADEA', 'https://yadea.pe/'),
+            ('Kayencorp', 'KAYENCORP', 'https://kayencorp.com/'),
+            ('GreenLine', 'GREENLINE', 'https://glperu.com/')
+        ) AS t(display_name, norm_name, web_url)
+    LOOP
+        UPDATE marcas
+        SET sitio_web = r.web_url,
+            estado = true
+        WHERE UPPER(TRIM(nombre)) = r.norm_name;
+
+        IF NOT FOUND THEN
+            INSERT INTO marcas (nombre, sitio_web, estado)
+            VALUES (r.display_name, r.web_url, true)
+            ON CONFLICT (nombre) DO UPDATE SET
+                sitio_web = EXCLUDED.sitio_web,
+                estado = EXCLUDED.estado;
+        END IF;
+    END LOOP;
+END $$;
 
 -- 2. PROVEEDORES OFICIALES
 INSERT INTO proveedores (nombre, sitio_web, politica_comercial, estado) VALUES
@@ -28,16 +49,35 @@ ON CONFLICT (nombre) DO UPDATE SET
     politica_comercial = EXCLUDED.politica_comercial;
 
 -- 3. CATEGORÍAS
-INSERT INTO categorias (nombre, descripcion, estado) VALUES
-('CARGADOR', 'Cargadores de batería inteligentes y rápidos para motos y VMP.', true),
-('BATERIA', 'Packs de batería de grafeno, plomo y litio (LiFePO4, LMFP, NMC).', true),
-('ACCESORIO', 'Accesorios de carrocería, espejos y complementos de chasis.', true),
-('ESPEJO', 'Espejos retrovisores originales y universales.', true),
-('CARROCERIA', 'Partes de carrocería, guardafangos y carenados.', true),
-('FRENOS', 'Sistemas de frenado, pastillas, discos y componentes hidráulicos.', true)
-ON CONFLICT (nombre) DO UPDATE SET
-    descripcion = EXCLUDED.descripcion,
-    estado = EXCLUDED.estado;
+-- Reutiliza categorías preexistentes insensible a mayúsculas (ej. 'Frenos' vs 'FRENOS')
+DO $$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN
+        SELECT * FROM (VALUES
+            ('CARGADOR', 'Cargadores de batería inteligentes y rápidos para motos y VMP.'),
+            ('BATERIA', 'Packs de batería de grafeno, plomo y litio (LiFePO4, LMFP, NMC).'),
+            ('ACCESORIO', 'Accesorios de carrocería, espejos y complementos de chasis.'),
+            ('ESPEJO', 'Espejos retrovisores originales y universales.'),
+            ('CARROCERIA', 'Partes de carrocería, guardafangos y carenados.'),
+            ('FRENOS', 'Sistemas de frenado, pastillas, discos y componentes hidráulicos.')
+        ) AS t(cat_name, cat_desc)
+    LOOP
+        UPDATE categorias
+        SET descripcion = r.cat_desc,
+            estado = true
+        WHERE UPPER(TRIM(nombre)) = UPPER(TRIM(r.cat_name));
+
+        IF NOT FOUND THEN
+            INSERT INTO categorias (nombre, descripcion, estado)
+            VALUES (r.cat_name, r.cat_desc, true)
+            ON CONFLICT (nombre) DO UPDATE SET
+                descripcion = EXCLUDED.descripcion,
+                estado = EXCLUDED.estado;
+        END IF;
+    END LOOP;
+END $$;
 
 -- 4. MODELOS DE MOTOCICLETAS (52 registros)
 
@@ -48,7 +88,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'E5',
     'tailg-e5',
     'MOTO_ELECTRICA',
@@ -88,7 +128,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'N6 Super S',
     'tailg-n6-super-s',
     'MOTO_ELECTRICA',
@@ -128,7 +168,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'F55 Mecha G2',
     'tailg-f55-mecha-g2',
     'MOTO_ELECTRICA',
@@ -168,7 +208,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'M1 Plus',
     'tailg-m1-plus',
     'MOTO_ELECTRICA',
@@ -208,7 +248,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'Optimus Mecha G3',
     'tailg-optimus-mecha-g3',
     'MOTO_ELECTRICA',
@@ -248,7 +288,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'F52 Mecha G1',
     'tailg-f52-mecha-g1',
     'MOTO_ELECTRICA',
@@ -288,7 +328,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'F52 NEO',
     'tailg-f52-neo',
     'MOTO_ELECTRICA',
@@ -328,7 +368,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'X9 Super S',
     'tailg-x9-super-s',
     'MOTO_ELECTRICA',
@@ -368,7 +408,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'F55L Litio Extraíble',
     'tailg-f55l-litio-extraible',
     'MOTO_ELECTRICA',
@@ -408,7 +448,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'T7 Litio Extraíble',
     'tailg-t7-litio-extraible',
     'VMP_BICIMOTO',
@@ -448,7 +488,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'V10 Litio Extraíble',
     'tailg-v10-litio-extraible',
     'VMP_BICIMOTO',
@@ -488,7 +528,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'X51 Litio Extraíble',
     'tailg-x51-litio-extraible',
     'VMP_BICIMOTO',
@@ -528,7 +568,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'LEDO Litio Extraíble LMFP',
     'tailg-ledo-litio-extraible-lmfp',
     'VMP_BICIMOTO',
@@ -568,7 +608,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'A1 Plus',
     'tailg-a1-plus',
     'MOTO_ELECTRICA',
@@ -608,7 +648,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'Lion Max 2026',
     'tailg-lion-max-2026',
     'MOTO_ELECTRICA',
@@ -648,7 +688,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'Polaris Super S',
     'tailg-polaris-super-s',
     'MOTO_ELECTRICA',
@@ -688,7 +728,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'Leopard Pro Super S',
     'tailg-leopard-pro-super-s',
     'MOTO_ELECTRICA',
@@ -728,7 +768,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'Master',
     'tailg-master',
     'MOTO_ELECTRICA',
@@ -768,7 +808,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'T5',
     'tailg-t5',
     'VMP_BICIMOTO',
@@ -808,7 +848,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'T3',
     'tailg-t3',
     'VMP_BICIMOTO',
@@ -848,7 +888,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'T24',
     'tailg-t24',
     'VMP_BICIMOTO',
@@ -888,7 +928,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'VMP S4',
     'tailg-vmp-s4',
     'VMP_BICIMOTO',
@@ -928,7 +968,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'VMP S2',
     'tailg-vmp-s2',
     'VMP_BICIMOTO',
@@ -968,7 +1008,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'VMP S2X',
     'tailg-vmp-s2x',
     'VMP_BICIMOTO',
@@ -1008,7 +1048,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'YADEA'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'YADEA' LIMIT 1),
     'M6',
     'yadea-m6',
     'MOTO_ELECTRICA',
@@ -1048,7 +1088,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'YADEA'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'YADEA' LIMIT 1),
     'M6 Pro',
     'yadea-m6-pro',
     'MOTO_ELECTRICA',
@@ -1088,7 +1128,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'YADEA'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'YADEA' LIMIT 1),
     'M6H',
     'yadea-m6h',
     'MOTO_ELECTRICA',
@@ -1128,7 +1168,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'YADEA'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'YADEA' LIMIT 1),
     'GT60',
     'yadea-gt60',
     'MOTO_ELECTRICA',
@@ -1168,7 +1208,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'YADEA'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'YADEA' LIMIT 1),
     'E8S Pro',
     'yadea-e8s-pro',
     'MOTO_ELECTRICA',
@@ -1208,7 +1248,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'YADEA'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'YADEA' LIMIT 1),
     'S80',
     'yadea-s80',
     'MOTO_ELECTRICA',
@@ -1248,7 +1288,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'KAYENCORP'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'KAYENCORP' LIMIT 1),
     'Moto Scooter TIME',
     'kayencorp-moto-scooter-time',
     'MOTO_SCOOTER',
@@ -1288,7 +1328,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'KAYENCORP'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'KAYENCORP' LIMIT 1),
     'Moto Scooter HAWK',
     'kayencorp-moto-scooter-hawk',
     'MOTO_SCOOTER',
@@ -1328,7 +1368,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'KAYENCORP'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'KAYENCORP' LIMIT 1),
     'Moto Scooter Kuaishan Plus',
     'kayencorp-moto-scooter-kuaishan-plus',
     'MOTO_SCOOTER',
@@ -1368,7 +1408,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'KAYENCORP'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'KAYENCORP' LIMIT 1),
     'Bicimoto IDO',
     'kayencorp-bicimoto-ido',
     'BICIMOTO',
@@ -1408,7 +1448,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'KAYENCORP'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'KAYENCORP' LIMIT 1),
     'Moto MNK2',
     'kayencorp-moto-mnk2',
     'MOTO_ELECTRICA',
@@ -1448,7 +1488,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'H5',
     'greenline-h5',
     'MOTO_ELECTRICA',
@@ -1488,7 +1528,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'X3',
     'greenline-x3',
     'MOTO_ELECTRICA',
@@ -1528,7 +1568,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'X6 PRO',
     'greenline-x6-pro',
     'MOTO_ELECTRICA',
@@ -1568,7 +1608,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'H3 Pro',
     'greenline-h3-pro',
     'MOTO_ELECTRICA',
@@ -1608,7 +1648,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'Y5',
     'greenline-y5',
     'MOTO_ELECTRICA',
@@ -1648,7 +1688,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'V9 Pro',
     'greenline-v9-pro',
     'MOTO_ELECTRICA',
@@ -1688,7 +1728,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'T8 (2026)',
     'greenline-t8-2026',
     'MOTO_ELECTRICA',
@@ -1728,7 +1768,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'V8',
     'greenline-v8',
     'MOTO_ELECTRICA',
@@ -1768,7 +1808,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'M6',
     'greenline-m6',
     'MOTO_ELECTRICA',
@@ -1808,7 +1848,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'M5',
     'greenline-m5',
     'MOTO_ELECTRICA',
@@ -1848,7 +1888,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'E3',
     'greenline-e3',
     'MOTO_ELECTRICA',
@@ -1888,7 +1928,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'E5',
     'greenline-e5',
     'MOTO_ELECTRICA',
@@ -1928,7 +1968,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'F6',
     'greenline-f6',
     'VMP_BICIMOTO',
@@ -1968,7 +2008,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'J4',
     'greenline-j4',
     'VMP_BICIMOTO',
@@ -2008,7 +2048,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'TM8X',
     'greenline-tm8x',
     'MOTO_ELECTRICA',
@@ -2048,7 +2088,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'TM6X',
     'greenline-tm6x',
     'MOTO_ELECTRICA',
@@ -2088,7 +2128,7 @@ INSERT INTO modelos_moto (
     bateria_capacidad_ah, bateria_extraible, velocidad_max_kmh,
     autonomia_min_km, autonomia_max_km, source_url, source_checked_on, notas, estado
 ) VALUES (
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'H2',
     'greenline-h2',
     'MOTO_ELECTRICA',
@@ -2130,9 +2170,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'CARGADOR'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'CARGADOR'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'TAILG Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'TAILG-CHG-60V-3A-PORT',
     'TAILG-CHG-60V-3A-PORT',
     'Cargador 60V 3A puerto TAILG',
@@ -2182,9 +2222,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'BATERIA'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'BATERIA'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'TAILG Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'TAILG-BAT-PHYLION-48V12-LMFP',
     'TAILG-BAT-PHYLION-48V12-LMFP',
     'Batería extraíble Phylion LMFP 48V12Ah',
@@ -2234,9 +2274,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'BATERIA'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'BATERIA'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'TAILG Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'TAILG-BAT-AMPACE-48V24',
     'TAILG-BAT-AMPACE-48V24',
     'Batería extraíble Ampace Snow Leopard 48V24Ah',
@@ -2286,9 +2326,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'BATERIA'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'BATERIA'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'TAILG Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'TAILG-BAT-GREENWAY-64V30',
     'TAILG-BAT-GREENWAY-64V30',
     'Batería GreenWay LiFePO4 64V30Ah',
@@ -2338,9 +2378,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'CARGADOR'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'CARGADOR'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'TAILG Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'TAILG-CHG-48V3A-54V6',
     'TAILG-CHG-48V3A-54V6',
     'Cargador de litio 48V 3A salida 54.6V',
@@ -2390,9 +2430,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'CARGADOR'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'CARGADOR'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'TAILG Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'TAILG-CHG-LEDO-48V3A-59V',
     'TAILG-CHG-LEDO-48V3A-59V',
     'Cargador de litio 48V 3A salida 59V para LEDO',
@@ -2442,9 +2482,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'CARGADOR'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'CARGADOR'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'TAILG Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'TAILG-CHG-F55L-60V5A-73V',
     'TAILG-CHG-F55L-60V5A-73V',
     'Cargador LiFePO4 60V 5A salida 73V',
@@ -2494,9 +2534,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'ACCESORIO'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'ACCESORIO'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'TAILG Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'TAILG-BOX-45L',
     'TAILG-BOX-45L',
     'Cajuela trasera cuadrada 45L',
@@ -2546,9 +2586,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'ESPEJO'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'ESPEJO'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'TAILG Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'TAILG-MIRROR-WY261-8MM',
     'WY-261',
     'Espejo deportivo original WY-261 rosca 8mm',
@@ -2598,9 +2638,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'ESPEJO'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'ESPEJO'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'TAILG Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'TAILG-MIRROR-HJ182-8MM',
     'HJ-182',
     'Par de espejos deportivos HJ-182 8mm',
@@ -2650,9 +2690,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'ESPEJO'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'ESPEJO'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'TAILG Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'TAILG'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'TAILG' LIMIT 1),
     'TAILG-MIRROR-XC603',
     'XC-603',
     'Espejo deportivo TAILG XC-603',
@@ -2702,9 +2742,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'CARGADOR'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'CARGADOR'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'GreenLine Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'GREENLINE-CHG-72V3A',
     'GREENLINE-CHG-72V3A',
     'Cargador GreenLine 72V 3A',
@@ -2754,9 +2794,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'BATERIA'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'BATERIA'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'GreenLine Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'GREENLINE-BAT-12V20AH-6DZF20',
     '6-DZF-20',
     'Batería plomo ácido 12V20Ah 6-DZF-20',
@@ -2806,9 +2846,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'CARGADOR'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'CARGADOR'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'GreenLine Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'GREENLINE'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'GREENLINE' LIMIT 1),
     'GREENLINE-CHG-60V3A-TM8X',
     'GREENLINE-CHG-60V3A-TM8X',
     'Cargador GreenLine 60V 3A para TM8X/TM6X/H2',
@@ -2858,9 +2898,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'BATERIA'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'BATERIA'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'Kayencorp Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'KAYENCORP'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'KAYENCORP' LIMIT 1),
     'KAYEN-BAT-LIFEPO4-72V30AH',
     '1569',
     'Batería LiFePO4 72V30Ah',
@@ -2910,9 +2950,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'BATERIA'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'BATERIA'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'Kayencorp Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'KAYENCORP'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'KAYENCORP' LIMIT 1),
     'KAYEN-BAT-LIFEPO4-72V24AH',
     '1568',
     'Batería LiFePO4 72V24Ah',
@@ -2962,9 +3002,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'CARROCERIA'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'CARROCERIA'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'Kayencorp Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'KAYENCORP'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'KAYENCORP' LIMIT 1),
     'KAYEN-FENDER-IDO',
     '199',
     'Guardafango posterior para bicimoto IDO',
@@ -3014,9 +3054,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'FRENOS'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'FRENOS'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'Kayencorp Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'KAYENCORP'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'KAYENCORP' LIMIT 1),
     'KAYEN-BRAKE-PADS-MNK2',
     '1020',
     'Pastillas de freno para moto MNK2',
@@ -3066,9 +3106,9 @@ INSERT INTO repuestos (
     voltaje_electrico_v, capacidad_electrica_ah, quimica, voltaje_salida_v, corriente_salida_a,
     conector_o_ajuste, source_url, source_checked_on, data_status, notas, estado
 ) VALUES (
-    (SELECT id_categoria FROM categorias WHERE nombre = 'CARGADOR'),
+    (SELECT id_categoria FROM categorias WHERE UPPER(TRIM(nombre)) = 'CARGADOR'),
     (SELECT id_proveedor FROM proveedores WHERE nombre = 'Kayencorp Perú'),
-    (SELECT id_marca FROM marcas WHERE nombre = 'KAYENCORP'),
+    (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'KAYENCORP' LIMIT 1),
     'KAYEN-CHG-48V3A-LITHIUM-BICIMOTO',
     '183',
     'Cargador litio bicimoto 48V 3A / salida 54.6V',
@@ -3112,13 +3152,96 @@ ON CONFLICT (part_key) DO UPDATE SET
     notas = EXCLUDED.notas;
 
 -- 6. COMPATIBILIDADES PUBLICADAS (46 registros)
+-- Verificación estricta previa: garantiza que cada una de las 46 compatibilidades
+-- resuelva un id_repuesto y un id_modelo válidos antes de ejecutar los INSERT.
+-- Si alguna referencia no existe, aborta con un error descriptivo identificando
+-- el repuesto (part_key), la marca y el modelo exacto.
+DO $$
+DECLARE
+    r RECORD;
+    v_id_repuesto BIGINT;
+    v_id_modelo BIGINT;
+BEGIN
+    FOR r IN
+        SELECT * FROM (VALUES
+            ('TAILG-CHG-48V3A-54V6', 'TAILG', 'T7 Litio Extraíble'),
+            ('TAILG-CHG-48V3A-54V6', 'TAILG', 'V10 Litio Extraíble'),
+            ('TAILG-CHG-48V3A-54V6', 'TAILG', 'X51 Litio Extraíble'),
+            ('TAILG-BAT-AMPACE-48V24', 'TAILG', 'T7 Litio Extraíble'),
+            ('TAILG-BAT-AMPACE-48V24', 'TAILG', 'V10 Litio Extraíble'),
+            ('TAILG-BAT-AMPACE-48V24', 'TAILG', 'X51 Litio Extraíble'),
+            ('TAILG-BAT-AMPACE-48V24', 'TAILG', 'T5'),
+            ('TAILG-BAT-AMPACE-48V24', 'TAILG', 'T3'),
+            ('TAILG-BAT-AMPACE-48V24', 'TAILG', 'T24'),
+            ('TAILG-BAT-PHYLION-48V12-LMFP', 'TAILG', 'LEDO Litio Extraíble LMFP'),
+            ('TAILG-BAT-PHYLION-48V12-LMFP', 'TAILG', 'VMP S4'),
+            ('TAILG-BAT-PHYLION-48V12-LMFP', 'TAILG', 'VMP S2'),
+            ('TAILG-BAT-PHYLION-48V12-LMFP', 'TAILG', 'VMP S2X'),
+            ('TAILG-CHG-LEDO-48V3A-59V', 'TAILG', 'LEDO Litio Extraíble LMFP'),
+            ('TAILG-CHG-F55L-60V5A-73V', 'TAILG', 'F55L Litio Extraíble'),
+            ('TAILG-BAT-GREENWAY-64V30', 'TAILG', 'F55L Litio Extraíble'),
+            ('TAILG-BOX-45L', 'TAILG', 'F55 Mecha G2'),
+            ('TAILG-BOX-45L', 'TAILG', 'F52 Mecha G1'),
+            ('TAILG-BOX-45L', 'TAILG', 'F52 NEO'),
+            ('TAILG-BOX-45L', 'TAILG', 'X9 Super S'),
+            ('TAILG-MIRROR-WY261-8MM', 'TAILG', 'X9 Super S'),
+            ('TAILG-MIRROR-WY261-8MM', 'TAILG', 'A1 Plus'),
+            ('TAILG-MIRROR-WY261-8MM', 'TAILG', 'V10 Litio Extraíble'),
+            ('TAILG-MIRROR-WY261-8MM', 'TAILG', 'T7 Litio Extraíble'),
+            ('TAILG-MIRROR-WY261-8MM', 'TAILG', 'Lion Max 2026'),
+            ('TAILG-MIRROR-WY261-8MM', 'TAILG', 'Polaris Super S'),
+            ('TAILG-MIRROR-WY261-8MM', 'TAILG', 'Master'),
+            ('TAILG-MIRROR-HJ182-8MM', 'TAILG', 'X9 Super S'),
+            ('TAILG-MIRROR-HJ182-8MM', 'TAILG', 'Leopard Pro Super S'),
+            ('TAILG-MIRROR-HJ182-8MM', 'TAILG', 'A1 Plus'),
+            ('TAILG-MIRROR-XC603', 'TAILG', 'F55 Mecha G2'),
+            ('TAILG-MIRROR-XC603', 'TAILG', 'F55L Litio Extraíble'),
+            ('TAILG-MIRROR-XC603', 'TAILG', 'Polaris Super S'),
+            ('TAILG-MIRROR-XC603', 'TAILG', 'Optimus Mecha G3'),
+            ('TAILG-MIRROR-XC603', 'TAILG', 'Master'),
+            ('TAILG-CHG-60V-3A-PORT', 'GREENLINE', 'M6'),
+            ('TAILG-CHG-60V-3A-PORT', 'GREENLINE', 'M5'),
+            ('TAILG-CHG-60V-3A-PORT', 'GREENLINE', 'E3'),
+            ('TAILG-CHG-60V-3A-PORT', 'GREENLINE', 'E5'),
+            ('GREENLINE-CHG-72V3A', 'GREENLINE', 'F6'),
+            ('GREENLINE-CHG-72V3A', 'GREENLINE', 'J4'),
+            ('GREENLINE-CHG-60V3A-TM8X', 'GREENLINE', 'TM8X'),
+            ('GREENLINE-CHG-60V3A-TM8X', 'GREENLINE', 'TM6X'),
+            ('GREENLINE-CHG-60V3A-TM8X', 'GREENLINE', 'H2'),
+            ('KAYEN-FENDER-IDO', 'KAYENCORP', 'Bicimoto IDO'),
+            ('KAYEN-BRAKE-PADS-MNK2', 'KAYENCORP', 'Moto MNK2')
+        ) AS t(part_key, marca, modelo)
+    LOOP
+        SELECT id_repuesto INTO v_id_repuesto
+        FROM repuestos
+        WHERE TRIM(part_key) = TRIM(r.part_key)
+        LIMIT 1;
+
+        IF v_id_repuesto IS NULL THEN
+            RAISE EXCEPTION '[SEED ECOMOTO] Referencia de repuesto faltante: part_key="%" (requerido para marca="%", modelo="%")',
+                r.part_key, r.marca, r.modelo;
+        END IF;
+
+        SELECT m.id_modelo INTO v_id_modelo
+        FROM modelos_moto m
+        JOIN marcas ma ON m.id_marca = ma.id_marca
+        WHERE UPPER(TRIM(ma.nombre)) = UPPER(TRIM(r.marca))
+          AND TRIM(m.nombre) = TRIM(r.modelo)
+        LIMIT 1;
+
+        IF v_id_modelo IS NULL THEN
+            RAISE EXCEPTION '[SEED ECOMOTO] Referencia de modelo faltante: marca="%", modelo="%" (requerido para repuesto part_key="%")',
+                r.marca, r.modelo, r.part_key;
+        END IF;
+    END LOOP;
+END $$;
 
 INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-CHG-48V3A-54V6'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'T7 Litio Extraíble'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-CHG-48V3A-54V6'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'T7 Litio Extraíble'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3140,8 +3263,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-CHG-48V3A-54V6'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'V10 Litio Extraíble'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-CHG-48V3A-54V6'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'V10 Litio Extraíble'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3163,8 +3286,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-CHG-48V3A-54V6'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'X51 Litio Extraíble'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-CHG-48V3A-54V6'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'X51 Litio Extraíble'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3186,8 +3309,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BAT-AMPACE-48V24'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'T7 Litio Extraíble'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BAT-AMPACE-48V24'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'T7 Litio Extraíble'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3209,8 +3332,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BAT-AMPACE-48V24'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'V10 Litio Extraíble'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BAT-AMPACE-48V24'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'V10 Litio Extraíble'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3232,8 +3355,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BAT-AMPACE-48V24'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'X51 Litio Extraíble'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BAT-AMPACE-48V24'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'X51 Litio Extraíble'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3255,8 +3378,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BAT-AMPACE-48V24'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'T5'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BAT-AMPACE-48V24'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'T5'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3278,8 +3401,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BAT-AMPACE-48V24'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'T3'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BAT-AMPACE-48V24'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'T3'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3301,8 +3424,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BAT-AMPACE-48V24'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'T24'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BAT-AMPACE-48V24'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'T24'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3324,8 +3447,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BAT-PHYLION-48V12-LMFP'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'LEDO Litio Extraíble LMFP'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BAT-PHYLION-48V12-LMFP'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'LEDO Litio Extraíble LMFP'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3347,8 +3470,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BAT-PHYLION-48V12-LMFP'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'VMP S4'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BAT-PHYLION-48V12-LMFP'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'VMP S4'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3370,8 +3493,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BAT-PHYLION-48V12-LMFP'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'VMP S2'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BAT-PHYLION-48V12-LMFP'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'VMP S2'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3393,8 +3516,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BAT-PHYLION-48V12-LMFP'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'VMP S2X'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BAT-PHYLION-48V12-LMFP'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'VMP S2X'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3416,8 +3539,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-CHG-LEDO-48V3A-59V'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'LEDO Litio Extraíble LMFP'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-CHG-LEDO-48V3A-59V'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'LEDO Litio Extraíble LMFP'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3439,8 +3562,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-CHG-F55L-60V5A-73V'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'F55L Litio Extraíble'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-CHG-F55L-60V5A-73V'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'F55L Litio Extraíble'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3462,8 +3585,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BAT-GREENWAY-64V30'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'F55L Litio Extraíble'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BAT-GREENWAY-64V30'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'F55L Litio Extraíble'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3485,8 +3608,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BOX-45L'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'F55 Mecha G2'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BOX-45L'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'F55 Mecha G2'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3508,8 +3631,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BOX-45L'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'F52 Mecha G1'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BOX-45L'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'F52 Mecha G1'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3531,8 +3654,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BOX-45L'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'F52 NEO'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BOX-45L'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'F52 NEO'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3554,8 +3677,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-BOX-45L'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'X9 Super S'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-BOX-45L'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'X9 Super S'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3577,8 +3700,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-WY261-8MM'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'X9 Super S'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-WY261-8MM'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'X9 Super S'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/producto/repuestos-y-accesorios-originales/espejos-retrovisores/espejo-tailg-8mm/',
@@ -3600,8 +3723,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-WY261-8MM'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'A1 Plus'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-WY261-8MM'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'A1 Plus'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/producto/repuestos-y-accesorios-originales/espejos-retrovisores/espejo-tailg-8mm/',
@@ -3623,8 +3746,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-WY261-8MM'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'V10 Litio Extraíble'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-WY261-8MM'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'V10 Litio Extraíble'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/producto/repuestos-y-accesorios-originales/espejos-retrovisores/espejo-tailg-8mm/',
@@ -3646,8 +3769,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-WY261-8MM'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'T7 Litio Extraíble'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-WY261-8MM'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'T7 Litio Extraíble'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/producto/repuestos-y-accesorios-originales/espejos-retrovisores/espejo-tailg-8mm/',
@@ -3669,8 +3792,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-WY261-8MM'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'Lion Max 2026'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-WY261-8MM'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'Lion Max 2026'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/producto/repuestos-y-accesorios-originales/espejos-retrovisores/espejo-tailg-8mm/',
@@ -3692,8 +3815,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-WY261-8MM'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'Polaris Super S'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-WY261-8MM'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'Polaris Super S'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/producto/repuestos-y-accesorios-originales/espejos-retrovisores/espejo-tailg-8mm/',
@@ -3715,8 +3838,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-WY261-8MM'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'Master'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-WY261-8MM'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'Master'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/producto/repuestos-y-accesorios-originales/espejos-retrovisores/espejo-tailg-8mm/',
@@ -3738,8 +3861,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-HJ182-8MM'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'X9 Super S'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-HJ182-8MM'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'X9 Super S'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/espejos-retrovisores/',
@@ -3761,8 +3884,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-HJ182-8MM'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'Leopard Pro Super S'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-HJ182-8MM'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'Leopard Pro Super S'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/espejos-retrovisores/',
@@ -3784,8 +3907,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-HJ182-8MM'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'A1 Plus'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-HJ182-8MM'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'A1 Plus'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/espejos-retrovisores/',
@@ -3807,8 +3930,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-XC603'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'F55 Mecha G2'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-XC603'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'F55 Mecha G2'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/espejos-retrovisores/',
@@ -3830,8 +3953,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-XC603'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'F55L Litio Extraíble'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-XC603'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'F55L Litio Extraíble'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/espejos-retrovisores/',
@@ -3853,8 +3976,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-XC603'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'Polaris Super S'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-XC603'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'Polaris Super S'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/espejos-retrovisores/',
@@ -3876,8 +3999,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-XC603'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'Optimus Mecha G3'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-XC603'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'Optimus Mecha G3'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/espejos-retrovisores/',
@@ -3899,8 +4022,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-MIRROR-XC603'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'TAILG' AND m.nombre = 'Master'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-MIRROR-XC603'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'TAILG' AND TRIM(m.nombre) = 'Master'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/espejos-retrovisores/',
@@ -3922,8 +4045,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-CHG-60V-3A-PORT'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'GREENLINE' AND m.nombre = 'M6'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-CHG-60V-3A-PORT'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'GREENLINE' AND TRIM(m.nombre) = 'M6'),
     'CONDICIONAL_FUENTE',
     'PENDIENTE',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3945,8 +4068,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-CHG-60V-3A-PORT'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'GREENLINE' AND m.nombre = 'M5'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-CHG-60V-3A-PORT'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'GREENLINE' AND TRIM(m.nombre) = 'M5'),
     'CONDICIONAL_FUENTE',
     'PENDIENTE',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3968,8 +4091,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-CHG-60V-3A-PORT'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'GREENLINE' AND m.nombre = 'E3'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-CHG-60V-3A-PORT'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'GREENLINE' AND TRIM(m.nombre) = 'E3'),
     'CONDICIONAL_FUENTE',
     'PENDIENTE',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -3991,8 +4114,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'TAILG-CHG-60V-3A-PORT'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'GREENLINE' AND m.nombre = 'E5'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'TAILG-CHG-60V-3A-PORT'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'GREENLINE' AND TRIM(m.nombre) = 'E5'),
     'CONDICIONAL_FUENTE',
     'PENDIENTE',
     'https://tailg.com.pe/motos/repuestos-y-accesorios-originales/',
@@ -4014,8 +4137,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'GREENLINE-CHG-72V3A'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'GREENLINE' AND m.nombre = 'F6'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'GREENLINE-CHG-72V3A'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'GREENLINE' AND TRIM(m.nombre) = 'F6'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://glperu.com/tienda/cargador-72v-3a-greenline/',
@@ -4037,8 +4160,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'GREENLINE-CHG-72V3A'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'GREENLINE' AND m.nombre = 'J4'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'GREENLINE-CHG-72V3A'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'GREENLINE' AND TRIM(m.nombre) = 'J4'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://glperu.com/tienda/cargador-72v-3a-greenline/',
@@ -4060,8 +4183,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'GREENLINE-CHG-60V3A-TM8X'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'GREENLINE' AND m.nombre = 'TM8X'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'GREENLINE-CHG-60V3A-TM8X'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'GREENLINE' AND TRIM(m.nombre) = 'TM8X'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://glperu.com/tienda/cargador-60v-3a-modelo-tm8x-tm6x-h2/',
@@ -4083,8 +4206,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'GREENLINE-CHG-60V3A-TM8X'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'GREENLINE' AND m.nombre = 'TM6X'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'GREENLINE-CHG-60V3A-TM8X'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'GREENLINE' AND TRIM(m.nombre) = 'TM6X'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://glperu.com/tienda/cargador-60v-3a-modelo-tm8x-tm6x-h2/',
@@ -4106,8 +4229,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'GREENLINE-CHG-60V3A-TM8X'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'GREENLINE' AND m.nombre = 'H2'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'GREENLINE-CHG-60V3A-TM8X'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'GREENLINE' AND TRIM(m.nombre) = 'H2'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://glperu.com/tienda/cargador-60v-3a-modelo-tm8x-tm6x-h2/',
@@ -4129,8 +4252,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'KAYEN-FENDER-IDO'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'KAYENCORP' AND m.nombre = 'Bicimoto IDO'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'KAYEN-FENDER-IDO'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'KAYENCORP' AND TRIM(m.nombre) = 'Bicimoto IDO'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://kayencorp.com/producto/guardafango-posterior-bicimoto-ido/',
@@ -4152,8 +4275,8 @@ INSERT INTO compatibilidades (
     id_repuesto, id_modelo, status, nivel_verificacion,
     source_url, evidence_note, verified_at, verified_by, observaciones
 ) VALUES (
-    (SELECT id_repuesto FROM repuestos WHERE part_key = 'KAYEN-BRAKE-PADS-MNK2'),
-    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE ma.nombre = 'KAYENCORP' AND m.nombre = 'Moto MNK2'),
+    (SELECT id_repuesto FROM repuestos WHERE TRIM(part_key) = 'KAYEN-BRAKE-PADS-MNK2'),
+    (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'KAYENCORP' AND TRIM(m.nombre) = 'Moto MNK2'),
     'CONFIRMADA_EN_FUENTE',
     'CONFIRMADA',
     'https://kayencorp.com/producto/pastillas-de-freno-moto-mnk2/',

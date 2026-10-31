@@ -114,23 +114,23 @@ export function RegisterForm() {
   if (emailConfirmationRequired) {
     return (
       <div className="space-y-5 text-center py-4">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-950/60 border border-cyan-800/80 text-cyan-400">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 border border-blue-200 text-blue-600">
           <Icon name="check-circle" className="w-8 h-8" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-xl font-bold text-white">¡Revisa tu correo electrónico!</h2>
-          <p className="text-sm text-slate-300 leading-relaxed">
+          <h2 className="text-xl font-bold text-gray-900">¡Revisa tu correo electrónico!</h2>
+          <p className="text-sm text-gray-600 leading-relaxed">
             Hemos enviado un enlace de confirmación a{' '}
-            <strong className="text-cyan-300">{email}</strong>.
+            <strong className="text-blue-600">{email}</strong>.
           </p>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-gray-500">
             Haz clic en el enlace para activar tu cuenta de cliente en NeroElectric Motors. Si no lo ves en unos minutos, revisa tu carpeta de spam.
           </p>
         </div>
         <div className="pt-3">
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-200 hover:bg-slate-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <span>Volver a Iniciar Sesión</span>
           </Link>

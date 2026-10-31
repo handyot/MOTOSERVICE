@@ -175,7 +175,7 @@ export function ProfileCard({ account }: ProfileCardProps) {
           </div>
         )}
 
-        {/* Acceso Especial para Administradores */}
+        {/* Aviso informativo para cuentas con rol administrativo */}
         {account.role === 'admin' && (
           <div className="mt-6 rounded-xl border border-amber-600/40 bg-amber-950/30 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -183,19 +183,21 @@ export function ProfileCard({ account }: ProfileCardProps) {
                 <Icon name="shield" className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white">Privilegios Administrativos Activos</h3>
+                <h3 className="text-sm font-bold text-white">Cuenta con Rol Administrativo</h3>
                 <p className="text-xs text-amber-200/80">
-                  Tu cuenta cuenta con el rol de administración de NeroElectric Motors verificado por base de datos.
+                  La gestión operativa se realiza desde el Portal Administrativo independiente de NeroElectric Motors.
                 </p>
               </div>
             </div>
-            <Link
-              href="/admin"
+            <a
+              href={process.env.NEXT_PUBLIC_ADMIN_PANEL_URL || 'https://panel.neroelectric.com'}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-amber-500 px-3.5 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400 transition-colors shrink-0"
             >
-              <span>Ir al Panel Admin</span>
+              <span>Abrir Portal Admin ↗</span>
               <Icon name="check-circle" className="w-3.5 h-3.5" />
-            </Link>
+            </a>
           </div>
         )}
       </div>

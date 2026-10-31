@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { AuthAccount, OrderStatus } from '../../types';
 import { signOutAction } from '../../lib/auth/actions';
 import { Icon } from '../ui/Icons';
 import { formatCurrency } from '../../lib/formatters.js';
 import { FEATURED_PARTS } from '../../lib/constants.js';
+import { CatalogImporterView, ImportHistoryRecord } from './CatalogImporterView';
 
 export interface AdminStats {
   totalMarcas: number;
@@ -66,6 +66,41 @@ export interface AdminSubscriptionRecord {
   origen: string;
 }
 
+export interface AdminBrandRecord {
+  id_marca: number;
+  nombre: string;
+  pais_origen?: string | null;
+  estado: boolean;
+}
+
+export interface AdminModelRecord {
+  id_modelo: number;
+  id_marca: number;
+  nombre: string;
+  voltaje_nominal_v?: number | null;
+  potencia_motor_w?: number | null;
+  estado: boolean;
+}
+
+export interface AdminPartRecord {
+  id_repuesto: number;
+  id_categoria: number;
+  codigo_sku: string;
+  nombre: string;
+  precio: number | string;
+  moneda: string;
+  estado: boolean;
+}
+
+export interface AdminCompatibilityRecord {
+  id_compatibilidad: number;
+  id_repuesto: number;
+  id_modelo: number;
+  es_compatible: boolean;
+  nivel_verificacion: string;
+  notas_tecnicas?: string | null;
+}
+
 interface AdminDashboardViewProps {
   account: AuthAccount;
   stats: AdminStats;
@@ -73,6 +108,11 @@ interface AdminDashboardViewProps {
   initialAssistance?: AdminAssistanceRecord[];
   initialDocuments?: AdminDocumentRecord[];
   initialSubscriptions?: AdminSubscriptionRecord[];
+  initialImportHistory?: ImportHistoryRecord[];
+  initialBrands?: AdminBrandRecord[];
+  initialModels?: AdminModelRecord[];
+  initialParts?: AdminPartRecord[];
+  initialCompatibilities?: AdminCompatibilityRecord[];
 }
 
 export function AdminDashboardView({
@@ -82,16 +122,47 @@ export function AdminDashboardView({
   initialAssistance = [],
   initialDocuments = [],
   initialSubscriptions = [],
+  initialImportHistory = [],
+  initialBrands = [],
+  initialModels = [],
+  initialParts = [],
+  initialCompatibilities = [],
 }: AdminDashboardViewProps) {
   const [activeModule, setActiveModule] = useState<
-    'resumen' | 'productos' | 'pedidos' | 'facturacion' | 'despacho' | 'clientes' | 'voltia' | 'promociones' | 'seguridad'
+    | 'resumen'
+    | 'catalogo_db'
+    | 'productos'
+    | 'pedidos'
+    | 'facturacion'
+    | 'despacho'
+    | 'clientes'
+    | 'voltia'
+    | 'promociones'
+    | 'importador'
   >('resumen');
 
   const [orders, setOrders] = useState<AdminOrderRecord[]>(initialOrders);
+  const [brands, setBrands] = useState<AdminBrandRecord[]>(initialBrands);
+  const [models, setModels] = useState<AdminModelRecord[]>(initialModels);
+  const [parts] = useState<AdminPartRecord[]>(initialParts);
+  const [compatibilities] = useState<AdminCompatibilityRecord[]>(
+    initialCompatibilities
+  );
+
   const [statusFeedback, setStatusFeedback] = useState<string | null>(null);
   const [isUpdatingOrder, setIsUpdatingOrder] = useState<string | null>(null);
 
-  // Inventario local verificado vs catálogo de proveedor
+  // Estado para formulario rápido de Marcas / Modelos / Compatibilidades
+  const [newBrandName, setNewBrandName] = useState('');
+  const [newModelBrandId, setNewModelBrandId] = useState(
+    initialBrands[0]?.id_marca ? String(initialBrands[0].id_marca) : '1'
+  );
+  const [newModelName, setNewModelName] = useState('');
+  const [newModelVoltage, setNewModelVoltage] = useState('72');
+  const [newModelPower] = useState('2000');
+
+  const storefrontUrl = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://neroelectric.com';
+
   const ownProducts = FEATURED_PARTS.map((p) => ({
     ...p,
     ownStock: 15,
@@ -125,6 +196,63 @@ export function AdminDashboardView({
     }
   };
 
+  const handleCreateBrand = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBrandName.trim()) return;
+    try {
+      const res = await fetch('/api/admin/catalog/manage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entity: 'marcas',
+          operation: 'create',
+          payload: { nombre: newBrandName.trim(), pais_origen: 'China' },
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.record) {
+        setBrands((prev) => [...prev, data.record]);
+        setNewBrandName('');
+        setStatusFeedback(`Marca «${data.record.nombre}» registrada correctamente.`);
+      } else {
+        setStatusFeedback(`Aviso: ${data.error || 'No se pudo crear la marca'}`);
+      }
+    } catch {
+      setStatusFeedback('Error conectando con el servidor administrativo.');
+    }
+  };
+
+  const handleCreateModel = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newModelName.trim()) return;
+    try {
+      const res = await fetch('/api/admin/catalog/manage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entity: 'modelos_moto',
+          operation: 'create',
+          payload: {
+            id_marca: Number(newModelBrandId),
+            nombre: newModelName.trim(),
+            voltaje_nominal_v: Number(newModelVoltage),
+            potencia_motor_w: Number(newModelPower),
+          },
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.record) {
+        setModels((prev) => [data.record, ...prev]);
+        setNewModelName('');
+        setStatusFeedback(`Modelo «${data.record.nombre}» registrado correctamente.`);
+      } else {
+        setStatusFeedback(`Aviso: ${data.error || 'No se pudo crear el modelo'}`);
+      }
+    } catch {
+      setStatusFeedback('Error conectando con el servidor administrativo.');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header Administrativo */}
@@ -135,10 +263,10 @@ export function AdminDashboardView({
               <Icon name="shield" className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl font-bold text-white">Panel Operativo NeroElectric Motors</h1>
                 <span className="rounded bg-amber-900/60 border border-amber-700/60 px-2 py-0.5 text-[11px] font-bold text-amber-300 uppercase tracking-wider">
-                  Admin Privado
+                  Rol: {account.role.toUpperCase()} Verificado
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -148,16 +276,20 @@ export function AdminDashboardView({
           </div>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/cuenta"
-              className="rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-200 hover:text-white hover:bg-slate-700 transition-colors"
-            >
-              Vista de Cliente
-            </Link>
+            {storefrontUrl && (
+              <a
+                href={storefrontUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-200 hover:text-white hover:bg-slate-700 transition-colors"
+              >
+                Abrir Tienda Pública ↗
+              </a>
+            )}
             <form action={signOutAction}>
               <button
                 type="submit"
-                className="rounded-lg border border-rose-900/50 bg-rose-950/30 px-3 py-1.5 text-xs font-medium text-rose-300 hover:bg-rose-900/50 transition-colors flex items-center gap-1.5"
+                className="rounded-lg border border-rose-900/50 bg-rose-950/30 px-3 py-1.5 text-xs font-medium text-rose-300 hover:bg-rose-900/50 transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 <Icon name="x" className="w-3.5 h-3.5" />
                 <span>Cerrar Sesión</span>
@@ -166,9 +298,8 @@ export function AdminDashboardView({
           </div>
         </div>
 
-        {/* Notificación de feedback */}
         {statusFeedback && (
-          <div className="mt-4 rounded-xl bg-slate-950 border border-amber-500/40 p-3 text-xs text-amber-300 font-semibold animate-in fade-in flex items-center justify-between">
+          <div className="mt-4 rounded-xl bg-slate-950 border border-amber-500/40 p-3 text-xs text-amber-300 font-semibold flex items-center justify-between">
             <span>{statusFeedback}</span>
             <button onClick={() => setStatusFeedback(null)} className="text-slate-400 hover:text-white">✕</button>
           </div>
@@ -185,12 +316,20 @@ export function AdminDashboardView({
             A. Resumen Operativo
           </button>
           <button
+            onClick={() => setActiveModule('catalogo_db')}
+            className={`rounded-lg px-3 py-1.5 transition-colors ${
+              activeModule === 'catalogo_db' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+            }`}
+          >
+            B. Marcas, Modelos, Repuestos y Compatibilidades
+          </button>
+          <button
             onClick={() => setActiveModule('productos')}
             className={`rounded-lg px-3 py-1.5 transition-colors ${
               activeModule === 'productos' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
-            B. Inventario Propio vs Proveedor
+            C. Inventario Propio vs Proveedor
           </button>
           <button
             onClick={() => setActiveModule('pedidos')}
@@ -198,7 +337,7 @@ export function AdminDashboardView({
               activeModule === 'pedidos' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
-            C. Pedidos ({orders.length})
+            D. Pedidos ({orders.length})
           </button>
           <button
             onClick={() => setActiveModule('facturacion')}
@@ -206,7 +345,7 @@ export function AdminDashboardView({
               activeModule === 'facturacion' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
-            D. Boletas & Facturas SUNAT
+            E. Boletas & Facturas SUNAT
           </button>
           <button
             onClick={() => setActiveModule('despacho')}
@@ -214,7 +353,7 @@ export function AdminDashboardView({
               activeModule === 'despacho' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
-            E. Despachos y Guías
+            F. Despachos y Guías
           </button>
           <button
             onClick={() => setActiveModule('clientes')}
@@ -222,7 +361,7 @@ export function AdminDashboardView({
               activeModule === 'clientes' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
-            F. Clientes & Invitados
+            G. Clientes & Invitados
           </button>
           <button
             onClick={() => setActiveModule('voltia')}
@@ -230,7 +369,7 @@ export function AdminDashboardView({
               activeModule === 'voltia' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
-            G. VoltIA & Asistencia Técnica
+            H. VoltIA & Asistencia Técnica
           </button>
           <button
             onClick={() => setActiveModule('promociones')}
@@ -238,7 +377,15 @@ export function AdminDashboardView({
               activeModule === 'promociones' ? 'bg-amber-500 text-slate-950 shadow' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
-            H. Promociones (5%)
+            I. Promociones (5%)
+          </button>
+          <button
+            onClick={() => setActiveModule('importador')}
+            className={`rounded-lg px-3 py-1.5 transition-colors ${
+              activeModule === 'importador' ? 'bg-amber-500 text-slate-950 shadow font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+            }`}
+          >
+            J. Importador Catálogos (CSV/JSON)
           </button>
         </div>
       </div>
@@ -254,17 +401,17 @@ export function AdminDashboardView({
               <span className="text-2xl font-black text-white mt-1 block">
                 {stats.totalMarcas} / {stats.totalModelos}
               </span>
-              <span className="text-[11px] text-cyan-400 mt-1 block">Catálogo base sincronizado</span>
+              <span className="text-[11px] text-cyan-400 mt-1 block">Catálogo base en Supabase</span>
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
               <span className="block text-xs font-medium text-slate-400 uppercase tracking-wider">
-                Repuestos en Venta Directa
+                Repuestos / Compatibilidades
               </span>
               <span className="text-2xl font-black text-emerald-400 mt-1 block">
-                {ownProducts.length}
+                {stats.totalRepuestos} / {stats.totalCompatibilidades}
               </span>
-              <span className="text-[11px] text-emerald-400 mt-1 block">Con stock propio confirmado</span>
+              <span className="text-[11px] text-emerald-400 mt-1 block">Sincronizados con Tienda Pública</span>
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
@@ -289,21 +436,21 @@ export function AdminDashboardView({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-3">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-3">
               <h3 className="font-bold text-white text-sm">Estado de Pasarela Culqi 3DS</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                El adaptador de cobros calcula los montos autorizados estrictamente en el servidor en céntimos (PEN). Las transacciones en local se ejecutan en modo de pruebas verificado con soporte de 3DS y procesamiento de webhooks idempotente.
+                El adaptador de cobros calcula los montos autorizados estrictamente en el servidor en céntimos (PEN). Las transacciones se ejecutan con soporte de 3DS y procesamiento de webhooks idempotente.
               </p>
               <div className="pt-2 flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
-                <span className="text-xs font-bold text-emerald-300">Adaptador Culqi 3DS Activo (Pruebas)</span>
+                <span className="text-xs font-bold text-emerald-300">Adaptador Culqi 3DS Activo</span>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-3">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-3">
               <h3 className="font-bold text-white text-sm">Facturador Electrónico SUNAT</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Los comprobantes se estructuran automáticamente en Boletas (DNI 8 dígitos) y Facturas (RUC 11 dígitos con IGV desglosado 18%). La emisión oficial hacia el SEE-OSE se encuentra preparada a la espera del certificado digital tributario.
+                Los comprobantes se estructuran automáticamente en Boletas (DNI 8 dígitos) y Facturas (RUC 11 dígitos con IGV desglosado 18%). Emisión oficial hacia SEE-OSE preparada.
               </p>
               <div className="pt-2 flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-amber-400"></span>
@@ -314,9 +461,154 @@ export function AdminDashboardView({
         </div>
       )}
 
-      {/* MÓDULO B: Inventario Propio vs Proveedor */}
+      {/* MÓDULO B: Gestión de Catálogo Base (Marcas, Modelos, Repuestos y Compatibilidades) */}
+      {activeModule === 'catalogo_db' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Marcas */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                  <h2 className="text-sm font-bold text-white">Marcas Homologadas ({brands.length})</h2>
+                  <p className="text-[11px] text-slate-400">Tabla: <code className="text-cyan-400">public.marcas</code></p>
+                </div>
+              </div>
+
+              <form onSubmit={handleCreateBrand} className="flex gap-2">
+                <input
+                  type="text"
+                  value={newBrandName}
+                  onChange={(e) => setNewBrandName(e.target.value)}
+                  placeholder="Nueva marca (ej. NIU)"
+                  className="flex-1 rounded-lg bg-slate-950 border border-slate-800 px-3 py-1.5 text-xs text-white"
+                />
+                <button
+                  type="submit"
+                  className="rounded-lg bg-amber-500 hover:bg-amber-400 px-3 py-1.5 text-xs font-bold text-slate-950"
+                >
+                  + Agregar Marca
+                </button>
+              </form>
+
+              <div className="max-h-56 overflow-y-auto divide-y divide-slate-800/60 text-xs">
+                {brands.map((b) => (
+                  <div key={b.id_marca} className="py-2 flex items-center justify-between">
+                    <span className="font-bold text-white">{b.nombre}</span>
+                    <span className="text-slate-400 font-mono text-[11px]">
+                      ID #{b.id_marca} • {b.estado ? 'Activa' : 'Inactiva'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Modelos */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                  <h2 className="text-sm font-bold text-white">Modelos de Motos Eléctricas ({models.length} mostrados)</h2>
+                  <p className="text-[11px] text-slate-400">Tabla: <code className="text-cyan-400">public.modelos_moto</code></p>
+                </div>
+              </div>
+
+              <form onSubmit={handleCreateModel} className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <select
+                  value={newModelBrandId}
+                  onChange={(e) => setNewModelBrandId(e.target.value)}
+                  className="rounded-lg bg-slate-950 border border-slate-800 px-2 py-1.5 text-white"
+                >
+                  {brands.map((b) => (
+                    <option key={b.id_marca} value={b.id_marca}>
+                      {b.nombre}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  value={newModelName}
+                  onChange={(e) => setNewModelName(e.target.value)}
+                  placeholder="Modelo (ej. F55)"
+                  className="rounded-lg bg-slate-950 border border-slate-800 px-2 py-1.5 text-white"
+                />
+                <input
+                  type="number"
+                  value={newModelVoltage}
+                  onChange={(e) => setNewModelVoltage(e.target.value)}
+                  placeholder="Voltaje V"
+                  className="rounded-lg bg-slate-950 border border-slate-800 px-2 py-1.5 text-white"
+                />
+                <button
+                  type="submit"
+                  className="rounded-lg bg-amber-500 hover:bg-amber-400 px-3 py-1.5 font-bold text-slate-950"
+                >
+                  + Modelo
+                </button>
+              </form>
+
+              <div className="max-h-56 overflow-y-auto divide-y divide-slate-800/60 text-xs">
+                {models.map((m) => (
+                  <div key={m.id_modelo} className="py-2 flex items-center justify-between">
+                    <span className="font-semibold text-white">{m.nombre}</span>
+                    <span className="text-cyan-400 font-mono text-[11px]">
+                      {m.voltaje_nominal_v ? `${m.voltaje_nominal_v}V` : 'S/V'} •{' '}
+                      {m.potencia_motor_w ? `${m.potencia_motor_w}W` : 'S/W'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Repuestos y Compatibilidades en Base de Datos */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 space-y-3">
+              <h2 className="text-sm font-bold text-white">
+                Repuestos Registrados en PostgreSQL ({parts.length} recientes)
+              </h2>
+              <div className="max-h-64 overflow-y-auto divide-y divide-slate-800/60 text-xs">
+                {parts.map((p) => (
+                  <div key={p.id_repuesto} className="py-2 flex items-center justify-between gap-2">
+                    <div>
+                      <span className="font-mono text-cyan-400 text-[11px] block">{p.codigo_sku}</span>
+                      <span className="text-white font-semibold">{p.nombre}</span>
+                    </div>
+                    <span className="font-bold text-emerald-400 shrink-0">
+                      {formatCurrency(Number(p.precio), p.moneda || 'PEN')}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 space-y-3">
+              <h2 className="text-sm font-bold text-white">
+                Matriz de Compatibilidades Técnicas ({compatibilities.length} recientes)
+              </h2>
+              <div className="max-h-64 overflow-y-auto divide-y divide-slate-800/60 text-xs">
+                {compatibilities.map((c) => (
+                  <div key={c.id_compatibilidad} className="py-2 flex items-center justify-between gap-2">
+                    <div>
+                      <span className="text-white font-mono">
+                        Repuesto #{c.id_repuesto} ↔ Modelo #{c.id_modelo}
+                      </span>
+                      {c.notas_tecnicas && (
+                        <span className="block text-[11px] text-slate-400">{c.notas_tecnicas}</span>
+                      )}
+                    </div>
+                    <span className="rounded bg-emerald-950 border border-emerald-800 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                      {c.nivel_verificacion}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MÓDULO C: Inventario Propio vs Proveedor */}
       {activeModule === 'productos' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
             <div>
               <h2 className="text-base font-bold text-white">Gestión de Inventario: Venta Directa vs Consulta Externa</h2>
@@ -365,9 +657,9 @@ export function AdminDashboardView({
         </div>
       )}
 
-      {/* MÓDULO C: Pedidos y Transiciones de Estado */}
+      {/* MÓDULO D: Pedidos y Transiciones de Estado */}
       {activeModule === 'pedidos' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
             <div>
               <h2 className="text-base font-bold text-white">Bandeja de Pedidos y Ciclo de Compra</h2>
@@ -400,9 +692,7 @@ export function AdminDashboardView({
                   {orders.map((o) => (
                     <tr key={o.id_pedido} className="hover:bg-slate-900/50">
                       <td className="p-3 font-mono font-bold text-cyan-400">
-                        <Link href={`/pedido/${o.id_pedido}`} className="underline hover:text-cyan-300">
-                          {o.numero_pedido}
-                        </Link>
+                        {o.numero_pedido}
                       </td>
                       <td className="p-3">
                         <span className="font-bold text-white block">{o.cliente_nombre}</span>
@@ -461,9 +751,9 @@ export function AdminDashboardView({
         </div>
       )}
 
-      {/* MÓDULO D: Boletas y Facturas Electrónicas */}
+      {/* MÓDULO E: Boletas y Facturas Electrónicas */}
       {activeModule === 'facturacion' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
           <div className="border-b border-slate-800 pb-3">
             <h2 className="text-base font-bold text-white">Comprobantes de Pago Electrónicos (SUNAT SEE-OSE)</h2>
             <p className="text-xs text-slate-400">
@@ -472,7 +762,7 @@ export function AdminDashboardView({
           </div>
 
           <div className="rounded-xl border border-amber-800/40 bg-amber-950/20 p-4 text-xs text-amber-200">
-            <strong>Estado del Proveedor Fiscal:</strong> Adaptador estructurado para SEE-OSE / Facturador SUNAT. Pendiente de certificado digital tributario y credenciales SOL en producción. Los comprobantes se emiten en serie correlativa preliminar (B001 / F001).
+            <strong>Estado del Proveedor Fiscal:</strong> Adaptador estructurado para SEE-OSE / Facturador SUNAT. Los comprobantes se emiten en serie correlativa (B001 / F001).
           </div>
 
           {initialDocuments.length === 0 ? (
@@ -514,9 +804,9 @@ export function AdminDashboardView({
         </div>
       )}
 
-      {/* MÓDULO E: Despacho y Guías */}
+      {/* MÓDULO F: Despacho y Guías */}
       {activeModule === 'despacho' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
           <div className="border-b border-slate-800 pb-3">
             <h2 className="text-base font-bold text-white">Logística, Envíos y Guías de Remisión</h2>
             <p className="text-xs text-slate-400">
@@ -544,38 +834,42 @@ export function AdminDashboardView({
         </div>
       )}
 
-      {/* MÓDULO F: Clientes e Invitados */}
+      {/* MÓDULO G: Clientes e Invitados */}
       {activeModule === 'clientes' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
           <div className="border-b border-slate-800 pb-3">
             <h2 className="text-base font-bold text-white">Control de Compradores (Invitados y Registrados)</h2>
             <p className="text-xs text-slate-400">
-              Datos protegidos contra exposición indiscriminada; solo accesibles con autorización administrativa.
+              Datos protegidos mediante RLS; solo accesibles con autorización administrativa verificada.
             </p>
           </div>
 
           <div className="divide-y divide-slate-800 text-xs">
-            {orders.map((o) => (
-              <div key={o.id_pedido} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <span className="font-bold text-white text-sm">{o.cliente_nombre}</span>
-                  <span className="text-slate-400 block">{o.cliente_email} • {o.cliente_telefono || 'Sin teléfono'}</span>
-                  <span className="text-[10px] text-slate-500 font-mono">Doc: {o.doc_numero} ({o.tipo_comprobante})</span>
+            {orders.length === 0 ? (
+              <p className="text-slate-500 py-4">Sin registros de compradores en órdenes recientes.</p>
+            ) : (
+              orders.map((o) => (
+                <div key={o.id_pedido} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <span className="font-bold text-white text-sm">{o.cliente_nombre}</span>
+                    <span className="text-slate-400 block">{o.cliente_email} • {o.cliente_telefono || 'Sin teléfono'}</span>
+                    <span className="text-[10px] text-slate-500 font-mono">Doc: {o.doc_numero} ({o.tipo_comprobante})</span>
+                  </div>
+                  <div>
+                    <span className={`rounded px-2 py-0.5 text-[10px] font-bold ${o.es_invitado ? 'bg-slate-900 text-slate-400 border border-slate-800' : 'bg-cyan-950 text-cyan-400 border border-cyan-800'}`}>
+                      {o.es_invitado ? 'Comprador Invitado' : 'Cliente con Cuenta'}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className={`rounded px-2 py-0.5 text-[10px] font-bold ${o.es_invitado ? 'bg-slate-900 text-slate-400 border border-slate-800' : 'bg-cyan-950 text-cyan-400 border border-cyan-800'}`}>
-                    {o.es_invitado ? 'Comprador Invitado' : 'Cliente con Cuenta'}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}
 
-      {/* MÓDULO G: VoltIA & Asistencia Técnica */}
+      {/* MÓDULO H: VoltIA & Asistencia Técnica */}
       {activeModule === 'voltia' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
           <div className="border-b border-slate-800 pb-3">
             <h2 className="text-base font-bold text-white">Bandeja de Asistencia Técnica y Cotizaciones de VoltIA</h2>
             <p className="text-xs text-slate-400">
@@ -603,9 +897,9 @@ export function AdminDashboardView({
         </div>
       )}
 
-      {/* MÓDULO H: Promociones */}
+      {/* MÓDULO I: Promociones */}
       {activeModule === 'promociones' && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 space-y-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
           <div className="border-b border-slate-800 pb-3">
             <h2 className="text-base font-bold text-white">Promociones Comerciales y Consentimiento Newsletter</h2>
             <p className="text-xs text-slate-400">
@@ -635,6 +929,11 @@ export function AdminDashboardView({
             </div>
           </div>
         </div>
+      )}
+
+      {/* MÓDULO J: Importador Central de Catálogos (CSV / JSON) */}
+      {activeModule === 'importador' && (
+        <CatalogImporterView initialHistory={initialImportHistory} />
       )}
     </div>
   );

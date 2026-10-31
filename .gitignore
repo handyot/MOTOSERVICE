@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/admin-panel/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -16,9 +17,12 @@
 # next.js
 /.next/
 /out/
+/admin-panel/.next/
+/admin-panel/out/
 
 # production
 /build
+/admin-panel/build
 
 # misc
 .DS_Store
@@ -33,10 +37,26 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 .env.local
+admin-panel/.env*
+admin-panel/.env.local
+!.env.example
+!admin-panel/.env.example
 
 # vercel
 .vercel
+admin-panel/.vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+admin-panel/next-env.d.ts
+
+# scraped raw catalogs (manual extraction)
+/JSON DEL SCRAPS/*.json
+/JSON DEL SCRAPS/*.csv
+/JSON DEL SCRAPS/*.JSON
+/JSON DEL SCRAPS/*.CSV
+!/JSON DEL SCRAPS/README.md
+
+# local import simulation reports
+/reports/*.json
