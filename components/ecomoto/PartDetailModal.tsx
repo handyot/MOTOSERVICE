@@ -41,30 +41,44 @@ export function PartDetailModal({ part, onClose, onSelectMotoSlug }: PartDetailM
 
         {/* Cabecera */}
         <div className="border-b border-gray-200 pb-5 pr-8">
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
-              {part.brand} Oficial
-            </span>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
-              Categoría: {part.category}
-            </span>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
-              Clave: {part.partKey}
-            </span>
-          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {part.imageUrl && (
+              <div className="h-24 w-28 shrink-0 rounded-xl border border-gray-200 bg-gray-50 p-2 flex items-center justify-center overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={part.imageUrl}
+                  alt={part.name}
+                  className="h-full w-full object-contain"
+                />
+              </div>
+            )}
+            <div className="flex-1">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+                  {part.brand} Oficial
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+                  Categoría: {part.category}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                  Clave: {part.partKey}
+                </span>
+              </div>
 
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-            {part.name}
-          </h2>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                {part.name}
+              </h2>
 
-          <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-gray-500">
-            <div className="flex items-center gap-1.5 text-gray-700">
-              <Building2 className="w-4 h-4 text-blue-600" />
-              <span>Proveedor Oficial: <strong>{part.supplier}</strong></span>
-            </div>
-            <div className="flex items-center gap-1 text-gray-400">
-              <Clock className="w-3.5 h-3.5" />
-              <span>Fecha de consulta: {part.sourceCheckedOn || '2026-10-30'}</span>
+              <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-gray-500">
+                <div className="flex items-center gap-1.5 text-gray-700">
+                  <Building2 className="w-4 h-4 text-blue-600" />
+                  <span>Proveedor Oficial: <strong>{part.supplier}</strong></span>
+                </div>
+                <div className="flex items-center gap-1 text-gray-400">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Fecha de consulta: {part.sourceCheckedOn || '2026-10-30'}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -270,6 +270,7 @@ export interface SupplierPart {
   sourceCheckedOn?: string;
   dataStatus: DataStatus;
   notes?: string;
+  imageUrl?: string;
   ownStock?: number;
   ownPricePen?: number;
 }

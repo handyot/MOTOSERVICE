@@ -47,6 +47,7 @@ export async function POST(request: Request) {
       const nombre = String(payload?.nombre || '').trim();
       const voltaje = payload?.voltaje_nominal_v ? Number(payload.voltaje_nominal_v) : null;
       const potencia = payload?.potencia_motor_w ? Number(payload.potencia_motor_w) : null;
+      const imagenUrl = payload?.imagen_url ? String(payload.imagen_url).trim() : null;
 
       if (!idMarca || !nombre) {
         return NextResponse.json(
@@ -62,6 +63,7 @@ export async function POST(request: Request) {
           nombre,
           voltaje_nominal_v: voltaje,
           potencia_motor_w: potencia,
+          imagen_url: imagenUrl,
           estado: true,
         })
         .select('*')
@@ -78,6 +80,7 @@ export async function POST(request: Request) {
       const codigoSku = String(payload?.codigo_sku || '').trim();
       const nombre = String(payload?.nombre || '').trim();
       const precio = Number(payload?.precio || 0);
+      const imagenUrl = payload?.imagen_url ? String(payload.imagen_url).trim() : null;
 
       if (!codigoSku || !nombre) {
         return NextResponse.json(
@@ -94,6 +97,7 @@ export async function POST(request: Request) {
           nombre,
           precio: precio >= 0 ? precio : 0,
           moneda: 'PEN',
+          imagen_url: imagenUrl,
           estado: true,
         })
         .select('*')
@@ -123,9 +127,8 @@ export async function POST(request: Request) {
         .insert({
           id_repuesto: idRepuesto,
           id_modelo: idModelo,
-          es_compatible: nivelVerificacion !== 'NO_COMPATIBLE',
           nivel_verificacion: nivelVerificacion,
-          notas_tecnicas: notasTecnicas,
+          observaciones: notasTecnicas,
         })
         .select('*')
         .single();
@@ -133,7 +136,14 @@ export async function POST(request: Request) {
       if (error) {
         return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
-      return NextResponse.json({ success: true, record: data });
+      return NextResponse.json({
+        success: true,
+        record: {
+          ...data,
+          es_compatible: nivelVerificacion !== 'NO_COMPATIBLE',
+          notas_tecnicas: data.observaciones || notasTecnicas,
+        },
+      });
     }
 
     return NextResponse.json(

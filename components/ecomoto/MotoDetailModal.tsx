@@ -269,9 +269,22 @@ export function MotoDetailModal({ moto, onClose, onSelectPart }: MotoDetailModal
                       </span>
                     </div>
 
-                    <h4 className="text-sm sm:text-base font-bold text-gray-900 mb-1">
-                      {part.name}
-                    </h4>
+                    <div className="flex items-center gap-3 mb-1">
+                      {part.imageUrl && (
+                        <div className="h-12 w-14 shrink-0 rounded-lg border border-gray-200 bg-gray-50 p-1 flex items-center justify-center overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={part.imageUrl}
+                            alt={part.name}
+                            className="h-full w-full object-contain"
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+                      <h4 className="text-sm sm:text-base font-bold text-gray-900">
+                        {part.name}
+                      </h4>
+                    </div>
 
                     {/* Precios y stock */}
                     <div className="flex items-baseline justify-between text-xs mt-2 pt-2 border-t border-gray-100">

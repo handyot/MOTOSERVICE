@@ -360,3 +360,41 @@ test('12. Integridad referencial y normalización de marcas en seed SQL EcoMoto 
     assert.ok(idMod, `Compatibilidad #${idx + 1}: id_modelo no nulo para marca="${brand}", modelo="${model}"`);
   });
 });
+
+test('13. Cobertura del 100% de imágenes reales (.webp) en los 52 modelos, 19 repuestos y operaciones del importador', () => {
+  const ecomotoSrc = fs.readFileSync('data/ecomoto-data.ts', 'utf8');
+  const motosMatch = ecomotoSrc.match(/export const OFFICIAL_MOTOS: MotoModel\[\] = (\[[\s\S]*?\]);\n\nexport const OFFICIAL_PARTS/);
+  const partsMatch = ecomotoSrc.match(/export const OFFICIAL_PARTS: SupplierPart\[\] = (\[[\s\S]*?\]);\n\nexport const OFFICIAL_COMPATIBILITIES/);
+
+  assert.ok(motosMatch, 'Debe existir OFFICIAL_MOTOS en data/ecomoto-data.ts');
+  assert.ok(partsMatch, 'Debe existir OFFICIAL_PARTS en data/ecomoto-data.ts');
+
+  const motos = JSON.parse(motosMatch[1]);
+  const parts = JSON.parse(partsMatch[1]);
+
+  assert.equal(motos.length, 52);
+  assert.equal(parts.length, 19);
+
+  for (const m of motos) {
+    assert.ok(
+      typeof m.imageUrl === 'string' && m.imageUrl.endsWith('.webp'),
+      `El modelo ${m.slug} debe tener una URL de imagen .webp real`
+    );
+  }
+
+  for (const p of parts) {
+    assert.ok(
+      typeof p.imageUrl === 'string' && p.imageUrl.endsWith('.webp'),
+      `El repuesto ${p.partKey} debe tener una URL de imagen .webp real`
+    );
+  }
+
+  const migrationSql = fs.readFileSync(
+    'supabase/migrations/20261031150000_modelos_y_repuestos_imagenes_reales.sql',
+    'utf8'
+  );
+  assert.ok(
+    migrationSql.includes('ADD COLUMN IF NOT EXISTS imagen_url TEXT'),
+    'La migración debe añadir imagen_url a public.modelos_moto'
+  );
+});

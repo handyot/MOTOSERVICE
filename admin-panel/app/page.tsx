@@ -31,19 +31,19 @@ export default async function AdminHomePage() {
       .order('id_marca', { ascending: true }),
     supabase
       .from('modelos_moto')
-      .select('id_modelo, id_marca, nombre, voltaje_nominal_v, potencia_motor_w, estado', { count: 'exact' })
+      .select('id_modelo, id_marca, nombre, voltaje_nominal_v, potencia_motor_w, imagen_url, estado', { count: 'exact' })
       .order('id_modelo', { ascending: false })
-      .limit(30),
+      .limit(100),
     supabase
       .from('repuestos')
-      .select('id_repuesto, id_categoria, codigo_sku, nombre, precio, moneda, estado', { count: 'exact' })
+      .select('id_repuesto, id_categoria, codigo_sku, nombre, precio, moneda, imagen_url, estado', { count: 'exact' })
       .order('id_repuesto', { ascending: false })
-      .limit(30),
+      .limit(100),
     supabase
       .from('compatibilidades')
-      .select('id_compatibilidad, id_repuesto, id_modelo, es_compatible, nivel_verificacion, notas_tecnicas', { count: 'exact' })
+      .select('id_compatibilidad, id_repuesto, id_modelo, nivel_verificacion, observaciones, status, evidence_note', { count: 'exact' })
       .order('id_compatibilidad', { ascending: false })
-      .limit(30),
+      .limit(100),
     supabase.from('pedidos').select('*').order('created_at', { ascending: false }).limit(20),
     supabase.from('solicitudes_asistencia').select('*').order('created_at', { ascending: false }).limit(20),
     supabase.from('documentos_fiscales').select('*').order('created_at', { ascending: false }).limit(20),
@@ -58,6 +58,15 @@ export default async function AdminHomePage() {
     totalCompatibilidades: countCompat ?? 0,
   };
 
+  const normalizedCompatibilities = (compatData || []).map((c) => ({
+    id_compatibilidad: c.id_compatibilidad,
+    id_repuesto: c.id_repuesto,
+    id_modelo: c.id_modelo,
+    es_compatible: c.status !== 'NO_COMPATIBLE',
+    nivel_verificacion: c.nivel_verificacion || c.status || 'CONFIRMADA',
+    notas_tecnicas: c.evidence_note || c.observaciones || null,
+  }));
+
   return (
     <AdminDashboardView
       account={account}
@@ -70,7 +79,7 @@ export default async function AdminHomePage() {
       initialBrands={brandsData || []}
       initialModels={modelsData || []}
       initialParts={partsData || []}
-      initialCompatibilities={compatData || []}
+      initialCompatibilities={normalizedCompatibilities}
     />
   );
 }

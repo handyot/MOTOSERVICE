@@ -360,6 +360,16 @@ export function EcoMotoCatalogSection() {
                     className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col justify-between hover:border-gray-300 hover:shadow-xs transition-all"
                   >
                     <div>
+                      <div className="relative h-40 w-full mb-3.5 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center p-3">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={part.imageUrl || '/images/motos/placeholder-ev-moto.svg'}
+                          alt={part.name}
+                          className="h-full w-full object-contain transition-transform duration-300 hover:scale-105"
+                          loading="lazy"
+                        />
+                      </div>
+
                       <div className="flex items-center justify-between gap-2 mb-2">
                         <span className="text-xs font-bold text-blue-600 uppercase">
                           {part.brand}
