@@ -123,6 +123,10 @@ export function CompatibilityFinder({ onFilterChange }: FinderProps) {
               <option value="ESPEJO">Espejos Retrovisores</option>
               <option value="CARROCERIA">Carrocería y Carenado</option>
               <option value="FRENOS">Sistemas de Frenos</option>
+              <option value="LLANTA">Llantas y Aros</option>
+              <option value="ELECTRICO">Sistema Eléctrico y Motor</option>
+              <option value="SUSPENSION">Suspensión</option>
+              <option value="CHASIS">Chasis y Timón</option>
             </select>
           </div>
 

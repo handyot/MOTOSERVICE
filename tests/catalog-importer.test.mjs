@@ -361,7 +361,7 @@ test('12. Integridad referencial y normalización de marcas en seed SQL EcoMoto 
   });
 });
 
-test('13. Cobertura del 100% de imágenes reales (.webp) en los 52 modelos, 19 repuestos y operaciones del importador', () => {
+test('13. Cobertura del 100% de imágenes reales en los 52 modelos, 173 repuestos y operaciones del importador', () => {
   const ecomotoSrc = fs.readFileSync('data/ecomoto-data.ts', 'utf8');
   const motosMatch = ecomotoSrc.match(/export const OFFICIAL_MOTOS: MotoModel\[\] = (\[[\s\S]*?\]);\n\nexport const OFFICIAL_PARTS/);
   const partsMatch = ecomotoSrc.match(/export const OFFICIAL_PARTS: SupplierPart\[\] = (\[[\s\S]*?\]);\n\nexport const OFFICIAL_COMPATIBILITIES/);
@@ -373,7 +373,9 @@ test('13. Cobertura del 100% de imágenes reales (.webp) en los 52 modelos, 19 r
   const parts = JSON.parse(partsMatch[1]);
 
   assert.equal(motos.length, 52);
-  assert.equal(parts.length, 19);
+  assert.equal(parts.length, 173);
+  assert.equal(new Set(parts.map((p) => p.partKey)).size, 173, 'partKey único en OFFICIAL_PARTS');
+  assert.equal(new Set(parts.map((p) => p.sku)).size, 173, 'sku único en OFFICIAL_PARTS');
 
   for (const m of motos) {
     assert.ok(
@@ -384,9 +386,10 @@ test('13. Cobertura del 100% de imágenes reales (.webp) en los 52 modelos, 19 r
 
   for (const p of parts) {
     assert.ok(
-      typeof p.imageUrl === 'string' && p.imageUrl.includes('.webp'),
-      `El repuesto ${p.partKey} debe tener una URL de imagen .webp real`
+      typeof p.imageUrl === 'string' && /^https:\/\/.+\.(webp|png)$/.test(p.imageUrl),
+      `El repuesto ${p.partKey} debe tener una URL de imagen real (webp/png) del proveedor`
     );
+    assert.ok(p.sourceUrl && p.sourceUrl.startsWith('https://'), `El repuesto ${p.partKey} debe tener URL de origen`);
   }
 
   const migrationSql = fs.readFileSync(
@@ -397,4 +400,45 @@ test('13. Cobertura del 100% de imágenes reales (.webp) en los 52 modelos, 19 r
     migrationSql.includes('ADD COLUMN IF NOT EXISTS imagen_url TEXT'),
     'La migración debe añadir imagen_url a public.modelos_moto'
   );
+});
+
+test('14. Migración de ampliación de repuestos: integridad con OFFICIAL_PARTS y modelos del seed', () => {
+  const ecomotoSrc = fs.readFileSync('data/ecomoto-data.ts', 'utf8');
+  const parts = JSON.parse(
+    ecomotoSrc.match(/export const OFFICIAL_PARTS: SupplierPart\[\] = (\[[\s\S]*?\]);\n\nexport const OFFICIAL_COMPATIBILITIES/)[1]
+  );
+  const comps = JSON.parse(
+    ecomotoSrc.match(/export const OFFICIAL_COMPATIBILITIES: PublishedCompatibility\[\] = (\[[\s\S]*?\]);\n\n\/\*\*/)[1]
+  );
+  const partKeys = new Set(parts.map((p) => p.partKey));
+  for (const c of comps) {
+    assert.ok(partKeys.has(c.partKey), `Compatibilidad con partKey inexistente: ${c.partKey}`);
+  }
+
+  const seed = fs.readFileSync('supabase/migrations/20261030140100_seed_ecomoto_datos_reales.sql', 'utf8');
+  const seedModels = new Set();
+  for (const block of seed.split('INSERT INTO modelos_moto').slice(1)) {
+    const brand = block.match(/UPPER\(TRIM\(nombre\)\)\s*=\s*'([^']+)'/)[1];
+    const model = block.split('LIMIT 1),')[1].match(/^\s*'([^']+)'/)[1];
+    seedModels.add(`${brand.toUpperCase()}:::${model.trim()}`);
+  }
+
+  const sql = fs.readFileSync('supabase/migrations/20261031160000_ampliar_catalogo_repuestos_proveedores.sql', 'utf8');
+  const repBlocks = sql.split('INSERT INTO repuestos').slice(1);
+  assert.equal(repBlocks.length, 88, 'Debe insertar 88 repuestos nuevos');
+  for (const block of repBlocks) {
+    const pk = block.match(/LIMIT 1\),\s*\n\s*'([^']+)',\s*\n/)[1];
+    assert.ok(partKeys.has(pk), `part_key de la migración debe existir en OFFICIAL_PARTS: ${pk}`);
+    assert.match(block, /ON CONFLICT \(part_key\) DO UPDATE/);
+  }
+
+  const compBlocks = sql.split('INSERT INTO compatibilidades').slice(1);
+  assert.equal(compBlocks.length, 12, 'Debe insertar 12 compatibilidades nuevas');
+  for (const block of compBlocks) {
+    const pk = block.match(/WHERE TRIM\(part_key\)\s*=\s*'([^']+)'/)[1];
+    const [, brand, model] = block.match(/UPPER\(TRIM\(ma\.nombre\)\)\s*=\s*'([^']+)'\s+AND\s+TRIM\(m\.nombre\)\s*=\s*'([^']+)'/);
+    assert.ok(partKeys.has(pk), `part_key inexistente en compatibilidad: ${pk}`);
+    assert.ok(seedModels.has(`${brand}:::${model}`), `Modelo inexistente en seed: ${brand} ${model}`);
+  }
+  assert.ok(!/DELETE|DROP TABLE|TRUNCATE/i.test(sql), 'La migración debe ser aditiva');
 });

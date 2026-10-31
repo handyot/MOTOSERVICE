@@ -322,7 +322,7 @@ export function EcoMotoCatalogSection() {
                   <span className="text-xs font-semibold text-gray-600 mr-1">
                     Categoría:
                   </span>
-                  {['todas', 'CARGADOR', 'BATERIA', 'ACCESORIO', 'ESPEJO', 'CARROCERIA', 'FRENOS'].map((cat) => (
+                  {['todas', 'BATERIA', 'CARGADOR', 'LLANTA', 'ESPEJO', 'CARROCERIA', 'ELECTRICO', 'SUSPENSION', 'FRENOS', 'CHASIS', 'ACCESORIO'].map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedPartCategory(cat)}

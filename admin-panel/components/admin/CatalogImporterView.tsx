@@ -50,6 +50,83 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
   const [brandFilter, setBrandFilter] = useState<string>('ALL');
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
+  // Estado del extractor / web scraper en vivo
+  const [isScraping, setIsScraping] = useState(false);
+  const [selectedScrapeStore, setSelectedScrapeStore] = useState<'all' | 'electrica' | 'tailg' | 'kayencorp'>('all');
+  const [autoSyncArchitecture, setAutoSyncArchitecture] = useState(true);
+  const [autoSyncDatabase, setAutoSyncDatabase] = useState(false);
+  const [scrapeSummary, setScrapeSummary] = useState<{
+    totalFound: number;
+    filename: string;
+    savedToDisk: boolean;
+    brandBreakdown: Record<string, number>;
+    categoryBreakdown: Record<string, number>;
+    storesScraped: Array<{ name: string; domain: string; found: number; status: string; error?: string }>;
+    syncResult?: {
+      success: boolean;
+      totalParts: number;
+      totalCompatibilities: number;
+      newPartsAdded: number;
+      existingPartsUpdated: number;
+      error?: string;
+    };
+  } | null>(null);
+
+  const handleRunLiveScrape = async () => {
+    setIsScraping(true);
+    setFeedback(null);
+    try {
+      const res = await fetch('/api/admin/catalog/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'scrape_live',
+          stores: selectedScrapeStore,
+          saveToDisk: true,
+          syncCatalog: autoSyncArchitecture,
+          syncDatabase: autoSyncDatabase,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.scrape) {
+        setScrapeSummary(data.scrape);
+        setSelectedFiles([
+          {
+            filename: data.scrape.filename,
+            sizeBytes: data.scrape.content ? data.scrape.content.length : 1024,
+            format: 'json',
+            content: data.scrape.content,
+            filepath: data.scrape.filepath,
+          },
+        ]);
+        if (data.preview) {
+          setPreview(data.preview);
+        }
+
+        const syncMsg = data.scrape.syncResult?.success
+          ? ` Catálogo público y arquitectura actualizados exitosamente (${data.scrape.syncResult.totalParts} repuestos activos, ${data.scrape.syncResult.totalCompatibilities} compatibilidades vinculadas).`
+          : '';
+
+        setFeedback({
+          type: 'success',
+          message: `Scraping completado: Se extrajeron ${data.scrape.totalFound} repuestos oficiales.${syncMsg}`,
+        });
+      } else {
+        setFeedback({
+          type: 'error',
+          message: data.error || 'Error al ejecutar scraping en vivo de proveedores.',
+        });
+      }
+    } catch {
+      setFeedback({
+        type: 'error',
+        message: 'Error de conexión o timeout al consultar las tiendas de proveedores.',
+      });
+    } finally {
+      setIsScraping(false);
+    }
+  };
+
   const handleScanLocalFolder = async () => {
     setIsScanning(true);
     setFeedback(null);
@@ -311,6 +388,112 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
           </button>
         </div>
       )}
+
+      {/* MÓDULO DESTACADO: WEB SCRAPER EN VIVO */}
+      <section className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50/60 via-white to-slate-50 p-5 shadow-2xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-100/80 border border-blue-300 text-blue-800 text-[11px] font-bold uppercase tracking-wider mb-2">
+              <Icon name="zap" className="w-3 h-3 text-blue-600" />
+              <span>Extracción Automática en Tiempo Real</span>
+            </div>
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span>Web Scraper de Tiendas Oficiales (Perú)</span>
+              <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
+                ● En vivo
+              </span>
+            </h3>
+            <p className="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">
+              Conexión directa a las tiendas oficiales de motos y repuestos eléctricos. Extrae automáticamente precios actualizados en Soles (PEN), imágenes verificadas, códigos SKU y compatibilidades técnicas sin necesidad de archivos manuales.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
+            <select
+              value={selectedScrapeStore}
+              onChange={(e) => setSelectedScrapeStore(e.target.value as 'all' | 'electrica' | 'tailg' | 'kayencorp')}
+              disabled={isScraping}
+              className="bg-white border border-slate-300 text-xs font-semibold text-slate-800 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-600 shadow-2xs"
+            >
+              <option value="all">⚡ Todas las tiendas (150+ repuestos)</option>
+              <option value="electrica">Electrica.pe (Yadea, GreenLine, TianNeng)</option>
+              <option value="tailg">TAILG Perú Oficial (tailg.com.pe)</option>
+              <option value="kayencorp">Kayencorp (kayencorp.com)</option>
+            </select>
+
+            <button
+              type="button"
+              onClick={handleRunLiveScrape}
+              disabled={isScraping}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-xs font-bold text-white shadow-2xs transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              <Icon name={isScraping ? "clock" : "zap"} className={`w-3.5 h-3.5 ${isScraping ? 'animate-spin' : ''}`} />
+              <span>{isScraping ? 'Extrayendo y sincronizando...' : 'Scraping y Sincronización Total'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Opciones de Sincronización Automática */}
+        <div className="mt-3 pt-3 border-t border-blue-100/70 flex flex-wrap items-center gap-4 text-xs">
+          <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+            <input
+              type="checkbox"
+              checked={autoSyncArchitecture}
+              onChange={(e) => setAutoSyncArchitecture(e.target.checked)}
+              disabled={isScraping}
+              className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+            />
+            <span>Sincronizar automáticamente la arquitectura pública (<code className="font-mono text-blue-700 bg-blue-50 px-1 py-0.5 rounded">data/ecomoto-data.ts</code>)</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
+            <input
+              type="checkbox"
+              checked={autoSyncDatabase}
+              onChange={(e) => setAutoSyncDatabase(e.target.checked)}
+              disabled={isScraping}
+              className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+            />
+            <span>Persistir en base de datos PostgreSQL/Supabase si está conectada</span>
+          </label>
+        </div>
+
+        {/* Resumen de Scraping si ya se ejecutó */}
+        {scrapeSummary && (
+          <div className="mt-4 pt-4 border-t border-blue-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-semibold text-slate-700">Proveedores consultados:</span>
+              {scrapeSummary.storesScraped.map((s, idx) => (
+                <span
+                  key={idx}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium border ${
+                    s.status === 'ok'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      : 'bg-red-50 text-red-800 border-red-200'
+                  }`}
+                >
+                  <span className="font-bold">{s.name}:</span>
+                  <span>{s.found} repuestos</span>
+                </span>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {scrapeSummary.syncResult?.success ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300 font-semibold text-[11px]">
+                  <Icon name="check-circle" className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Catálogo público actualizado: {scrapeSummary.syncResult.totalParts} repuestos y {scrapeSummary.syncResult.totalCompatibilities} compatibilidades activas</span>
+                </span>
+              ) : (
+                <span className="text-slate-500 flex items-center gap-1">
+                  <Icon name="check-circle" className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>{scrapeSummary.totalFound} repuestos listos para importar</span>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* Paso 1: Bandeja de Archivos Seleccionados */}
       <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">

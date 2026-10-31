@@ -14,6 +14,7 @@ import {
   generateImportPreview,
   executeCatalogImport,
 } from '@/lib/importers/import-service';
+import { runLiveScrape, SCRAPE_STORES } from '@/lib/importers/scraper-service';
 
 export async function GET() {
   const auth = await requireAdminApi();
@@ -36,6 +37,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       files,
+      stores: SCRAPE_STORES,
       history: history || [],
     });
   } catch (err: unknown) {
@@ -59,6 +61,50 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const action = body.action || 'preview';
+
+    if (action === 'scrape_live') {
+      const stores = body.stores || 'all';
+      const saveToDisk = body.saveToDisk !== false;
+      const syncCatalog = body.syncCatalog !== false;
+      const scrapeResult = await runLiveScrape({ stores, saveToDisk, syncCatalog });
+
+      if (!scrapeResult.success || scrapeResult.items.length === 0) {
+        return NextResponse.json({
+          success: false,
+          error: 'No se pudieron extraer productos de las tiendas seleccionadas. Verifica la conectividad.',
+          scrape: scrapeResult,
+        });
+      }
+
+      // Generar automáticamente vista previa técnica
+      const preview = await generateImportPreview([
+        {
+          filename: scrapeResult.filename,
+          content: scrapeResult.content,
+          filepath: scrapeResult.filepath,
+        },
+      ]);
+
+      // Si se solicitó syncDatabase (persistir también de inmediato en PostgreSQL/Supabase)
+      let dbExecution = null;
+      if (body.syncDatabase) {
+        try {
+          dbExecution = await executeCatalogImport(preview, {
+            dryRun: false,
+            adminEmail: auth.account.email,
+          });
+        } catch (dbErr) {
+          console.warn('[ADMIN SCRAPE] Advertencia en persistencia DB:', dbErr);
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        scrape: scrapeResult,
+        preview,
+        dbExecution,
+      });
+    }
 
     if (action === 'scan_local') {
       const files = discoverScrapedFiles();

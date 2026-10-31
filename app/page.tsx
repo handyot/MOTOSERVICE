@@ -7,6 +7,7 @@ import { WhyChooseUs } from "../components/home/WhyChooseUs";
 import { AssistanceCTA } from "../components/home/AssistanceCTA";
 import { NewsletterSection } from "../components/home/NewsletterSection";
 import { EcoMotoCatalogSection } from "../components/ecomoto/EcoMotoCatalogSection";
+import { PRODUCTS } from "../data/products";
 import { createClient } from "../lib/supabase/server";
 import type { FeaturedPartItem } from "../types";
 
@@ -74,6 +75,23 @@ export default async function Home() {
       err instanceof Error ? err.message : err
     );
     error = true;
+  }
+
+  // Fallback garantizado a repuestos con stock propio verificado si Supabase no responde o está vacío
+  if (parts.length === 0) {
+    parts = PRODUCTS.slice(0, 8).map((p) => ({
+      id: p.id,
+      sku: p.sku,
+      name: p.title,
+      shortDescription: p.shortDescription,
+      price: p.price,
+      currency: p.currency,
+      imageUrl: p.imageUrl,
+      categoryName: p.category,
+      voltage: p.voltage ? parseInt(p.voltage, 10) || undefined : undefined,
+      isDirectSale: true,
+    }));
+    error = false;
   }
 
   return (
