@@ -14,6 +14,7 @@ import {
 import { MotoModel, SupplierPart } from '@/types';
 import {
   getPublicCatalogMotos,
+  OFFICIAL_BRANDS,
   OFFICIAL_PARTS,
   getMotoWithCompatibleParts
 } from '@/data/ecomoto-data';
@@ -147,7 +148,7 @@ export function EcoMotoCatalogSection() {
                   <span className="text-xs font-semibold text-gray-600 flex items-center gap-1">
                     <Filter className="w-3.5 h-3.5" /> Marca:
                   </span>
-                  {['todas', 'TAILG', 'YADEA', 'KAYENCORP', 'GREENLINE'].map((b) => (
+                  {['todas', ...OFFICIAL_BRANDS.map((b) => b.name)].map((b) => (
                     <button
                       key={b}
                       onClick={() => setSelectedBrand(b)}
@@ -345,10 +346,11 @@ export function EcoMotoCatalogSection() {
                     className="bg-white border border-gray-300 text-xs text-gray-900 rounded-md px-2.5 py-1 focus:ring-1 focus:ring-blue-600"
                   >
                     <option value="todas">Todas las marcas</option>
-                    <option value="TAILG">TAILG</option>
-                    <option value="YADEA">YADEA</option>
-                    <option value="KAYENCORP">KAYENCORP</option>
-                    <option value="GREENLINE">GREENLINE</option>
+                    {OFFICIAL_BRANDS.map((b) => (
+                      <option key={b.name} value={b.name}>
+                        {b.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

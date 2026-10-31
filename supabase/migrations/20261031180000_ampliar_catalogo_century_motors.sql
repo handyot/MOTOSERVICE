@@ -50,7 +50,7 @@ INSERT INTO modelos_moto (
     2026,
     60,
     1000,
-    '/images/motos/century-motors-guardabarros-para-moto-electri.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/05/image_1-20.png',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -194,7 +194,7 @@ INSERT INTO modelos_moto (
     2026,
     48,
     800,
-    '/images/motos/century-motors-de-litio-modelo-matte.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/07/bicimoto-matte.png',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -206,7 +206,7 @@ INSERT INTO modelos_moto (
     2026,
     24,
     800,
-    '/images/motos/century-motors-electrica-para-ni-os-24v-ducat.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/06/ducati-24v-rojo.png',
     true
 ) ON CONFLICT DO NOTHING;
 

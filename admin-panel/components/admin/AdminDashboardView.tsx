@@ -150,7 +150,7 @@ interface AdminDashboardViewProps {
 
 export function AdminDashboardView({
   account,
-  stats,
+  stats: initialStats,
   initialOrders = [],
   initialAssistance = [],
   initialDocuments = [],
@@ -166,6 +166,7 @@ export function AdminDashboardView({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Datos reactivos de operación
+  const [stats, setStats] = useState<AdminStats>(initialStats);
   const [orders, setOrders] = useState<AdminOrderRecord[]>(initialOrders);
   const [brands, setBrands] = useState<AdminBrandRecord[]>(initialBrands);
   const [models, setModels] = useState<AdminModelRecord[]>(initialModels);
@@ -173,6 +174,22 @@ export function AdminDashboardView({
   const [compatibilities, setCompatibilities] = useState<AdminCompatibilityRecord[]>(
     initialCompatibilities
   );
+
+  const refreshCatalogData = async () => {
+    try {
+      const res = await fetch('/api/admin/catalog/manage');
+      const data = await res.json();
+      if (data.success) {
+        if (Array.isArray(data.brands)) setBrands(data.brands);
+        if (Array.isArray(data.models)) setModels(data.models);
+        if (Array.isArray(data.parts)) setParts(data.parts);
+        if (Array.isArray(data.compatibilities)) setCompatibilities(data.compatibilities);
+        if (data.stats) setStats(data.stats);
+      }
+    } catch {
+      // Silencioso
+    }
+  };
 
   // Feedback global de acciones operativas
   const [statusFeedback, setStatusFeedback] = useState<{
@@ -3032,7 +3049,10 @@ export function AdminDashboardView({
               10. MÓDULO: IMPORTADOR DE CATÁLOGOS CSV/JSON (importador)
              ==================================================================== */}
           {activeModule === 'importador' && (
-            <CatalogImporterView initialHistory={initialImportHistory} />
+            <CatalogImporterView
+              initialHistory={initialImportHistory}
+              onCatalogUpdated={refreshCatalogData}
+            />
           )}
         </main>
       </div>

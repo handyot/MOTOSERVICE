@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { requireAdmin } from '../lib/auth/server';
 import { createClient } from '../lib/supabase/server';
 import { AdminDashboardView } from '../components/admin/AdminDashboardView';
+import { mergeCatalogWithMaster } from '../lib/catalog/catalog-fallback';
 
 export const metadata: Metadata = {
   title: 'Resumen Operativo | ERP NeroElectric Motors',
@@ -51,13 +52,6 @@ export default async function AdminHomePage() {
     supabase.from('catalogo_importaciones').select('*').order('created_at', { ascending: false }).limit(15),
   ]);
 
-  const stats = {
-    totalMarcas: countMarcas ?? 0,
-    totalModelos: countModelos ?? 0,
-    totalRepuestos: countRepuestos ?? 0,
-    totalCompatibilidades: countCompat ?? 0,
-  };
-
   const normalizedCompatibilities = (compatData || []).map((c) => ({
     id_compatibilidad: c.id_compatibilidad,
     id_repuesto: c.id_repuesto,
@@ -67,19 +61,33 @@ export default async function AdminHomePage() {
     notas_tecnicas: c.evidence_note || c.observaciones || null,
   }));
 
+  const merged = mergeCatalogWithMaster(
+    brandsData,
+    modelsData,
+    partsData,
+    normalizedCompatibilities,
+    {
+      marcas: countMarcas,
+      modelos: countModelos,
+      repuestos: countRepuestos,
+      compat: countCompat,
+    }
+  );
+
   return (
     <AdminDashboardView
+      key={`${merged.brands.length}-${merged.models.length}-${merged.parts.length}`}
       account={account}
-      stats={stats}
+      stats={merged.stats}
       initialOrders={ordersData || []}
       initialAssistance={assistanceData || []}
       initialDocuments={documentsData || []}
       initialSubscriptions={subscriptionsData || []}
       initialImportHistory={importHistoryData || []}
-      initialBrands={brandsData || []}
-      initialModels={modelsData || []}
-      initialParts={partsData || []}
-      initialCompatibilities={normalizedCompatibilities}
+      initialBrands={merged.brands}
+      initialModels={merged.models}
+      initialParts={merged.parts}
+      initialCompatibilities={merged.compatibilities}
     />
   );
 }

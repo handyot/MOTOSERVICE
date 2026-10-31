@@ -166,6 +166,7 @@ export function MotoComparator({ initialSlugs = ['tailg-n6-super-s', 'yadea-m6-p
                         src={m.imageUrl || "/images/motos/placeholder-ev-moto.svg"}
                         alt={`${m.brand} ${m.model}`}
                         fill
+                        unoptimized={Boolean(m.imageUrl?.startsWith('http'))}
                         sizes="180px"
                         className="object-contain p-1"
                       />

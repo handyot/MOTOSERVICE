@@ -7,6 +7,81 @@
 import { NextResponse } from 'next/server';
 import { requireAdminApi } from '@/lib/auth/server';
 import { createCatalogWriteClient } from '@/lib/supabase/server';
+import { mergeCatalogWithMaster } from '@/lib/catalog/catalog-fallback';
+
+export async function GET() {
+  const auth = await requireAdminApi();
+  if (!auth.authorized) {
+    return NextResponse.json(
+      { success: false, error: auth.error },
+      { status: auth.status }
+    );
+  }
+
+  try {
+    const supabase = await createCatalogWriteClient();
+    const [
+      { count: countMarcas, data: brandsData },
+      { count: countModelos, data: modelsData },
+      { count: countRepuestos, data: partsData },
+      { count: countCompat, data: compatData },
+    ] = await Promise.all([
+      supabase
+        .from('marcas')
+        .select('id_marca, nombre, pais_origen, estado', { count: 'exact' })
+        .order('id_marca', { ascending: true }),
+      supabase
+        .from('modelos_moto')
+        .select('id_modelo, id_marca, nombre, voltaje_nominal_v, potencia_motor_w, imagen_url, estado', { count: 'exact' })
+        .order('id_modelo', { ascending: false })
+        .limit(100),
+      supabase
+        .from('repuestos')
+        .select('id_repuesto, id_categoria, codigo_sku, nombre, precio, moneda, imagen_url, estado', { count: 'exact' })
+        .order('id_repuesto', { ascending: false })
+        .limit(100),
+      supabase
+        .from('compatibilidades')
+        .select('id_compatibilidad, id_repuesto, id_modelo, nivel_verificacion, observaciones, status, evidence_note', { count: 'exact' })
+        .order('id_compatibilidad', { ascending: false })
+        .limit(100),
+    ]);
+
+    const normalizedCompatibilities = (compatData || []).map((c) => ({
+      id_compatibilidad: c.id_compatibilidad,
+      id_repuesto: c.id_repuesto,
+      id_modelo: c.id_modelo,
+      es_compatible: c.status !== 'NO_COMPATIBLE',
+      nivel_verificacion: c.nivel_verificacion || c.status || 'CONFIRMADA',
+      notas_tecnicas: c.evidence_note || c.observaciones || null,
+    }));
+
+    const merged = mergeCatalogWithMaster(
+      brandsData,
+      modelsData,
+      partsData,
+      normalizedCompatibilities,
+      {
+        marcas: countMarcas,
+        modelos: countModelos,
+        repuestos: countRepuestos,
+        compat: countCompat,
+      }
+    );
+
+    return NextResponse.json({
+      success: true,
+      brands: merged.brands,
+      models: merged.models,
+      parts: merged.parts,
+      compatibilities: merged.compatibilities,
+      stats: merged.stats,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Error al consultar catálogo';
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
+}
 
 export async function POST(request: Request) {
   const auth = await requireAdminApi();

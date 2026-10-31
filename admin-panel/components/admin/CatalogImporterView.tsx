@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Icon } from '../ui/Icons';
 import type { EcoMotoBrand } from '@/types';
 import type {
@@ -34,9 +35,14 @@ interface FileSelection {
 
 interface CatalogImporterViewProps {
   initialHistory?: ImportHistoryRecord[];
+  onCatalogUpdated?: () => void;
 }
 
-export function CatalogImporterView({ initialHistory = [] }: CatalogImporterViewProps) {
+export function CatalogImporterView({
+  initialHistory = [],
+  onCatalogUpdated,
+}: CatalogImporterViewProps) {
+  const router = useRouter();
   const [selectedFiles, setSelectedFiles] = useState<FileSelection[]>([]);
   const [history, setHistory] = useState<ImportHistoryRecord[]>(initialHistory);
   const [isScanning, setIsScanning] = useState(false);
@@ -153,6 +159,9 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
           type: 'success',
           message: `¡URL verificada con éxito! ${brandStatus} Se extrajeron ${data.scrape.totalFound} productos (${data.scrape.vehiclesCount} motos, ${data.scrape.partsCount} repuestos).${syncMsg}`,
         });
+
+        onCatalogUpdated?.();
+        router.refresh();
       } else {
         const errReason = data.error || data.scrape?.rubroValidation?.reason || 'Error al escanear la URL.';
         setFeedback({
@@ -212,6 +221,9 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
           type: 'success',
           message: `Scraping completado: Se extrajeron ${data.scrape.totalFound} repuestos oficiales.${syncMsg}`,
         });
+
+        onCatalogUpdated?.();
+        router.refresh();
       } else {
         setFeedback({
           type: 'error',
@@ -366,6 +378,9 @@ export function CatalogImporterView({ initialHistory = [] }: CatalogImporterView
           const histData = await histRes.json();
           if (histData.history) setHistory(histData.history);
         }
+
+        onCatalogUpdated?.();
+        router.refresh();
       } else {
         setFeedback({
           type: 'error',

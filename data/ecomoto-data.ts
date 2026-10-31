@@ -1136,7 +1136,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://centurymotors.pe/producto/guardabarros-para-moto-electrica-chopper-citycoco/",
     "sourceCheckedOn": "2026-10-31",
     "notes": "Importado automáticamente desde https://centurymotors.pe",
-    "imageUrl": "/images/motos/century-motors-guardabarros-para-moto-electri.webp"
+    "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/05/image_1-20.png"
   },
   {
     "brand": "CENTURY MOTORS",
@@ -1388,7 +1388,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://centurymotors.pe/producto/bicimoto-de-litio-modelo-matte/",
     "sourceCheckedOn": "2026-10-31",
     "notes": "Importado automáticamente desde https://centurymotors.pe",
-    "imageUrl": "/images/motos/century-motors-de-litio-modelo-matte.webp"
+    "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/07/bicimoto-matte.png"
   },
   {
     "brand": "CENTURY MOTORS",
@@ -1409,7 +1409,7 @@ export const OFFICIAL_MOTOS: MotoModel[] = [
     "sourceUrl": "https://centurymotors.pe/producto/moto-electrica-para-ninos-24v-ducati/",
     "sourceCheckedOn": "2026-10-31",
     "notes": "Importado automáticamente desde https://centurymotors.pe",
-    "imageUrl": "/images/motos/century-motors-electrica-para-ni-os-24v-ducat.webp"
+    "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/06/ducati-24v-rojo.png"
   }
 ];
 

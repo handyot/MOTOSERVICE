@@ -71,6 +71,22 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "www.kayencorp.com",
       },
+      {
+        protocol: "https",
+        hostname: "centurymotors.pe",
+      },
+      {
+        protocol: "https",
+        hostname: "www.centurymotors.pe",
+      },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
+      },
     ],
   },
 };

@@ -381,8 +381,8 @@ test('13. Cobertura del 100% de imágenes reales en los 52 modelos, 173 repuesto
 
   for (const m of motos) {
     assert.ok(
-      typeof m.imageUrl === 'string' && m.imageUrl.includes('.webp'),
-      `El modelo ${m.slug} debe tener una URL de imagen .webp real`
+      typeof m.imageUrl === 'string' && (m.imageUrl.includes('.webp') || m.imageUrl.includes('.png')),
+      `El modelo ${m.slug} debe tener una URL de imagen real (.webp o .png)`
     );
   }
 
