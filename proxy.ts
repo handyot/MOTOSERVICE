@@ -1,7 +1,33 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { getSafeRedirectUrl } from './lib/auth/validations';
 
 export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Bloquear cualquier intento de invocar APIs administrativas en el dominio público
+  if (pathname.startsWith('/api/admin')) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Las operaciones administrativas están deshabilitadas en la tienda pública y operan en un dominio independiente.',
+      },
+      { status: 404 }
+    );
+  }
+
+  // Si alguien intenta acceder a /admin en la tienda pública y existe URL del portal independiente, redirigir
+  if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+    const externalAdminUrl = process.env.NEXT_PUBLIC_ADMIN_PANEL_URL;
+    if (externalAdminUrl && externalAdminUrl.startsWith('http')) {
+      return NextResponse.redirect(new URL(externalAdminUrl));
+    }
+    return new NextResponse('Recurso no disponible en la tienda pública (404).', {
+      status: 404,
+      headers: { 'content-type': 'text/plain; charset=utf-8' },
+    });
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -10,7 +36,6 @@ export async function proxy(request: NextRequest) {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    // Si no están configuradas las variables, continuar sin bloquear estáticos
     return supabaseResponse;
   }
 
@@ -38,11 +63,8 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
-
-  // Redirecciones preliminares: rutas protegidas requieren sesión
-  const isProtectedPath =
-    pathname.startsWith('/cuenta') || pathname.startsWith('/admin');
+  // Redirección preliminar: rutas privadas de cliente (/cuenta) requieren sesión
+  const isProtectedPath = pathname.startsWith('/cuenta');
 
   if (isProtectedPath && !user) {
     const loginUrl = request.nextUrl.clone();
@@ -50,7 +72,6 @@ export async function proxy(request: NextRequest) {
     loginUrl.searchParams.set('redirectTo', pathname);
 
     const redirectResponse = NextResponse.redirect(loginUrl);
-    // Preservar cookies actualizadas en la redirección
     supabaseResponse.cookies.getAll().forEach((cookie) => {
       redirectResponse.cookies.set(cookie);
     });
@@ -60,10 +81,11 @@ export async function proxy(request: NextRequest) {
   // Redirección preliminar: si ya está autenticado, no requiere visitar login o registro
   const isAuthEntryPath = pathname === '/login' || pathname === '/registro';
   if (isAuthEntryPath && user) {
-    const cuentaUrl = request.nextUrl.clone();
-    cuentaUrl.pathname = '/cuenta';
+    const rawRedirect = request.nextUrl.searchParams.get('redirectTo');
+    const safeTarget = getSafeRedirectUrl(rawRedirect, '/cuenta');
+    const targetUrl = new URL(safeTarget, request.nextUrl.origin);
 
-    const redirectResponse = NextResponse.redirect(cuentaUrl);
+    const redirectResponse = NextResponse.redirect(targetUrl);
     supabaseResponse.cookies.getAll().forEach((cookie) => {
       redirectResponse.cookies.set(cookie);
     });
@@ -75,9 +97,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Aplica a todas las rutas excepto archivos estáticos e imágenes.
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

@@ -52,21 +52,49 @@ CREATE INDEX IF NOT EXISTS idx_user_roles_role ON public.user_roles (role);
 
 
 -- 3. FUNCIÓN DE SEGURIDAD: public.is_admin
--- Determina si el usuario actual o el UUID indicado posee el rol administrativo.
--- SECURITY DEFINER con search_path fijado para evitar secuestro de búsqueda.
+-- Determina de forma confiable si el usuario actual posee el rol administrativo.
+-- Si se suministra un UUID distinto al de la sesión activa, solo se evalúa si el invocador
+-- ya cuenta con privilegios administrativos comprobados o si es el superusuario/service_role.
+-- Esto previene que usuarios comunes puedan explorar o enumerar qué UUIDs poseen el rol admin.
 CREATE OR REPLACE FUNCTION public.is_admin(check_user_id UUID DEFAULT auth.uid())
 RETURNS BOOLEAN
-LANGUAGE sql
+LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
 STABLE
 AS $$
-    SELECT EXISTS (
-        SELECT 1
-        FROM public.user_roles
-        WHERE user_id = check_user_id
-          AND role = 'admin'
+DECLARE
+    v_caller_id UUID := auth.uid();
+BEGIN
+    -- Caso 1: Consulta para el propio usuario autenticado o invocación por defecto
+    IF check_user_id IS NULL OR check_user_id = v_caller_id THEN
+        IF v_caller_id IS NULL THEN
+            RETURN FALSE;
+        END IF;
+        RETURN EXISTS (
+            SELECT 1 FROM public.user_roles
+            WHERE user_id = v_caller_id AND role = 'admin'
+        );
+    END IF;
+
+    -- Caso 2: Consulta sobre un tercero.
+    -- Solo se autoriza si el invocador es service_role/operador SQL (v_caller_id IS NULL)
+    -- o si el invocador autenticado ya es un administrador verificado.
+    IF v_caller_id IS NOT NULL THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM public.user_roles
+            WHERE user_id = v_caller_id AND role = 'admin'
+        ) THEN
+            -- Invocador estándar intentando sondear el rol de otro usuario: denegar sin revelar información
+            RETURN FALSE;
+        END IF;
+    END IF;
+
+    RETURN EXISTS (
+        SELECT 1 FROM public.user_roles
+        WHERE user_id = check_user_id AND role = 'admin'
     );
+END;
 $$;
 
 COMMENT ON FUNCTION public.is_admin IS 'Verifica de forma confiable en el servidor si un usuario posee el rol admin.';
@@ -226,12 +254,46 @@ GRANT SELECT, UPDATE ON TABLE public.profiles TO authenticated;
 -- Clientes autenticados solo reciben SELECT sobre user_roles (controlado por RLS)
 GRANT SELECT ON TABLE public.user_roles TO authenticated;
 
--- Permitir ejecución de la función de comprobación de rol
-GRANT EXECUTE ON FUNCTION public.is_admin TO authenticated;
+-- Permisos estrictos para public.is_admin con firma explícita
+REVOKE ALL ON FUNCTION public.is_admin(UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.is_admin(UUID) TO authenticated;
 
 
 -- ==============================================================================
--- 7. PROCEDIMIENTO OPERATIVO DOCUMENTADO: ELEVACIÓN DE PRIMER ADMINISTRADOR
+-- 7. INICIALIZACIÓN RETROACTIVA (BACKFILL) PARA USUARIOS EXISTENTES
+-- ==============================================================================
+-- Garantiza que cualquier cuenta creada previamente en auth.users reciba su perfil
+-- y su rol correspondiente sin sobrescribir datos de usuarios ya inicializados.
+
+-- Backfill de perfiles faltantes
+INSERT INTO public.profiles (id, full_name, phone, created_at, updated_at)
+SELECT
+    u.id,
+    COALESCE(
+        NULLIF(TRIM(u.raw_user_meta_data->>'full_name'), ''),
+        NULLIF(split_part(u.email, '@', 1), ''),
+        'Cliente'
+    ),
+    NULLIF(TRIM(u.raw_user_meta_data->>'phone'), ''),
+    COALESCE(u.created_at, now()),
+    now()
+FROM auth.users u
+ON CONFLICT (id) DO NOTHING;
+
+-- Backfill de rol 'customer' exclusivamente para cuentas sin rol asignado.
+-- ON CONFLICT (user_id) DO NOTHING preserva estrictamente cualquier rol admin
+-- preexistente asignado manualmente por el operador.
+INSERT INTO public.user_roles (user_id, role, created_at)
+SELECT
+    u.id,
+    'customer',
+    COALESCE(u.created_at, now())
+FROM auth.users u
+ON CONFLICT (user_id) DO NOTHING;
+
+
+-- ==============================================================================
+-- 8. PROCEDIMIENTO OPERATIVO DOCUMENTADO: ELEVACIÓN DE PRIMER ADMINISTRADOR
 -- ==============================================================================
 -- Para asignar el rol 'admin' a la primera cuenta administrativa, un operador con
 -- acceso al SQL Editor del panel de Supabase o mediante la CLI de Supabase

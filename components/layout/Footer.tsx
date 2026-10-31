@@ -144,9 +144,6 @@ export function Footer() {
             <Link href="/cuenta" className="hover:text-blue-600 transition-colors">
               Mi Cuenta
             </Link>
-            <Link href="/admin" className="hover:text-blue-600 transition-colors">
-              Administración
-            </Link>
           </div>
         </div>
       </div>

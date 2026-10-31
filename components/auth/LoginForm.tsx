@@ -104,9 +104,9 @@ export function LoginForm() {
       {infoNotice && (
         <div
           role="status"
-          className="rounded-lg border border-cyan-500/30 bg-cyan-950/40 p-3.5 text-xs text-cyan-300 flex items-start gap-2.5"
+          className="rounded-lg border border-blue-200 bg-blue-50 p-3.5 text-xs text-blue-700 flex items-start gap-2.5"
         >
-          <Icon name="check-circle" className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+          <Icon name="check-circle" className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
           <span>{infoNotice}</span>
         </div>
       )}
@@ -189,12 +189,12 @@ export function LoginForm() {
       >
         {isLoading ? (
           <>
-            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-slate-950 border-t-transparent" />
+            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
             <span>Iniciando sesión...</span>
           </>
         ) : (
           <>
-            <Icon name="check-circle" className="w-4 h-4 text-slate-950" />
+            <Icon name="check-circle" className="w-4 h-4 text-white" />
             <span>Ingresar a mi Cuenta</span>
           </>
         )}

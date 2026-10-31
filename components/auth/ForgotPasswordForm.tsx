@@ -54,22 +54,22 @@ export function ForgotPasswordForm() {
   if (isSubmitted) {
     return (
       <div className="space-y-5 text-center py-4">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-950/60 border border-cyan-800/80 text-cyan-400">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 border border-blue-200 text-blue-600">
           <Icon name="check-circle" className="w-8 h-8" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-xl font-bold text-white">Solicitud recibida</h2>
-          <p className="text-sm text-slate-300 leading-relaxed">
-            Si la dirección <strong className="text-cyan-300">{email}</strong> está registrada en nuestra plataforma, recibirás un enlace seguro para restablecer tu contraseña.
+          <h2 className="text-xl font-bold text-gray-900">Solicitud recibida</h2>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            Si la dirección <strong className="text-blue-600">{email}</strong> está registrada en nuestra plataforma, recibirás un enlace seguro para restablecer tu contraseña.
           </p>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-gray-500">
             Revisa tu bandeja de entrada y carpeta de spam. El enlace tiene un tiempo limitado de validez.
           </p>
         </div>
         <div className="pt-2">
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-200 hover:bg-slate-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <span>Volver a Iniciar Sesión</span>
           </Link>
@@ -84,15 +84,15 @@ export function ForgotPasswordForm() {
       {errorMessage && (
         <div
           role="alert"
-          className="rounded-lg border border-rose-500/30 bg-rose-950/40 p-3.5 text-xs text-rose-300 flex items-start gap-2.5"
+          className="rounded-lg border border-red-200 bg-red-50 p-3.5 text-xs text-red-700 flex items-start gap-2.5"
         >
-          <Icon name="alert-triangle" className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+          <Icon name="alert-triangle" className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       <div>
-        <label htmlFor="reset-email" className="block text-xs font-semibold text-slate-300 mb-1.5">
+        <label htmlFor="reset-email" className="block text-xs font-semibold text-gray-700 mb-1.5">
           Correo Electrónico de tu Cuenta
         </label>
         <input
@@ -104,9 +104,9 @@ export function ForgotPasswordForm() {
           onChange={(e) => setEmail(e.target.value)}
           disabled={isLoading}
           placeholder="ejemplo@motoservice.pe"
-          className="w-full rounded-lg border border-slate-700 bg-slate-950/80 px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 transition-colors disabled:opacity-50"
+          className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 transition-colors disabled:opacity-50"
         />
-        <p className="mt-1.5 text-xs text-slate-400">
+        <p className="mt-1.5 text-xs text-gray-500">
           Te enviaremos un enlace temporal para que definas una nueva contraseña segura.
         </p>
       </div>
@@ -114,16 +114,16 @@ export function ForgotPasswordForm() {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full mt-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/20 hover:brightness-110 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full mt-2 rounded-lg bg-blue-600 hover:bg-blue-700 active:scale-[0.99] px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
       >
         {isLoading ? (
           <>
-            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-slate-950 border-t-transparent" />
+            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
             <span>Enviando enlace seguro...</span>
           </>
         ) : (
           <>
-            <Icon name="zap" className="w-4 h-4 text-slate-950" />
+            <Icon name="zap" className="w-4 h-4 text-white" />
             <span>Enviar Instrucciones de Recuperación</span>
           </>
         )}
