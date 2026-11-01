@@ -481,6 +481,17 @@ export interface VoltIARecommendedPart {
   inStock: boolean;
   isDirectSale: boolean;
   rationale: string;
+  isAdaptation?: boolean;
+  workshopModificationRequired?: boolean;
+  workshopNotes?: string;
+}
+
+export interface VoltIAAdaptationNotice {
+  isCustomAdaptation: boolean;
+  title: string;
+  description: string;
+  suggestedModifications: string[];
+  workshopRecommendation: string;
 }
 
 export interface VoltIADiagnosisResult {
@@ -495,6 +506,7 @@ export interface VoltIADiagnosisResult {
   certainty: DiagnosticCertainty;
   recommendedAction: string;
   safetyAlert?: VoltIASafetyAlert;
+  adaptationNotice?: VoltIAAdaptationNotice;
   recommendedParts: VoltIARecommendedPart[];
   referToTechnician: boolean;
   referralReason?: string;

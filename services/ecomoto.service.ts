@@ -29,6 +29,7 @@ export interface MotoFilters {
   maxPrice?: number;
   voltage?: number | 'todos';
   search?: string;
+  onlyWithParts?: boolean;
 }
 
 export interface PartFilters {
@@ -89,6 +90,13 @@ export class EcoMotoService {
           m.brand.toLowerCase().includes(q) ||
           (m.vehicleType && m.vehicleType.toLowerCase().includes(q))
       );
+    }
+
+    if (filters.onlyWithParts) {
+      list = list.filter((m) => {
+        const detail = getMotoWithCompatibleParts(m.slug);
+        return Boolean(detail && detail.compatibleParts && detail.compatibleParts.length > 0);
+      });
     }
 
     return list;

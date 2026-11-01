@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import {
   Scale,
@@ -11,7 +11,7 @@ import {
   MessageCircle
 } from 'lucide-react';
 import { MotoModel } from '@/types';
-import { getPublicCatalogMotos } from '@/data/ecomoto-data';
+import { getPublicCatalogMotos, getMotoWithCompatibleParts } from '@/data/ecomoto-data';
 import { formatCurrency } from '@/lib/utils';
 
 interface MotoComparatorProps {
@@ -19,8 +19,18 @@ interface MotoComparatorProps {
   onInspectMoto?: (moto: MotoModel) => void;
 }
 
-export function MotoComparator({ initialSlugs = ['tailg-n6-super-s', 'yadea-m6-pro', 'greenline-m3'], onInspectMoto }: MotoComparatorProps) {
-  const allMotos = getPublicCatalogMotos();
+export function MotoComparator({
+  initialSlugs = ['tailg-f55-mecha-g2', 'yadea-e8s-pro', 'tailg-optimus-mecha-g3'],
+  onInspectMoto,
+}: MotoComparatorProps) {
+  // Solo se comparan motos con repuestos o compatibilidades confirmadas/condicionales
+  const allMotos = useMemo(() => {
+    return getPublicCatalogMotos().filter((m) => {
+      const detail = getMotoWithCompatibleParts(m.slug);
+      return Boolean(detail && detail.compatibleParts && detail.compatibleParts.length > 0);
+    });
+  }, []);
+
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>(initialSlugs);
   const [selectorBrand, setSelectorBrand] = useState<string>('todas');
 

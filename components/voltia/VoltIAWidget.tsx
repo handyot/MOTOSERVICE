@@ -388,11 +388,59 @@ export function VoltIAWidget() {
                       </p>
                     </div>
 
+                    {/* Alerta de Adaptación en Taller Autorizado (Modelo sin repuestos directos) */}
+                    {currentDiagnosis.adaptationNotice && (
+                      <div className="rounded-xl bg-amber-950/40 border border-amber-500/50 p-3 text-xs space-y-2">
+                        <div className="flex items-start gap-2">
+                          <span className="text-base leading-none">🛠️</span>
+                          <div>
+                            <h5 className="font-bold text-amber-300 text-xs">
+                              {currentDiagnosis.adaptationNotice.title}
+                            </h5>
+                            <p className="text-slate-300 text-[11px] leading-relaxed mt-1">
+                              {currentDiagnosis.adaptationNotice.description}
+                            </p>
+                          </div>
+                        </div>
+
+                        {currentDiagnosis.adaptationNotice.suggestedModifications.length > 0 && (
+                          <div className="bg-slate-900/80 rounded-lg p-2.5 border border-amber-900/40">
+                            <span className="text-[10px] uppercase font-bold text-amber-400 block mb-1">
+                              Modificaciones requeridas en taller autorizado:
+                            </span>
+                            <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-300">
+                              {currentDiagnosis.adaptationNotice.suggestedModifications.map((mod, idx) => (
+                                <li key={idx}>{mod}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <div className="pt-1 space-y-2">
+                          <p className="text-[10px] text-amber-200/80 italic">
+                            {currentDiagnosis.adaptationNotice.workshopRecommendation}
+                          </p>
+                          <a
+                            href={`https://wa.me/51987654321?text=${encodeURIComponent(
+                              `Hola MotoService, deseo agendar una modificación y adaptación técnica en taller autorizado para mi moto ${currentDiagnosis.reportedVehicle || ''}. Diagnóstico VoltIA: ${currentDiagnosis.symptom}`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2 text-xs transition-colors"
+                          >
+                            <span>🔧 Agendar Modificación en Taller Autorizado</span>
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Repuestos recomendados con acción directa de compra */}
                     {currentDiagnosis.recommendedParts.length > 0 && (
                       <div className="space-y-2 pt-2 border-t border-slate-800">
                         <span className="text-xs font-bold text-white block">
-                          Repuestos compatibles de venta directa:
+                          {currentDiagnosis.adaptationNotice
+                            ? 'Repuestos de tracción compatibles mediante adaptación en taller:'
+                            : 'Repuestos compatibles de venta directa:'}
                         </span>
                         {currentDiagnosis.recommendedParts.map((part) => (
                           <div
@@ -412,9 +460,24 @@ export function VoltIAWidget() {
                                 S/ {part.price.toFixed(2)}
                               </span>
                             </div>
+
+                            {part.workshopModificationRequired && (
+                              <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-[10px] text-amber-300 font-semibold">
+                                <span>⚠️</span>
+                                <span>Requiere modificación en taller autorizado</span>
+                              </div>
+                            )}
+
                             <p className="text-[11px] text-slate-400 leading-relaxed">
                               {part.rationale}
                             </p>
+
+                            {part.workshopNotes && (
+                              <p className="text-[10px] text-slate-400 italic">
+                                {part.workshopNotes}
+                              </p>
+                            )}
+
                             <div className="flex items-center gap-2 pt-1">
                               <button
                                 onClick={() => handleAddToCart(part)}
@@ -460,7 +523,7 @@ export function VoltIAWidget() {
                 <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-white text-xs">
-                      Solicitud de Asistencia Técnica NeroElectric Motors
+                      Solicitud de Asistencia Técnica MotoService
                     </h4>
                     <button
                       onClick={() => setIsRequestingHuman(false)}

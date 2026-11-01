@@ -85,9 +85,15 @@ export function EcoMotoCatalogSection() {
     }
   };
 
-  // Filtrado de motos
+  // Filtrado de motos (solo modelos con repuestos o compatibilidades confirmadas/condicionales)
   const filteredMotos = useMemo(() => {
     return allCatalogMotos.filter((m) => {
+      // Ocultar motos que no tienen repuestos ni compatibilidades en catálogo
+      const detail = getMotoWithCompatibleParts(m.slug);
+      if (!detail || !detail.compatibleParts || detail.compatibleParts.length === 0) {
+        return false;
+      }
+
       const matchBrand = selectedBrand === 'todas' || m.brand === selectedBrand;
       const matchType = selectedVehicleType === 'todos' || m.vehicleType === selectedVehicleType;
       const matchVoltage =
@@ -215,134 +221,148 @@ export function EcoMotoCatalogSection() {
                 </div>
               </div>
 
-              {/* Rejilla de Motos */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredMotos.map((moto) => {
-                  const detail = getMotoWithCompatibleParts(moto.slug);
-                  const partsCount = detail?.compatibleParts.length || 0;
+              {/* Rejilla de Motos o Estado Vacío */}
+              {filteredMotos.length === 0 ? (
+                <div className="text-center py-12 px-4 rounded-xl bg-gray-50 border border-gray-200">
+                  <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
+                    <Zap className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-sm font-bold text-gray-900">
+                    No hay modelos con repuestos directos para esta selección
+                  </h3>
+                  <p className="text-xs text-gray-500 max-w-md mx-auto mt-1">
+                    Solo mostramos motos que cuentan con repuestos o compatibilidades confirmadas. Si tienes este u otro modelo, nuestro asistente VoltIA puede seleccionar repuestos adaptables con instalación en taller autorizado.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {filteredMotos.map((moto) => {
+                    const detail = getMotoWithCompatibleParts(moto.slug);
+                    const partsCount = detail?.compatibleParts.length || 0;
 
-                  return (
-                    <div
-                      key={moto.slug}
-                      className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 flex flex-col justify-between hover:border-blue-200 hover:shadow-xs transition-all group"
-                    >
-                      <div>
-                        {/* Contenedor de Fotografía Real / Representativa */}
-                        <div className="relative w-full h-44 mb-3.5 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center p-2">
-                          <Image
-                            src={moto.imageUrl || "/images/motos/placeholder-ev-moto.svg"}
-                            alt={`Moto eléctrica ${moto.brand} ${moto.model}`}
-                            fill
-                            unoptimized={Boolean(moto.imageUrl?.startsWith('http'))}
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
-                          />
-                          {moto.imageUrl ? (
-                            <span className="absolute top-2 left-2 rounded-md bg-white/90 backdrop-blur-xs px-2 py-0.5 text-[10px] font-semibold text-emerald-700 border border-emerald-100 shadow-2xs">
-                              Foto Verificada
-                            </span>
-                          ) : (
-                            <span className="absolute top-2 left-2 rounded-md bg-white/90 backdrop-blur-xs px-2 py-0.5 text-[10px] font-medium text-gray-500 border border-gray-200 shadow-2xs">
-                              En Homologación
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Badge superior */}
-                        <div className="flex items-center justify-between gap-2 mb-1.5">
-                          <span className="text-xs font-bold tracking-wider uppercase text-blue-600">
-                            {moto.brand}
-                          </span>
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-gray-100 text-gray-600">
-                            {moto.vehicleType.replace(/_/g, ' ')}
-                          </span>
-                        </div>
-
-                        <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                          {moto.model}
-                        </h3>
-
-                        {/* Precio Referencial de Proveedor */}
-                        <div className="mt-2 mb-3">
-                          <span className="text-[10px] uppercase font-semibold text-gray-400 block">
-                            Precio Referencial Proveedor:
-                          </span>
-                          {moto.pricePen ? (
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-xl font-bold text-gray-900">
-                                {formatCurrency(moto.pricePen)}
+                    return (
+                      <div
+                        key={moto.slug}
+                        className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 flex flex-col justify-between hover:border-blue-200 hover:shadow-xs transition-all group"
+                      >
+                        <div>
+                          {/* Contenedor de Fotografía Real / Representativa */}
+                          <div className="relative w-full h-44 mb-3.5 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center p-2">
+                            <Image
+                              src={moto.imageUrl || "/images/motos/placeholder-ev-moto.svg"}
+                              alt={`Moto eléctrica ${moto.brand} ${moto.model}`}
+                              fill
+                              unoptimized={Boolean(moto.imageUrl?.startsWith('http'))}
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
+                            />
+                            {moto.imageUrl ? (
+                              <span className="absolute top-2 left-2 rounded-md bg-white/90 backdrop-blur-xs px-2 py-0.5 text-[10px] font-semibold text-emerald-700 border border-emerald-100 shadow-2xs">
+                                Foto Verificada
                               </span>
-                              {moto.regularPricePen && (
-                                <span className="text-xs line-through text-gray-400">
-                                  {formatCurrency(moto.regularPricePen)}
+                            ) : (
+                              <span className="absolute top-2 left-2 rounded-md bg-white/90 backdrop-blur-xs px-2 py-0.5 text-[10px] font-medium text-gray-500 border border-gray-200 shadow-2xs">
+                                En Homologación
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Badge superior */}
+                          <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <span className="text-xs font-bold tracking-wider uppercase text-blue-600">
+                              {moto.brand}
+                            </span>
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-gray-100 text-gray-600">
+                              {moto.vehicleType.replace(/_/g, ' ')}
+                            </span>
+                          </div>
+
+                          <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                            {moto.model}
+                          </h3>
+
+                          {/* Precio Referencial de Proveedor */}
+                          <div className="mt-2 mb-3">
+                            <span className="text-[10px] uppercase font-semibold text-gray-400 block">
+                              Precio Referencial Proveedor:
+                            </span>
+                            {moto.pricePen ? (
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-xl font-bold text-gray-900">
+                                  {formatCurrency(moto.pricePen)}
                                 </span>
-                              )}
+                                {moto.regularPricePen && (
+                                  <span className="text-xs line-through text-gray-400">
+                                    {formatCurrency(moto.regularPricePen)}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-amber-700 font-medium">A consultar en proveedor</span>
+                            )}
+                          </div>
+
+                          {/* Métricas clave */}
+                          <div className="grid grid-cols-3 gap-2 py-2.5 border-y border-gray-100 text-center my-3 bg-gray-50 rounded-lg">
+                            <div>
+                              <span className="text-[10px] text-gray-400 block">Motor</span>
+                              <span className="text-xs font-semibold text-gray-800">
+                                {moto.motorNominalW ? `${moto.motorNominalW}W` : 'N/D'}
+                              </span>
                             </div>
-                          ) : (
-                            <span className="text-xs text-amber-700 font-medium">A consultar en proveedor</span>
-                          )}
+                            <div>
+                              <span className="text-[10px] text-gray-400 block">Batería</span>
+                              <span className="text-xs font-semibold text-gray-800">
+                                {moto.batteryVoltageV ? `${moto.batteryVoltageV}V` : 'N/D'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-gray-400 block">Velocidad</span>
+                              <span className="text-xs font-semibold text-gray-800">
+                                {moto.maxSpeedKmh ? `${moto.maxSpeedKmh} km/h` : 'N/D'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Repuestos compatibles vinculados */}
+                          <div className="mt-2 flex items-center justify-between text-xs">
+                            <span className="text-gray-500">Repuestos verificados:</span>
+                            {partsCount > 0 ? (
+                              <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                {partsCount} compatible{partsCount > 1 ? 's' : ''}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">En documentación</span>
+                            )}
+                          </div>
                         </div>
 
-                        {/* Métricas clave */}
-                        <div className="grid grid-cols-3 gap-2 py-2.5 border-y border-gray-100 text-center my-3 bg-gray-50 rounded-lg">
-                          <div>
-                            <span className="text-[10px] text-gray-400 block">Motor</span>
-                            <span className="text-xs font-semibold text-gray-800">
-                              {moto.motorNominalW ? `${moto.motorNominalW}W` : 'N/D'}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-gray-400 block">Batería</span>
-                            <span className="text-xs font-semibold text-gray-800">
-                              {moto.batteryVoltageV ? `${moto.batteryVoltageV}V` : 'N/D'}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-gray-400 block">Velocidad</span>
-                            <span className="text-xs font-semibold text-gray-800">
-                              {moto.maxSpeedKmh ? `${moto.maxSpeedKmh} km/h` : 'N/D'}
-                            </span>
-                          </div>
-                        </div>
+                        {/* Botones de acción */}
+                        <div className="mt-4 pt-3 border-t border-gray-100 flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setInspectedMoto(moto)}
+                            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all cursor-pointer shadow-xs"
+                          >
+                            <Wrench className="w-3.5 h-3.5" />
+                            <span>Ver Repuestos Compatibles</span>
+                          </button>
 
-                        {/* Repuestos compatibles vinculados */}
-                        <div className="mt-2 flex items-center justify-between text-xs">
-                          <span className="text-gray-500">Repuestos verificados:</span>
-                          {partsCount > 0 ? (
-                            <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                              {partsCount} compatible{partsCount > 1 ? 's' : ''}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400">En documentación</span>
-                          )}
+                          <a
+                            href={`https://wa.me/51987654321?text=${encodeURIComponent(`Hola MotoService, deseo cotizar la moto eléctrica ${moto.brand} ${moto.model}.`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Cotizar moto con un asesor de ventas de MotoService"
+                            className="p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 transition-colors"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                          </a>
                         </div>
                       </div>
-
-                      {/* Botones de acción */}
-                      <div className="mt-4 pt-3 border-t border-gray-100 flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setInspectedMoto(moto)}
-                          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all cursor-pointer shadow-xs"
-                        >
-                          <Wrench className="w-3.5 h-3.5" />
-                          <span>Ver Repuestos Compatibles</span>
-                        </button>
-
-                        <a
-                          href={`https://wa.me/51987654321?text=${encodeURIComponent(`Hola MotoService, deseo cotizar la moto eléctrica ${moto.brand} ${moto.model}.`)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title="Cotizar moto con un asesor de ventas de MotoService"
-                          className="p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 transition-colors"
-                        >
-                          <MessageCircle className="w-3.5 h-3.5" />
-                        </a>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
