@@ -207,6 +207,32 @@ test('Culqi: Adaptador de simulación 3DS para entorno de pruebas', async () => 
 
   assert.strictEqual(chargeDeclined.success, false);
   assert.strictEqual(chargeDeclined.status, 'rechazado');
+
+  // Cobro con tarjeta que requiere autenticación 3DS (Challenge)
+  const charge3ds = await processCulqiCharge({
+    orderId: 'ord-test-3ds',
+    orderNumber: 'MS-2026-10003',
+    amountPen: 150.0,
+    customerEmail: 'review@culqi.com',
+    tokenId: 'tok_test_3ds_card',
+  });
+  assert.strictEqual(charge3ds.success, false);
+  assert.strictEqual(charge3ds.status, 'requiere_3ds');
+  assert.strictEqual(charge3ds.requires3DS, true);
+
+  // Cobro 3DS con Challenge/OTP confirmado por el usuario
+  const charge3dsConfirmed = await processCulqiCharge({
+    orderId: 'ord-test-3ds',
+    orderNumber: 'MS-2026-10003',
+    amountPen: 150.0,
+    customerEmail: 'review@culqi.com',
+    tokenId: 'tok_test_3ds_card',
+    challengeConfirmed: true,
+    otpCode: '123456',
+  });
+  assert.strictEqual(charge3dsConfirmed.success, true);
+  assert.strictEqual(charge3dsConfirmed.status, 'pagado');
+  assert.ok(charge3dsConfirmed.chargeId?.startsWith('chr_test_3ds_'));
 });
 
 test('Culqi: Detección de configuración de pasarela y llaves reales', () => {

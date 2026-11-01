@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { processCulqiCharge } from '@/lib/payments/culqi';
-import { getOrderSecurely } from '@/lib/orders/order-service';
+import { getOrderSecurely, recordOrderPaymentInMemory } from '@/lib/orders/order-service';
 import { createClient } from '@/lib/supabase/server';
 import { generateProvisionalFiscalReceipt, calculateTaxBreakdown } from '@/lib/documents/fiscal-service';
 
 export async function POST(request: Request) {
   try {
-    const { orderId, tokenId, guestToken } = await request.json();
+    const { orderId, tokenId, guestToken, challengeConfirmed, otpCode } = await request.json();
 
     if (!orderId || !tokenId) {
       return NextResponse.json(
@@ -40,18 +40,37 @@ export async function POST(request: Request) {
       amountPen: order.total,
       customerEmail: order.customerEmail,
       tokenId,
+      challengeConfirmed: Boolean(challengeConfirmed),
+      otpCode: otpCode ? String(otpCode) : undefined,
     });
 
     if (!chargeResult.success) {
+      if (chargeResult.status === 'requiere_3ds') {
+        return NextResponse.json(
+          {
+            success: false,
+            requires3DS: true,
+            actionCode: chargeResult.actionCode || 'REVIEW',
+            status: 'requiere_3ds',
+            error: chargeResult.errorMessage || 'Autenticación 3DS requerida.',
+          },
+          { status: 200 }
+        );
+      }
+
       return NextResponse.json(
         {
           success: false,
           error: chargeResult.errorMessage || 'El cobro no pudo ser procesado.',
-          status: 'rechazado',
+          status: chargeResult.status || 'rechazado',
+          actionCode: chargeResult.actionCode,
         },
         { status: 402 }
       );
     }
+
+    // Actualizar estado en memoria inmediatamente
+    recordOrderPaymentInMemory(order.id, chargeResult.chargeId);
 
     // Registrar pago y actualizar estados del pedido en base de datos
     try {

@@ -17,13 +17,17 @@ export interface CulqiPaymentInput {
   customerEmail: string;
   tokenId: string;
   deviceFingerprint?: string;
+  challengeConfirmed?: boolean;
+  otpCode?: string;
 }
 
 export interface CulqiPaymentResponse {
   success: boolean;
   chargeId?: string;
   orderId: string;
-  status: 'pagado' | 'en_proceso' | 'rechazado';
+  status: 'pagado' | 'en_proceso' | 'rechazado' | 'requiere_3ds';
+  actionCode?: string;
+  requires3DS?: boolean;
   amountCents: number;
   currency: 'PEN';
   authorizationCode?: string;

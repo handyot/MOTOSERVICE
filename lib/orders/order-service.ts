@@ -280,6 +280,29 @@ export async function createOrder(
   return { order: orderRecord, guestToken };
 }
 
+export function recordOrderPaymentInMemory(orderId: string, chargeId?: string) {
+  let order = memoryOrders.get(orderId);
+  if (!order) {
+    for (const o of memoryOrders.values()) {
+      if (o.id === orderId || o.orderNumber.toUpperCase() === orderId.toUpperCase()) {
+        order = o;
+        break;
+      }
+    }
+  }
+
+  if (order) {
+    order.paymentStatus = 'pagado';
+    order.orderStatus = 'confirmado';
+    order.documentStatus = 'listo';
+    order.updatedAt = new Date().toISOString();
+    if (chargeId) {
+      order.adminNotes = `Pago confirmado Culqi chargeId: ${chargeId}`;
+    }
+    memoryOrders.set(order.id, order);
+  }
+}
+
 /**
  * Obtiene un pedido de forma segura.
  * Solo autoriza si:
@@ -294,8 +317,18 @@ export async function getOrderSecurely(params: {
   isAdmin?: boolean;
 }): Promise<OrderRecord | null> {
   const { orderId, guestToken, authenticatedUserId, isAdmin } = params;
+  const cleanId = (orderId || '').trim();
 
-  let order: OrderRecord | null = memoryOrders.get(orderId) || null;
+  let order: OrderRecord | null = memoryOrders.get(cleanId) || null;
+
+  if (!order) {
+    for (const o of memoryOrders.values()) {
+      if (o.id === cleanId || o.orderNumber.toUpperCase() === cleanId.toUpperCase()) {
+        order = o;
+        break;
+      }
+    }
+  }
 
   if (!order) {
     try {
@@ -306,7 +339,7 @@ export async function getOrderSecurely(params: {
           *,
           pedido_items (*)
         `)
-        .eq('id_pedido', orderId)
+        .or(`id_pedido.eq.${cleanId},numero_pedido.eq.${cleanId}`)
         .maybeSingle();
 
       if (data && !error) {
@@ -371,6 +404,251 @@ export async function getOrderSecurely(params: {
 
   // Denegar acceso si no cumple ninguna condición
   return null;
+}
+
+function maskEmail(email: string): string {
+  if (!email || !email.includes('@')) return '***@***.com';
+  const [local, domain] = email.split('@');
+  const maskedLocal =
+    local.length <= 2 ? `${local[0]}***` : `${local.slice(0, 2)}***${local.slice(-1)}`;
+  return `${maskedLocal}@${domain}`;
+}
+
+function maskName(name: string): string {
+  if (!name) return 'Cliente NeroElectric';
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => (word.length <= 2 ? word : `${word[0]}${'*'.repeat(Math.min(word.length - 1, 4))}`))
+    .join(' ');
+}
+
+function maskAddress(address: string): string {
+  if (!address) return 'Dirección protegida';
+  const words = address.split(' ');
+  if (words.length <= 2) return `${words[0]} ***`;
+  return `${words.slice(0, 2).join(' ')} ***`;
+}
+
+export interface PublicOrderTracking {
+  id: string;
+  orderNumber: string;
+  orderStatus: OrderStatus;
+  paymentStatus: string;
+  dispatchStatus: string;
+  deliveryMethod: string;
+  customerNameMasked: string;
+  customerEmailMasked: string;
+  shippingAddressMasked: string;
+  department: string;
+  province: string;
+  district: string;
+  total: number;
+  currency: string;
+  createdAt: string;
+  updatedAt: string;
+  items: Array<{
+    sku: string;
+    name: string;
+    quantity: number;
+    unitPrice: number;
+    subtotal: number;
+  }>;
+  timelineSteps: Array<{
+    key: string;
+    label: string;
+    description: string;
+    status: 'completed' | 'current' | 'upcoming';
+  }>;
+  supportWhatsAppUrl: string;
+}
+
+/**
+ * Consulta pública y segura del estado de un pedido por número de orden o identificador.
+ * Enmascara datos privados (DNI/RUC, teléfono, dirección completa) para consulta pública
+ * en `/carrito` o `/pedido/[id]`.
+ */
+export async function trackOrderPublicly(params: {
+  query: string;
+  customerEmail?: string | null;
+}): Promise<PublicOrderTracking | null> {
+  const cleanQuery = (params.query || '').trim();
+  if (!cleanQuery) return null;
+
+  // 1. Buscar en memoria
+  let found: OrderRecord | null = null;
+  const upperQuery = cleanQuery.toUpperCase();
+
+  for (const o of memoryOrders.values()) {
+    if (
+      o.id.toUpperCase() === upperQuery ||
+      o.orderNumber.toUpperCase() === upperQuery ||
+      o.customerEmail.toLowerCase() === cleanQuery.toLowerCase() ||
+      (params.customerEmail && o.customerEmail.toLowerCase() === params.customerEmail.trim().toLowerCase())
+    ) {
+      found = o;
+      break;
+    }
+  }
+
+  // 2. Si no está en memoria, buscar en Supabase
+  if (!found) {
+    try {
+      const supabase = await createClient();
+      let queryBuilder = supabase
+        .from('pedidos')
+        .select(`
+          *,
+          pedido_items (*)
+        `);
+
+      if (cleanQuery.includes('@')) {
+        queryBuilder = queryBuilder
+          .eq('cliente_email', cleanQuery.toLowerCase())
+          .order('created_at', { ascending: false })
+          .limit(1);
+      } else if (cleanQuery.includes('-') || cleanQuery.startsWith('MS-')) {
+        queryBuilder = queryBuilder.or(`id_pedido.eq.${cleanQuery},numero_pedido.eq.${cleanQuery}`);
+      } else {
+        queryBuilder = queryBuilder.or(`id_pedido.eq.${cleanQuery},numero_pedido.ilike.%${cleanQuery}%`);
+      }
+
+      const { data, error } = await queryBuilder.maybeSingle();
+
+      if (data && !error) {
+        found = {
+          id: data.id_pedido,
+          orderNumber: data.numero_pedido,
+          userId: data.user_id,
+          isGuest: data.es_invitado,
+          guestAccessTokenHash: data.guest_access_token_hash,
+          customerEmail: data.cliente_email,
+          customerName: data.cliente_nombre,
+          customerPhone: data.cliente_telefono,
+          shippingAddress: data.direccion_envio,
+          department: data.departamento,
+          province: data.provincia,
+          district: data.distrito,
+          deliveryMethod: data.modalidad_entrega,
+          invoiceType: data.tipo_comprobante,
+          docNumber: data.doc_numero,
+          docBusinessName: data.doc_razon_social,
+          subtotal: Number(data.subtotal),
+          discount: Number(data.descuento),
+          shippingCost: Number(data.costo_envio),
+          total: Number(data.total),
+          currency: data.moneda,
+          couponCode: data.cupon_codigo,
+          orderStatus: data.estado_pedido,
+          paymentStatus: data.estado_pago,
+          documentStatus: data.estado_comprobante,
+          dispatchStatus: data.estado_despacho,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at,
+          items: (data.pedido_items || []).map((i: Record<string, unknown>) => ({
+            id: String(i.id_item),
+            orderId: String(i.id_pedido),
+            sku: String(i.sku),
+            name: String(i.nombre),
+            unitPrice: Number(i.precio_unitario),
+            quantity: Number(i.cantidad),
+            subtotal: Number(i.subtotal),
+          })),
+        };
+      }
+    } catch {
+      // Ignorar fallo de conexión
+    }
+  }
+
+  if (!found) return null;
+
+  // Determinar progreso de línea de tiempo
+  const statusOrder: OrderStatus[] = [
+    'pendiente_pago',
+    'confirmado',
+    'en_preparacion',
+    'despachado',
+    'entregado',
+  ];
+
+  const currentIdx = statusOrder.indexOf(found.orderStatus);
+
+  const stepsConfig = [
+    {
+      key: 'confirmado',
+      label: 'Pago Confirmado',
+      description: 'El pago con Culqi ha sido verificado satisfactoriamente.',
+      idx: 1,
+    },
+    {
+      key: 'en_preparacion',
+      label: 'En Preparación de Almacén',
+      description: 'Componentes validados, empaquetados y con control de calidad.',
+      idx: 2,
+    },
+    {
+      key: 'despachado',
+      label: found.deliveryMethod === 'recojo_tienda' ? 'Listo para Recojo' : 'En Ruta de Despacho',
+      description:
+        found.deliveryMethod === 'recojo_tienda'
+          ? 'Disponible para retiro en almacén central de Lima.'
+          : 'Motorizado en trayecto hacia tu dirección.',
+      idx: 3,
+    },
+    {
+      key: 'entregado',
+      label: 'Entregado con Conformidad',
+      description: 'Repuesto entregado con guía y garantía oficial activada.',
+      idx: 4,
+    },
+  ];
+
+  const timelineSteps = stepsConfig.map((s) => {
+    let stepStatus: 'completed' | 'current' | 'upcoming' = 'upcoming';
+    if (currentIdx >= s.idx) {
+      stepStatus = currentIdx === s.idx ? 'current' : 'completed';
+    }
+    return {
+      key: s.key,
+      label: s.label,
+      description: s.description,
+      status: stepStatus,
+    };
+  });
+
+  const waText = encodeURIComponent(
+    `Hola NeroElectric Motors, deseo consultar el estado de mi pedido ${found.orderNumber} por un total de S/ ${found.total.toFixed(2)}.`
+  );
+  const supportWhatsAppUrl = `https://wa.me/51987654321?text=${waText}`;
+
+  return {
+    id: found.id,
+    orderNumber: found.orderNumber,
+    orderStatus: found.orderStatus,
+    paymentStatus: found.paymentStatus,
+    dispatchStatus: found.dispatchStatus,
+    deliveryMethod: found.deliveryMethod,
+    customerNameMasked: maskName(found.customerName || ''),
+    customerEmailMasked: maskEmail(found.customerEmail || ''),
+    shippingAddressMasked: maskAddress(found.shippingAddress || ''),
+    department: found.department || 'Lima',
+    province: found.province || 'Lima',
+    district: found.district || '',
+    total: found.total,
+    currency: found.currency,
+    createdAt: found.createdAt,
+    updatedAt: found.updatedAt,
+    items: (found.items || []).map((i) => ({
+      sku: i.sku,
+      name: i.name,
+      quantity: i.quantity,
+      unitPrice: i.unitPrice,
+      subtotal: i.subtotal,
+    })),
+    timelineSteps,
+    supportWhatsAppUrl,
+  };
 }
 
 /**
