@@ -37,6 +37,32 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const handleCardNumberChange = (val: string) => {
+    const raw = val.replace(/\D/g, '').slice(0, 16);
+    const formatted = raw.replace(/(\d{4})(?=\d)/g, '$1 ');
+    setCardNumber(formatted);
+  };
+
+  const handleCardExpChange = (val: string) => {
+    const raw = val.replace(/\D/g, '').slice(0, 4);
+    if (raw.length >= 3) {
+      setCardExp(`${raw.slice(0, 2)}/${raw.slice(2)}`);
+    } else {
+      setCardExp(raw);
+    }
+  };
+
+  const handleCardCvvChange = (val: string) => {
+    const raw = val.replace(/\D/g, '').slice(0, 4);
+    setCardCvv(raw);
+  };
+
+  const fillTestCard = () => {
+    setCardNumber('4111 1111 1111 1111');
+    setCardExp('12/28');
+    setCardCvv('123');
+  };
+
   // Redirigir si el carrito está vacío tras cargar
   useEffect(() => {
     if (isLoaded && items.length === 0) {
@@ -127,21 +153,88 @@ export default function CheckoutPage() {
       const orderId = orderData.order.id;
       const guestToken = orderData.guestToken;
 
-      // 4. Procesar el pago con Culqi 3DS mediante el adaptador seguro de servidor
-      const mockToken = `tok_test_${Date.now()}`;
+      // 4. Validar datos de tarjeta para pasarela Culqi
+      const cleanCard = cardNumber.replace(/\D/g, '');
+      if (cleanCard.length < 13 || cleanCard.length > 19) {
+        throw new Error('Por favor ingresa un número de tarjeta válido (13 a 19 dígitos).');
+      }
+
+      const cleanExp = cardExp.replace(/\s/g, '');
+      const [expMonthStr, expYearStr] = cleanExp.includes('/')
+        ? cleanExp.split('/')
+        : [cleanExp.slice(0, 2), cleanExp.slice(2)];
+      const expMonth = parseInt(expMonthStr || '0', 10);
+      let expYear = parseInt(expYearStr || '0', 10);
+      if (expYear < 100) {
+        expYear += 2000;
+      }
+
+      if (!expMonth || expMonth < 1 || expMonth > 12) {
+        throw new Error('El mes de vencimiento debe ser entre 01 y 12.');
+      }
+      const currentYear = new Date().getFullYear();
+      if (!expYear || expYear < currentYear || expYear > currentYear + 20) {
+        throw new Error('El año de vencimiento no es válido o la tarjeta ha expirado.');
+      }
+
+      const cleanCvv = cardCvv.trim();
+      if (cleanCvv.length < 3 || cleanCvv.length > 4) {
+        throw new Error('Ingresa un código de seguridad CVV válido (3 o 4 dígitos).');
+      }
+
+      // 5. Tokenizar la tarjeta con la API oficial de Culqi
+      const culqiPublicKey =
+        process.env.NEXT_PUBLIC_CULQI_PUBLIC_KEY || 'pk_test_PMjqbnwQ8wMQs03O';
+      let culqiTokenId = '';
+
+      try {
+        const tokenRes = await fetch('https://api.culqi.com/v2/tokens', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${culqiPublicKey}`,
+          },
+          body: JSON.stringify({
+            card_number: cleanCard,
+            cvv: cleanCvv,
+            expiration_month: expMonth,
+            expiration_year: expYear,
+            email: customerEmail.trim(),
+          }),
+        });
+
+        const tokenData = await tokenRes.json();
+        if (!tokenRes.ok || !tokenData.id) {
+          const userMsg =
+            tokenData.user_message ||
+            tokenData.merchant_message ||
+            tokenData.message ||
+            'Error al verificar la tarjeta con Culqi.';
+          throw new Error(`Culqi: ${userMsg}`);
+        }
+        culqiTokenId = tokenData.id;
+      } catch (tokenErr: unknown) {
+        const msg =
+          tokenErr instanceof Error
+            ? tokenErr.message
+            : 'Error al conectar con la pasarela Culqi.';
+        throw new Error(msg);
+      }
+
+      // 6. Procesar el cobro seguro en el servidor con Culqi
       const payRes = await fetch('/api/payments/charge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId,
-          tokenId: mockToken,
+          tokenId: culqiTokenId,
           guestToken,
         }),
       });
 
       const payData = await payRes.json();
       if (!payRes.ok || !payData.success) {
-        throw new Error(payData.error || 'El pago con tarjeta fue rechazado.');
+        throw new Error(payData.error || payData.errorMessage || 'El pago con tarjeta fue rechazado.');
       }
 
       // Limpiar carrito local tras pago confirmado
@@ -488,41 +581,56 @@ export default function CheckoutPage() {
                 <Icon name="shield" className="w-4 h-4 text-emerald-600" />
                 Pasarela de Pago Segura (Culqi 3DS)
               </h2>
-              <span className="text-[10px] rounded bg-gray-100 border border-gray-200 px-2 py-0.5 text-gray-600 font-mono">
-                Cifrado 256-bit
+              <span className="text-[10px] rounded bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-emerald-700 font-mono font-semibold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Culqi Activo
               </span>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="text-gray-700 block mb-1 font-semibold">Número de Tarjeta</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-gray-700 font-semibold">Número de Tarjeta *</label>
+                  <button
+                    type="button"
+                    onClick={fillTestCard}
+                    className="text-[10px] text-blue-600 hover:text-blue-800 underline font-medium cursor-pointer"
+                  >
+                    Usar tarjeta de prueba
+                  </button>
+                </div>
                 <input
                   type="text"
+                  required
                   value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
+                  onChange={(e) => handleCardNumberChange(e.target.value)}
                   className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-xs text-gray-900 font-mono placeholder-gray-400 focus:outline-none focus:border-blue-600"
                   placeholder="4111 1111 1111 1111"
+                  maxLength={19}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-gray-700 block mb-1 font-semibold">Vencimiento</label>
+                  <label className="text-gray-700 block mb-1 font-semibold">Vencimiento (MM/AA) *</label>
                   <input
                     type="text"
+                    required
                     value={cardExp}
-                    onChange={(e) => setCardExp(e.target.value)}
+                    onChange={(e) => handleCardExpChange(e.target.value)}
                     className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-xs text-gray-900 font-mono placeholder-gray-400 focus:outline-none focus:border-blue-600"
                     placeholder="MM/AA"
+                    maxLength={5}
                   />
                 </div>
                 <div>
-                  <label className="text-gray-700 block mb-1 font-semibold">CVV (3DS)</label>
+                  <label className="text-gray-700 block mb-1 font-semibold">CVV (3DS) *</label>
                   <input
                     type="password"
+                    required
                     maxLength={4}
                     value={cardCvv}
-                    onChange={(e) => setCardCvv(e.target.value)}
+                    onChange={(e) => handleCardCvvChange(e.target.value)}
                     className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-xs text-gray-900 font-mono placeholder-gray-400 focus:outline-none focus:border-blue-600"
                     placeholder="123"
                   />
@@ -531,9 +639,9 @@ export default function CheckoutPage() {
             </div>
 
             <div className="rounded-lg bg-gray-50 p-3 border border-gray-200 text-xs text-gray-600 space-y-1">
-              <p className="font-semibold text-gray-800">Entorno seguro de pagos:</p>
+              <p className="font-semibold text-gray-800">Entorno seguro certificado por Culqi:</p>
               <p className="text-[11px] leading-snug">
-                El servidor autorizará el cargo exacto de <strong>{formatCurrency(estimatedTotal, 'PEN')}</strong> a través de Culqi con validación 3DS. No almacenamos datos de tu tarjeta.
+                El servidor autorizará el cargo exacto de <strong>{formatCurrency(estimatedTotal, 'PEN')}</strong> a través de Culqi con validación 3DS. Los datos de la tarjeta son tokenizados directamente de forma cifrada.
               </p>
             </div>
 

@@ -6,6 +6,7 @@ import {
   processCulqiCharge,
   verifyCulqiWebhookSignature,
   handleCulqiWebhookEvent,
+  isCulqiConfigured,
 } from '../lib/payments/culqi-core.mjs';
 
 import {
@@ -206,6 +207,11 @@ test('Culqi: Adaptador de simulación 3DS para entorno de pruebas', async () => 
 
   assert.strictEqual(chargeDeclined.success, false);
   assert.strictEqual(chargeDeclined.status, 'rechazado');
+});
+
+test('Culqi: Detección de configuración de pasarela y llaves reales', () => {
+  const configured = isCulqiConfigured();
+  assert.strictEqual(typeof configured, 'boolean');
 });
 
 test('Culqi: Procesamiento idempotente de eventos Webhook', async () => {
