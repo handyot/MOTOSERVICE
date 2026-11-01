@@ -216,9 +216,19 @@ export async function createOrder(
     items: verifiedItems.map((item) => ({ ...item, orderId })),
   };
 
-  // 6. Persistir en base de datos o fallback en memoria
-  try {
-    const supabase = createOrderAdminClient() || (await createClient());
+  // 6. Persistir en base de datos PostgreSQL de Supabase
+  const isTestEnv = process.env.NODE_ENV === 'test';
+  const supabase = createOrderAdminClient();
+
+  if (!supabase) {
+    if (isTestEnv) {
+      memoryOrders.set(orderId, orderRecord);
+    } else {
+      throw new Error(
+        'Servicio de persistencia no configurado en el servidor (SUPABASE_SECRET_KEY requerida). No se pudo crear el pedido.'
+      );
+    }
+  } else {
     const { error: orderError } = await supabase.from('pedidos').insert({
       id_pedido: orderId,
       numero_pedido: orderNumber,
@@ -249,10 +259,14 @@ export async function createOrder(
     });
 
     if (orderError) {
-      console.warn('[MOTOSERVICE] Guardando pedido en memoria por error en Supabase:', orderError.message);
-      memoryOrders.set(orderId, orderRecord);
+      console.error('[MOTOSERVICE] Error al persistir pedido en Supabase:', orderError.message);
+      if (isTestEnv) {
+        memoryOrders.set(orderId, orderRecord);
+      } else {
+        throw new Error(`Error al registrar el pedido en la base de datos: ${orderError.message}`);
+      }
     } else {
-      // Insertar items
+      // Insertar items del pedido
       const itemsPayload = verifiedItems.map((item) => ({
         id_item: item.id,
         id_pedido: orderId,
@@ -262,12 +276,17 @@ export async function createOrder(
         cantidad: item.quantity,
         subtotal: item.subtotal,
       }));
-      await supabase.from('pedido_items').insert(itemsPayload);
-      memoryOrders.set(orderId, orderRecord);
+      const { error: itemsError } = await supabase.from('pedido_items').insert(itemsPayload);
+      if (itemsError) {
+        console.error('[MOTOSERVICE] Error al registrar items del pedido:', itemsError.message);
+        if (!isTestEnv) {
+          throw new Error(`Error al registrar los items del pedido: ${itemsError.message}`);
+        }
+      }
+      if (isTestEnv) {
+        memoryOrders.set(orderId, orderRecord);
+      }
     }
-  } catch (err) {
-    console.warn('[MOTOSERVICE] Error conectando a DB, usando memoria:', err);
-    memoryOrders.set(orderId, orderRecord);
   }
 
   // Si se aplicó un cupón, registrar redención
@@ -322,13 +341,17 @@ export async function getOrderSecurely(params: {
   const { orderId, guestToken, authenticatedUserId, isAdmin } = params;
   const cleanId = (orderId || '').trim();
 
-  let order: OrderRecord | null = memoryOrders.get(cleanId) || null;
+  let order: OrderRecord | null = null;
 
-  if (!order) {
-    for (const o of memoryOrders.values()) {
-      if (o.id === cleanId || o.orderNumber.toUpperCase() === cleanId.toUpperCase()) {
-        order = o;
-        break;
+  // En entorno de pruebas unitarias aisladas, permitir lectura desde memoria simulada
+  if (process.env.NODE_ENV === 'test') {
+    order = memoryOrders.get(cleanId) || null;
+    if (!order) {
+      for (const o of memoryOrders.values()) {
+        if (o.id === cleanId || o.orderNumber.toUpperCase() === cleanId.toUpperCase()) {
+          order = o;
+          break;
+        }
       }
     }
   }
