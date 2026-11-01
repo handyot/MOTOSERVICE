@@ -4,6 +4,7 @@
 
 import {
   convertPenToCents as coreConvertPenToCents,
+  getCulqiPrivateKey as coreGetCulqiPrivateKey,
   isCulqiConfigured as coreIsCulqiConfigured,
   processCulqiCharge as coreProcessCulqiCharge,
   verifyCulqiWebhookSignature as coreVerifyCulqiWebhookSignature,
@@ -61,6 +62,7 @@ export interface CulqiWebhookPayload {
 }
 
 export const convertPenToCents = coreConvertPenToCents;
+export const getCulqiPrivateKey = coreGetCulqiPrivateKey;
 export const isCulqiConfigured = coreIsCulqiConfigured;
 export const processCulqiCharge = coreProcessCulqiCharge as (input: CulqiPaymentInput) => Promise<CulqiPaymentResponse>;
 export const verifyCulqiWebhookSignature = coreVerifyCulqiWebhookSignature;

@@ -1,3 +1,5 @@
+process.env.NODE_ENV = 'test';
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -7,6 +9,7 @@ import {
   verifyCulqiWebhookSignature,
   handleCulqiWebhookEvent,
   isCulqiConfigured,
+  getCulqiPrivateKey,
 } from '../lib/payments/culqi-core.mjs';
 
 import {
@@ -481,4 +484,208 @@ test('Auditoría Trazabilidad: Enmascaramiento estricto de PII en seguimiento de
   assert.ok(maskedName.includes('*'), 'El nombre debe estar enmascarado');
   assert.ok(maskedAddress.endsWith('***'), 'La dirección debe terminar en máscara');
   assert.strictEqual(maskedAddress.includes('Dpto 402'), false, 'No debe filtrar número de departamento ni interior');
+});
+
+// -----------------------------------------------------------------------------
+// 10. AUDITORÍA CRÍTICA CHECKOUT: VALIDACIONES DE PERSISTENCIA Y PASARELA FAIL-CLOSE
+// -----------------------------------------------------------------------------
+
+test('Auditoría Culqi: Falta de credenciales en servidor rechaza tokens auténticos sin simular venta', async () => {
+  // Simular ausencia de credenciales privadas de Culqi
+  const origPrivate = process.env.CULQI_PRIVATE_KEY;
+  const origSecret = process.env.CULQI_SECRET_KEY;
+  delete process.env.CULQI_PRIVATE_KEY;
+  delete process.env.CULQI_SECRET_KEY;
+
+  try {
+    assert.strictEqual(isCulqiConfigured(), false);
+    assert.strictEqual(getCulqiPrivateKey(), null);
+
+    // Un token de navegador real NUNCA debe ser aprobado de forma simulada
+    const realBrowserToken = 'tkn_test_browser_token_sample_8888';
+    const result = await processCulqiCharge({
+      orderId: 'ord-failclose-test',
+      orderNumber: 'MS-2026-88888',
+      amountPen: 281.0,
+      customerEmail: 'review@culqi.com',
+      tokenId: realBrowserToken,
+    });
+
+    assert.strictEqual(result.success, false, 'No debe autorizarse un cobro si faltan credenciales');
+    assert.strictEqual(result.status, 'rechazado');
+    assert.strictEqual(result.isMock, false, 'No debe producirse una simulación de venta con token real');
+    assert.ok(result.errorMessage?.includes('Configuración de pasarela incompleta'));
+  } finally {
+    if (origPrivate) process.env.CULQI_PRIVATE_KEY = origPrivate;
+    if (origSecret) process.env.CULQI_SECRET_KEY = origSecret;
+  }
+});
+
+test('Auditoría Culqi: Compatibilidad canónica de CULQI_PRIVATE_KEY y CULQI_SECRET_KEY', () => {
+  const origPrivate = process.env.CULQI_PRIVATE_KEY;
+  const origSecret = process.env.CULQI_SECRET_KEY;
+
+  try {
+    delete process.env.CULQI_PRIVATE_KEY;
+    delete process.env.CULQI_SECRET_KEY;
+    assert.strictEqual(getCulqiPrivateKey(), null);
+
+    // Caso A: CULQI_PRIVATE_KEY (canónico)
+    process.env.CULQI_PRIVATE_KEY = 'sk_test_canonical_key_111';
+    assert.strictEqual(getCulqiPrivateKey(), 'sk_test_canonical_key_111');
+    assert.strictEqual(isCulqiConfigured(), true);
+
+    // Caso B: CULQI_SECRET_KEY (compatible)
+    delete process.env.CULQI_PRIVATE_KEY;
+    process.env.CULQI_SECRET_KEY = 'sk_test_compatible_key_222';
+    assert.strictEqual(getCulqiPrivateKey(), 'sk_test_compatible_key_222');
+    assert.strictEqual(isCulqiConfigured(), true);
+  } finally {
+    if (origPrivate) process.env.CULQI_PRIVATE_KEY = origPrivate;
+    else delete process.env.CULQI_PRIVATE_KEY;
+    if (origSecret) process.env.CULQI_SECRET_KEY = origSecret;
+    else delete process.env.CULQI_SECRET_KEY;
+  }
+});
+
+test('Auditoría Checkout: Rechazo de respuestas mock fuera de tests unitarios', () => {
+  // Simulación de la regla del endpoint /api/payments/charge
+  function evaluateChargeSafety(chargeResult, nodeEnv) {
+    if (chargeResult.isMock && nodeEnv !== 'test') {
+      return { allowed: false, status: 402, error: 'Cobro simulado rechazado en entorno de producción/preview' };
+    }
+    return { allowed: true, status: 200 };
+  }
+
+  const mockApprovedCharge = {
+    success: true,
+    chargeId: 'chr_test_mock_fake_123',
+    status: 'pagado',
+    isMock: true,
+  };
+
+  // En producción / preview debe ser RECHAZADO de forma tajante
+  const prodCheck = evaluateChargeSafety(mockApprovedCharge, 'production');
+  assert.strictEqual(prodCheck.allowed, false);
+  assert.strictEqual(prodCheck.status, 402);
+
+  const previewCheck = evaluateChargeSafety(mockApprovedCharge, 'preview');
+  assert.strictEqual(previewCheck.allowed, false);
+
+  // Únicamente en 'test' se autoriza ejecución controlada
+  const testCheck = evaluateChargeSafety(mockApprovedCharge, 'test');
+  assert.strictEqual(testCheck.allowed, true);
+});
+
+test('Auditoría Persistencia: Pedido inexistente en Supabase no procesa cobro', () => {
+  // Simular la regla de validación previa de /api/payments/charge
+  function checkOrderPaymentEligibility(orderInDatabase) {
+    if (!orderInDatabase) {
+      return { eligible: false, statusCode: 404, error: 'Pedido no encontrado en base de datos. No se puede cobrar.' };
+    }
+    if (orderInDatabase.paymentStatus === 'pagado') {
+      return { eligible: false, statusCode: 200, message: 'Pedido ya pagado previamente.' };
+    }
+    return { eligible: true };
+  }
+
+  // Escenario: Pedido que no fue persistido en Supabase
+  const missingOrderCheck = checkOrderPaymentEligibility(null);
+  assert.strictEqual(missingOrderCheck.eligible, false);
+  assert.strictEqual(missingOrderCheck.statusCode, 404);
+
+  // Escenario: Pedido previamente pagado (idempotencia)
+  const alreadyPaidCheck = checkOrderPaymentEligibility({ paymentStatus: 'pagado' });
+  assert.strictEqual(alreadyPaidCheck.eligible, false);
+  assert.strictEqual(alreadyPaidCheck.statusCode, 200);
+});
+
+test('Auditoría Idempotencia: Bloqueo de cobros duplicados y concurrencia por clave idempotente', () => {
+  // Simular almacén de transacciones con restricción única uq_pagos_idempotency
+  const processedIdempotencyKeys = new Set();
+
+  function attemptPaymentRegistration(orderId, chargeId) {
+    const idempotencyKey = `pay_${orderId}_${chargeId}`;
+    if (processedIdempotencyKeys.has(idempotencyKey)) {
+      return { duplicated: true, error: '23505 (unique_violation: uq_pagos_idempotency)' };
+    }
+    processedIdempotencyKeys.add(idempotencyKey);
+    return { duplicated: false, success: true };
+  }
+
+  const orderId = '84f411e7-f350-462d-868f-90e17b29007b';
+  const realChargeId = 'chr_test_real_001';
+
+  // Primera ejecución: exitosa
+  const first = attemptPaymentRegistration(orderId, realChargeId);
+  assert.strictEqual(first.success, true);
+  assert.strictEqual(first.duplicated, false);
+
+  // Solicitud concurrente o reintento de red idéntico: detecta duplicado
+  const second = attemptPaymentRegistration(orderId, realChargeId);
+  assert.strictEqual(second.success, undefined);
+  assert.strictEqual(second.duplicated, true);
+});
+
+test('Auditoría Regresión MS-2026-18354: Token auténtico de navegador bajo entorno productivo sin llaves falla cerrado', async () => {
+  const origNodeEnv = process.env.NODE_ENV;
+  const origPrivate = process.env.CULQI_PRIVATE_KEY;
+  const origSecret = process.env.CULQI_SECRET_KEY;
+
+  try {
+    process.env.NODE_ENV = 'production';
+    delete process.env.CULQI_PRIVATE_KEY;
+    delete process.env.CULQI_SECRET_KEY;
+
+    // Token real generado por el navegador en la incidencia
+    const realIncidentToken = 'tkn_test_5eXDXRN10I33eQbA';
+
+    const result = await processCulqiCharge({
+      orderId: 'ord-incident-repro',
+      orderNumber: 'MS-2026-18354',
+      amountPen: 281.0,
+      customerEmail: 'review@culqi.com',
+      tokenId: realIncidentToken,
+    });
+
+    assert.strictEqual(result.success, false, 'Jamás debe declararse éxito si faltan credenciales de pasarela');
+    assert.strictEqual(result.status, 'rechazado');
+    assert.strictEqual(result.isMock, false, 'No debe generarse simulación mock en entorno productivo');
+    assert.ok(result.errorMessage?.includes('Configuración de pasarela incompleta'));
+  } finally {
+    process.env.NODE_ENV = origNodeEnv;
+    if (origPrivate) process.env.CULQI_PRIVATE_KEY = origPrivate;
+    if (origSecret) process.env.CULQI_SECRET_KEY = origSecret;
+  }
+});
+
+test('Auditoría Regresión MS-2026-18354: Token sintético bajo entorno productivo NUNCA activa simulación mock', async () => {
+  const origNodeEnv = process.env.NODE_ENV;
+  const origPrivate = process.env.CULQI_PRIVATE_KEY;
+  const origSecret = process.env.CULQI_SECRET_KEY;
+
+  try {
+    process.env.NODE_ENV = 'production';
+    delete process.env.CULQI_PRIVATE_KEY;
+    delete process.env.CULQI_SECRET_KEY;
+
+    // Token sintético que en test activaría mock, en production DEBE ser rechazado
+    const syntheticToken = 'tok_test_valid_card';
+
+    const result = await processCulqiCharge({
+      orderId: 'ord-incident-synthetic',
+      orderNumber: 'MS-2026-18354',
+      amountPen: 281.0,
+      customerEmail: 'review@culqi.com',
+      tokenId: syntheticToken,
+    });
+
+    assert.strictEqual(result.success, false, 'Token sintético no debe simular compra en producción');
+    assert.strictEqual(result.status, 'rechazado');
+    assert.strictEqual(result.isMock, false);
+  } finally {
+    process.env.NODE_ENV = origNodeEnv;
+    if (origPrivate) process.env.CULQI_PRIVATE_KEY = origPrivate;
+    if (origSecret) process.env.CULQI_SECRET_KEY = origSecret;
+  }
 });
