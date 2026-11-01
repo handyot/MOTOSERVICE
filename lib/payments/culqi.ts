@@ -22,6 +22,7 @@ export interface CulqiPaymentInput {
   deviceFingerprint?: string;
   challengeConfirmed?: boolean;
   otpCode?: string;
+  authentication3DS?: Record<string, unknown>;
 }
 
 export interface CulqiPaymentResponse {

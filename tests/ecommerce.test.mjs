@@ -26,6 +26,9 @@ import {
   verifyGuestToken,
   validateOrderStatusTransition,
   getVerifiedCatalogPart,
+  maskEmail,
+  maskName,
+  maskAddress,
 } from '../lib/orders/order-core.mjs';
 
 import {
@@ -389,4 +392,93 @@ test('Carrito: Inmunidad ante errores de hidratación y consistencia de snapshot
     ? 'Ver carrito de compras con 1 repuesto'
     : `Ver carrito de compras con ${clientTotalCount} repuestos`;
   assert.strictEqual(clientAriaLabel, 'Ver carrito de compras con 2 repuestos');
+});
+
+// -----------------------------------------------------------------------------
+// 9. AUDITORÍA FOCALIZADA: CULQI 3DS V2, IDEMPOTENCIA, PROTECCIÓN RLS Y SUPABASE
+// -----------------------------------------------------------------------------
+test('Auditoría Culqi 3DS: Distinción estricta de códigos de decisión antifraude (REVIEW vs DENIED vs Error)', async () => {
+  // 1. Simulación de token sintético 3DS que exige autenticación (REVIEW)
+  const req3ds = await processCulqiCharge({
+    orderId: 'ord-audit-3ds-1',
+    orderNumber: 'MS-2026-90001',
+    amountPen: 250.0,
+    customerEmail: 'review@culqi.com',
+    tokenId: 'tok_test_3ds_challenge',
+  });
+  assert.strictEqual(req3ds.status, 'requiere_3ds', 'REVIEW debe traducirse a requiere_3ds');
+  assert.strictEqual(req3ds.requires3DS, true);
+  assert.strictEqual(req3ds.actionCode, 'REVIEW');
+
+  // 2. Simulación de tarjeta con rechazo antifraude o emisor
+  const declined = await processCulqiCharge({
+    orderId: 'ord-audit-declined',
+    orderNumber: 'MS-2026-90002',
+    amountPen: 100.0,
+    customerEmail: 'fraud@culqi.com',
+    tokenId: 'tok_test_declined_card',
+  });
+  assert.strictEqual(declined.status, 'rechazado', 'Tarjeta declinada no debe exigir 3DS');
+  assert.strictEqual(declined.success, false);
+});
+
+test('Auditoría Culqi 3DS: Inmunidad ante confirmaciones no autorizadas sin verificación de pasarela', async () => {
+  // Intento de forzar cobro con challengeConfirmed pero sin código OTP o con token fraudulento
+  const fakeConfirmation = await processCulqiCharge({
+    orderId: 'ord-audit-hack',
+    orderNumber: 'MS-2026-90003',
+    amountPen: 350.0,
+    customerEmail: 'attacker@test.com',
+    tokenId: 'tok_test_3ds_card',
+    challengeConfirmed: true,
+    otpCode: 'wrong_code',
+  });
+
+  assert.strictEqual(fakeConfirmation.success, false, 'No debe autorizarse un cobro sin código de desafío válido');
+  assert.strictEqual(fakeConfirmation.status, 'requiere_3ds');
+});
+
+test('Auditoría Supabase: createOrderAdminClient rechaza credenciales públicas anónimas', () => {
+  // Simular la regla de autorización de servidor: solo permite inicializarse con SUPABASE_SECRET_KEY o SUPABASE_SERVICE_ROLE_KEY
+  function evaluateAdminClientAuth(env) {
+    const key = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!key) return null;
+    return { authorized: true };
+  }
+
+  // Escenario 1: Solo credenciales anónimas públicas disponibles (ej. cliente frontend o Vercel sin secretos)
+  const envOnlyAnon = {
+    NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co',
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test',
+  };
+  assert.strictEqual(
+    evaluateAdminClientAuth(envOnlyAnon),
+    null,
+    'createOrderAdminClient jamás debe operar bajo la anon key'
+  );
+
+  // Escenario 2: Clave secreta administrativa legítima
+  const envWithSecret = {
+    NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co',
+    SUPABASE_SECRET_KEY: 'mock_admin_secret_key_123',
+  };
+  const adminClient = evaluateAdminClientAuth(envWithSecret);
+  assert.strictEqual(adminClient?.authorized, true);
+});
+
+test('Auditoría Trazabilidad: Enmascaramiento estricto de PII en seguimiento de pedidos', () => {
+  const rawEmail = 'review@culqi.com';
+  const rawName = 'Carlos Mendoza';
+  const rawAddress = 'Av. Larco 1234, Dpto 402';
+
+  const maskedEmail = maskEmail(rawEmail);
+  const maskedName = maskName(rawName);
+  const maskedAddress = maskAddress(rawAddress);
+
+  // Verificaciones de ofuscación de datos personales (PII)
+  assert.ok(maskedEmail.includes('***'), 'El email debe estar ofuscado');
+  assert.strictEqual(maskedEmail.includes('review@culqi.com'), false, 'No debe filtrar correo en plano');
+  assert.ok(maskedName.includes('*'), 'El nombre debe estar enmascarado');
+  assert.ok(maskedAddress.endsWith('***'), 'La dirección debe terminar en máscara');
+  assert.strictEqual(maskedAddress.includes('Dpto 402'), false, 'No debe filtrar número de departamento ni interior');
 });

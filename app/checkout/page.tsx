@@ -523,7 +523,17 @@ export default function CheckoutPage() {
         const win = window as unknown as { Culqi3DS?: { initAuthentication?: (id: string) => Promise<void> } };
         if (win?.Culqi3DS?.initAuthentication) {
           try {
+            let captured3DS: Record<string, unknown> | undefined;
+            const messageHandler = (ev: MessageEvent) => {
+              if (ev.data && (ev.data.action === 'authentication_3DS' || ev.data.parameters_3DS || ev.data.eci)) {
+                captured3DS = ev.data.parameters_3DS || ev.data.data || ev.data;
+              }
+            };
+            window.addEventListener('message', messageHandler, { once: false });
+
             await win.Culqi3DS.initAuthentication(culqiTokenId);
+
+            window.removeEventListener('message', messageHandler);
 
             // Reintentar confirmación tras resolución del reto 3DS en Culqi
             const confirmRes = await fetch('/api/payments/charge', {
@@ -535,6 +545,7 @@ export default function CheckoutPage() {
                 guestToken,
                 challengeConfirmed: true,
                 deviceFingerprint,
+                authentication3DS: captured3DS,
               }),
             });
 

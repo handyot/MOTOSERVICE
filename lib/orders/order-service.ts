@@ -20,6 +20,9 @@ import {
   verifyGuestToken,
   getVerifiedCatalogPart,
   validateOrderStatusTransition,
+  maskEmail,
+  maskName,
+  maskAddress,
 } from './order-core.mjs';
 import { OFFICIAL_PARTS } from '../../data/ecomoto-data';
 import {
@@ -415,30 +418,6 @@ export async function getOrderSecurely(params: {
   return null;
 }
 
-function maskEmail(email: string): string {
-  if (!email || !email.includes('@')) return '***@***.com';
-  const [local, domain] = email.split('@');
-  const maskedLocal =
-    local.length <= 2 ? `${local[0]}***` : `${local.slice(0, 2)}***${local.slice(-1)}`;
-  return `${maskedLocal}@${domain}`;
-}
-
-function maskName(name: string): string {
-  if (!name) return 'Cliente NeroElectric';
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .map((word) => (word.length <= 2 ? word : `${word[0]}${'*'.repeat(Math.min(word.length - 1, 4))}`))
-    .join(' ');
-}
-
-function maskAddress(address: string): string {
-  if (!address) return 'Dirección protegida';
-  const words = address.split(' ');
-  if (words.length <= 2) return `${words[0]} ***`;
-  return `${words.slice(0, 2).join(' ')} ***`;
-}
-
 export interface PublicOrderTracking {
   id: string;
   orderNumber: string;
@@ -482,17 +461,22 @@ export async function trackOrderPublicly(params: {
   customerEmail?: string | null;
 }): Promise<PublicOrderTracking | null> {
   const cleanQuery = (params.query || '').trim();
-  if (!cleanQuery) return null;
+  const sanitizedQuery = cleanQuery.replace(/[%_,;]/g, '').trim();
+
+  // Validación estricta anti-enumeración: mínimo 4 caracteres
+  if (!sanitizedQuery || sanitizedQuery.length < 4) {
+    return null;
+  }
 
   // 1. Buscar en memoria
   let found: OrderRecord | null = null;
-  const upperQuery = cleanQuery.toUpperCase();
+  const upperQuery = sanitizedQuery.toUpperCase();
 
   for (const o of memoryOrders.values()) {
     if (
       o.id.toUpperCase() === upperQuery ||
       o.orderNumber.toUpperCase() === upperQuery ||
-      o.customerEmail.toLowerCase() === cleanQuery.toLowerCase() ||
+      o.customerEmail.toLowerCase() === sanitizedQuery.toLowerCase() ||
       (params.customerEmail && o.customerEmail.toLowerCase() === params.customerEmail.trim().toLowerCase())
     ) {
       found = o;
@@ -512,17 +496,23 @@ export async function trackOrderPublicly(params: {
         `);
 
       const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      const isUuid = UUID_REGEX.test(cleanQuery);
+      const isUuid = UUID_REGEX.test(sanitizedQuery);
 
-      if (cleanQuery.includes('@')) {
+      if (sanitizedQuery.includes('@')) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(sanitizedQuery)) return null;
+
         queryBuilder = queryBuilder
-          .eq('cliente_email', cleanQuery.toLowerCase())
+          .eq('cliente_email', sanitizedQuery.toLowerCase())
           .order('created_at', { ascending: false })
           .limit(1);
       } else if (isUuid) {
-        queryBuilder = queryBuilder.or(`id_pedido.eq.${cleanQuery},numero_pedido.eq.${cleanQuery}`);
+        queryBuilder = queryBuilder.or(`id_pedido.eq.${sanitizedQuery},numero_pedido.eq.${sanitizedQuery}`);
       } else {
-        queryBuilder = queryBuilder.or(`numero_pedido.ilike.%${cleanQuery}%`);
+        const normalizedOrder = sanitizedQuery.toUpperCase().startsWith('MS-')
+          ? sanitizedQuery.toUpperCase()
+          : `MS-2026-${sanitizedQuery.toUpperCase()}`;
+        queryBuilder = queryBuilder.or(`numero_pedido.eq.${sanitizedQuery.toUpperCase()},numero_pedido.eq.${normalizedOrder}`);
       }
 
       const { data, error } = await queryBuilder.maybeSingle();

@@ -77,3 +77,27 @@ export function validateOrderStatusTransition(current, target, paymentStatus) {
 
   return { allowed: true };
 }
+
+export function maskEmail(email) {
+  if (!email || typeof email !== 'string' || !email.includes('@')) return '***@***.com';
+  const [local, domain] = email.split('@');
+  const maskedLocal =
+    local.length <= 2 ? `${local[0]}***` : `${local.slice(0, 2)}***${local.slice(-1)}`;
+  return `${maskedLocal}@${domain}`;
+}
+
+export function maskName(name) {
+  if (!name || typeof name !== 'string') return 'Cliente NeroElectric';
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => (word.length <= 2 ? word : `${word[0]}${'*'.repeat(Math.min(word.length - 1, 4))}`))
+    .join(' ');
+}
+
+export function maskAddress(address) {
+  if (!address || typeof address !== 'string') return 'Dirección protegida';
+  const words = address.split(' ');
+  if (words.length <= 2) return `${words[0]} ***`;
+  return `${words.slice(0, 2).join(' ')} ***`;
+}

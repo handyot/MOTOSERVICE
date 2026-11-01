@@ -4,7 +4,7 @@ import {
   handleCulqiWebhookEvent,
   CulqiWebhookPayload,
 } from '@/lib/payments/culqi';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createOrderAdminClient } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
   try {
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     // 3. Si el evento afecta a un pedido, actualizarlo en Supabase
     if (result.orderId && result.status) {
       try {
-        const supabase = await createClient();
+        const supabase = createOrderAdminClient() || (await createClient());
         await supabase
           .from('pedidos')
           .update({

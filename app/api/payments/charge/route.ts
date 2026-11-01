@@ -13,6 +13,7 @@ export async function POST(request: Request) {
       challengeConfirmed,
       otpCode,
       deviceFingerprint,
+      authentication3DS,
     } = await request.json();
 
     if (!orderId || !tokenId) {
@@ -40,6 +41,26 @@ export async function POST(request: Request) {
       });
     }
 
+    // Comprobación de idempotencia: verificar si ya existe un pago confirmado en DB
+    const adminClient = createOrderAdminClient();
+    if (adminClient) {
+      const { data: existingPaid } = await adminClient
+        .from('pagos_intentos')
+        .select('referencia_externa, estado')
+        .eq('id_pedido', order.id)
+        .eq('estado', 'pagado')
+        .maybeSingle();
+
+      if (existingPaid) {
+        return NextResponse.json({
+          success: true,
+          message: 'Pago previamente confirmado para este pedido (Idempotencia).',
+          chargeId: existingPaid.referencia_externa,
+          status: 'pagado',
+        });
+      }
+    }
+
     // Ejecutar cobro mediante el adaptador de Culqi
     const nameParts = (order.customerName || 'Cliente').trim().split(/\s+/);
     const customerFirstName = nameParts[0] || 'Cliente';
@@ -57,6 +78,7 @@ export async function POST(request: Request) {
       deviceFingerprint: deviceFingerprint ? String(deviceFingerprint) : undefined,
       challengeConfirmed: Boolean(challengeConfirmed),
       otpCode: otpCode ? String(otpCode) : undefined,
+      authentication3DS: authentication3DS && typeof authentication3DS === 'object' ? authentication3DS : undefined,
     });
 
     if (!chargeResult.success) {
@@ -95,12 +117,14 @@ export async function POST(request: Request) {
         id_pedido: order.id,
         proveedor: 'culqi',
         referencia_externa: chargeResult.chargeId,
+        idempotency_key: `pay_${order.id}_${chargeResult.chargeId}`,
         monto: order.total,
         moneda: 'PEN',
         estado: 'pagado',
         metadatos: {
           authorizationCode: chargeResult.authorizationCode,
           isMock: chargeResult.isMock,
+          actionCode: chargeResult.actionCode,
         },
       });
 
@@ -112,7 +136,8 @@ export async function POST(request: Request) {
           estado_comprobante: 'listo',
           updated_at: new Date().toISOString(),
         })
-        .eq('id_pedido', order.id);
+        .eq('id_pedido', order.id)
+        .neq('estado_pago', 'pagado');
 
       // Generar registro de comprobante fiscal en estado listo
       const taxBreakdown = calculateTaxBreakdown({
