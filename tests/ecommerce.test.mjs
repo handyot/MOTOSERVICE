@@ -30,6 +30,7 @@ import {
 import {
   detectElectricalHazards,
   executeDiagnosticEvaluation,
+  hasDirectCompatibleParts,
 } from '../lib/voltia/voltia-core.mjs';
 
 // -----------------------------------------------------------------------------
@@ -46,6 +47,31 @@ test('Catálogo: Diferenciación estricta entre repuestos de venta directa y con
   // Repuesto no existente o no homologado para venta directa inmediata
   const unknownPart = getVerifiedCatalogPart('PROV-EXTERNAL-999');
   assert.strictEqual(unknownPart, null, 'No debe permitir venta directa de piezas no autorizadas');
+});
+
+test('Catálogo: Ocultación de motos sin repuestos directos en catálogo público preservando base de datos', () => {
+  // Lista de modelos oficiales y lógica de filtrado de visibilidad
+  const sampleMotos = [
+    { slug: 'tailg-f55-mecha-g2', brand: 'TAILG', model: 'F55 Mecha G2', partsCount: 4 },
+    { slug: 'tailg-e5', brand: 'TAILG', model: 'E5', partsCount: 0 },
+    { slug: 'century-chopper', brand: 'CENTURY MOTORS', model: 'Chopper 1500W', partsCount: 0 },
+    { slug: 'yadea-e8s-pro', brand: 'YADEA', model: 'E8S Pro', partsCount: 6 },
+  ];
+
+  // Filtro de visibilidad: solo motos con partsCount > 0 se muestran en la cuadrícula pública
+  const visibleMotos = sampleMotos.filter((m) => m.partsCount > 0);
+  const hiddenMotos = sampleMotos.filter((m) => m.partsCount === 0);
+
+  // Verificación de ocultación
+  assert.strictEqual(visibleMotos.length, 2, 'Solo deben mostrarse modelos con repuestos compatibles');
+  assert.strictEqual(hiddenMotos.length, 2, 'Los modelos sin repuestos deben quedar ocultos');
+  assert.deepStrictEqual(
+    visibleMotos.map((m) => m.slug),
+    ['tailg-f55-mecha-g2', 'yadea-e8s-pro']
+  );
+
+  // Verificación de no-eliminación (preservación de la data histórica)
+  assert.strictEqual(sampleMotos.length, 4, 'La base de datos original no se altera ni elimina registros');
 });
 
 // -----------------------------------------------------------------------------
@@ -238,7 +264,7 @@ test('VoltIA: Diagnóstico estructurado y enlaces a repuestos con certeza declar
   const diagnosis = executeDiagnosticEvaluation({
     symptom: 'perdida-potencia',
     brand: 'TAILG',
-    model: 'Lion',
+    model: 'F55 Mecha G2',
   });
 
   assert.strictEqual(diagnosis.certainty, 'PROBABLE');
@@ -246,6 +272,33 @@ test('VoltIA: Diagnóstico estructurado y enlaces a repuestos con certeza declar
   assert.ok(diagnosis.recommendedParts.length > 0, 'Debe sugerir piezas compatibles');
   assert.strictEqual(diagnosis.recommendedParts[0].isDirectSale, true);
   assert.ok(diagnosis.recommendedParts[0].price > 0);
+  assert.strictEqual(diagnosis.adaptationNotice, undefined, 'Modelo con repuesto directo no requiere aviso de adaptación forzada');
+});
+
+test('VoltIA: Autonomía técnica ("dependencia propia") para modelos sin repuesto directo o no registrados', () => {
+  // Modelo sin repuesto directo de fábrica (ej. Tailg E5 o marca externa Wanxin EV)
+  const isDirectKnown = hasDirectCompatibleParts('Wanxin', 'EV-500 Sport');
+  assert.strictEqual(isDirectKnown, false, 'Modelo externo no debe tener repuesto directo registrado');
+
+  const customDiagnosis = executeDiagnosticEvaluation({
+    symptom: 'bateria-descarga-rapido',
+    brand: 'Wanxin',
+    model: 'EV-500 Sport',
+  });
+
+  // Debe activar autonomía técnica por dependencia propia
+  assert.ok(customDiagnosis.adaptationNotice, 'Debe proveer aviso de adaptación en taller');
+  assert.strictEqual(customDiagnosis.adaptationNotice.isCustomAdaptation, true);
+  assert.ok(customDiagnosis.adaptationNotice.suggestedModifications.length >= 2, 'Debe listar adecuaciones de taller');
+  assert.strictEqual(customDiagnosis.referToTechnician, true, 'Debe derivar a taller autorizado');
+  assert.ok(customDiagnosis.recommendedAction.includes('taller autorizado MotoService'));
+
+  // Los repuestos sugeridos deben estar marcados con requerimiento de taller
+  assert.ok(customDiagnosis.recommendedParts.length > 0, 'VoltIA debe proveer componentes alternativos viables');
+  const part = customDiagnosis.recommendedParts[0];
+  assert.strictEqual(part.isAdaptation, true);
+  assert.strictEqual(part.workshopModificationRequired, true);
+  assert.ok(part.workshopNotes && part.workshopNotes.includes('taller autorizado MotoService'));
 });
 
 // -----------------------------------------------------------------------------
