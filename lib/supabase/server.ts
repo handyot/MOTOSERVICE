@@ -2,12 +2,15 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
+const DEFAULT_SUPABASE_URL = 'https://tbznauwbvhsbmsbcodes.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_ZwTDdWQcT6KR3hmkvZskPA_Dllu8flQ';
+
 export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || DEFAULT_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
@@ -33,11 +36,12 @@ export async function createClient() {
  * Utiliza SUPABASE_SECRET_KEY para persistir en PostgreSQL sin ser bloqueado por RLS anónimo.
  */
 export function createOrderAdminClient() {
-  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
   const key =
     process.env.SUPABASE_SECRET_KEY ||
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    DEFAULT_SUPABASE_ANON_KEY;
 
   if (!url || !key) return null;
 
