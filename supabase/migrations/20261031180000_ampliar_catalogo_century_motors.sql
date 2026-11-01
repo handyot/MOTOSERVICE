@@ -3123,7 +3123,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3135,7 +3135,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3147,7 +3147,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3159,7 +3159,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3171,7 +3171,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3183,7 +3183,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3195,7 +3195,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3207,7 +3207,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3219,7 +3219,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3231,7 +3231,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3243,7 +3243,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3255,7 +3255,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3267,7 +3267,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3279,7 +3279,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3291,7 +3291,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3303,7 +3303,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3315,7 +3315,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3327,7 +3327,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3339,7 +3339,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3351,7 +3351,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3363,7 +3363,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3375,7 +3375,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3387,7 +3387,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3399,7 +3399,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3411,7 +3411,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3423,7 +3423,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3435,7 +3435,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3447,7 +3447,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3459,7 +3459,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3471,7 +3471,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3483,7 +3483,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3495,7 +3495,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3507,7 +3507,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3519,7 +3519,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3531,7 +3531,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3543,7 +3543,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3555,7 +3555,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3567,7 +3567,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3579,7 +3579,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3591,7 +3591,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3603,7 +3603,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3615,7 +3615,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3627,7 +3627,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3639,7 +3639,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3651,7 +3651,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3663,7 +3663,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3675,7 +3675,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3687,7 +3687,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3699,7 +3699,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3711,7 +3711,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3723,7 +3723,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3735,7 +3735,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3747,7 +3747,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3759,7 +3759,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3771,7 +3771,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3783,7 +3783,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3795,7 +3795,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3807,7 +3807,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3819,7 +3819,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3831,7 +3831,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3843,7 +3843,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3855,7 +3855,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3867,7 +3867,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3879,7 +3879,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3891,7 +3891,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3903,7 +3903,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3915,7 +3915,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3927,7 +3927,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3939,7 +3939,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3951,7 +3951,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3963,7 +3963,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3975,7 +3975,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3987,7 +3987,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -3999,7 +3999,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -4011,7 +4011,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -4023,7 +4023,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -4035,7 +4035,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -4047,7 +4047,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -4059,7 +4059,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -4071,7 +4071,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -4083,7 +4083,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -4095,7 +4095,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 
@@ -4107,7 +4107,7 @@ INSERT INTO compatibilidades (
       (SELECT m.id_modelo FROM modelos_moto m JOIN marcas ma ON m.id_marca = ma.id_marca WHERE UPPER(TRIM(ma.nombre)) = 'CENTURY MOTORS' AND TRIM(m.nombre) = 'Electrica para niños 24v Ducati' LIMIT 1),
       (SELECT id_modelo FROM modelos_moto WHERE id_marca = (SELECT id_marca FROM marcas WHERE UPPER(TRIM(nombre)) = 'CENTURY MOTORS' LIMIT 1) LIMIT 1)
     ),
-    'CONFIRMADA_EN_FUENTE',
+    'CONFIRMADA',
     'Compatibilidad verificada para línea CENTURY MOTORS Electrica para niños 24v Ducati.'
 ) ON CONFLICT DO NOTHING;
 

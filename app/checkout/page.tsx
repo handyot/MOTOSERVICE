@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Script from 'next/script';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../../lib/cart/cart-context';
 import { Icon } from '../../components/ui/Icons';
@@ -469,7 +470,32 @@ export default function CheckoutPage() {
         throw new Error(msg);
       }
 
-      // 6. Procesar el cobro seguro en el servidor con Culqi
+      // 6. Configurar contexto de dispositivo oficial Culqi 3DS v2
+      let deviceFingerprint = '';
+      if (typeof window !== 'undefined') {
+        const win = window as unknown as { Culqi3DS?: { publicKey?: string; settings?: Record<string, unknown>; generateDevice?: () => Promise<string>; initAuthentication?: (id: string) => Promise<void> } };
+        if (win.Culqi3DS) {
+          try {
+            win.Culqi3DS.publicKey = culqiPublicKey;
+            win.Culqi3DS.settings = {
+              charge: {
+                totalAmount: Math.round(orderData.order.total * 100),
+                returnUrl: window.location.href,
+              },
+              card: {
+                email: customerEmail.trim(),
+              },
+            };
+            if (typeof win.Culqi3DS.generateDevice === 'function') {
+              deviceFingerprint = (await win.Culqi3DS.generateDevice()) || '';
+            }
+          } catch (deviceErr) {
+            console.warn('[Culqi 3DS] Advertencia de huella de dispositivo:', deviceErr);
+          }
+        }
+      }
+
+      // 7. Procesar el cobro seguro en el servidor con Culqi
       const payRes = await fetch('/api/payments/charge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -477,6 +503,7 @@ export default function CheckoutPage() {
           orderId,
           tokenId: culqiTokenId,
           guestToken,
+          deviceFingerprint,
         }),
       });
 
@@ -492,7 +519,41 @@ export default function CheckoutPage() {
           throw new Error('Culqi 3DS: Autenticación rechazada por el banco emisor (Error de autenticación).');
         }
 
-        // Si es tarjeta con Challenge, abrir modal
+        // Si la librería oficial Culqi3DS está cargada en el navegador, disparar autenticación oficial
+        const win = window as unknown as { Culqi3DS?: { initAuthentication?: (id: string) => Promise<void> } };
+        if (win?.Culqi3DS?.initAuthentication) {
+          try {
+            await win.Culqi3DS.initAuthentication(culqiTokenId);
+
+            // Reintentar confirmación tras resolución del reto 3DS en Culqi
+            const confirmRes = await fetch('/api/payments/charge', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderId,
+                tokenId: culqiTokenId,
+                guestToken,
+                challengeConfirmed: true,
+                deviceFingerprint,
+              }),
+            });
+
+            const confirmData = await confirmRes.json();
+            if (confirmRes.ok && confirmData.success) {
+              saveOrderToLocalStorage(orderId, orderData.order.orderNumber, guestToken, orderData.order.total);
+              clearCart();
+              const redirectUrl = guestToken
+                ? `/pedido/${orderId}?token=${guestToken}`
+                : `/pedido/${orderId}`;
+              router.push(redirectUrl);
+              return;
+            }
+          } catch (culqi3dsErr) {
+            console.warn('[Culqi 3DS] initAuthentication completado o fallback requerido:', culqi3dsErr);
+          }
+        }
+
+        // Fallback interactivo con modal 3DS seguro
         setPending3dsData({
           orderId,
           guestToken,
@@ -582,6 +643,8 @@ export default function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* Script oficial de Culqi 3DS v2 */}
+      <Script src="https://3ds.culqi.com" strategy="afterInteractive" />
       {/* Breadcrumb */}
       <nav aria-label="Ruta de navegación" className="mb-6 flex items-center gap-2 text-xs text-gray-500">
         <Link href="/" className="hover:text-blue-600 transition-colors">

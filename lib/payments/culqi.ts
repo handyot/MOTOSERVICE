@@ -15,6 +15,9 @@ export interface CulqiPaymentInput {
   orderNumber: string;
   amountPen: number;
   customerEmail: string;
+  customerFirstName?: string;
+  customerLastName?: string;
+  customerPhone?: string;
   tokenId: string;
   deviceFingerprint?: string;
   challengeConfirmed?: boolean;

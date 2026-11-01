@@ -7,9 +7,20 @@
 
 BEGIN;
 
+CREATE TABLE IF NOT EXISTS public.repuestos_compatibilidad (
+    id_compatibilidad uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    id_repuesto bigint,
+    id_modelo bigint,
+    compatibilidad_declarada text,
+    notas_evidencia text,
+    source_url text,
+    source_checked_on date,
+    UNIQUE(id_repuesto, id_modelo)
+);
+
 -- 1. Asegurar existencia del proveedor Electrica.pe
-INSERT INTO proveedores (nombre, ruc, contacto_email, sitio_web)
-VALUES ('Electrica.pe', '20608594215', 'contacto@electrica.pe', 'https://electrica.pe')
+INSERT INTO proveedores (nombre, sitio_web, contacto_soporte)
+VALUES ('Electrica.pe', 'https://electrica.pe', 'contacto@electrica.pe')
 ON CONFLICT (nombre) DO NOTHING;
 
 INSERT INTO repuestos (

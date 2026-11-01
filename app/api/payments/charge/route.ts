@@ -6,7 +6,14 @@ import { generateProvisionalFiscalReceipt, calculateTaxBreakdown } from '@/lib/d
 
 export async function POST(request: Request) {
   try {
-    const { orderId, tokenId, guestToken, challengeConfirmed, otpCode } = await request.json();
+    const {
+      orderId,
+      tokenId,
+      guestToken,
+      challengeConfirmed,
+      otpCode,
+      deviceFingerprint,
+    } = await request.json();
 
     if (!orderId || !tokenId) {
       return NextResponse.json(
@@ -34,12 +41,20 @@ export async function POST(request: Request) {
     }
 
     // Ejecutar cobro mediante el adaptador de Culqi
+    const nameParts = (order.customerName || 'Cliente').trim().split(/\s+/);
+    const customerFirstName = nameParts[0] || 'Cliente';
+    const customerLastName = nameParts.slice(1).join(' ') || 'NeroElectric';
+
     const chargeResult = await processCulqiCharge({
       orderId: order.id,
       orderNumber: order.orderNumber,
       amountPen: order.total,
       customerEmail: order.customerEmail,
+      customerFirstName,
+      customerLastName,
+      customerPhone: order.customerPhone || '987654321',
       tokenId,
+      deviceFingerprint: deviceFingerprint ? String(deviceFingerprint) : undefined,
       challengeConfirmed: Boolean(challengeConfirmed),
       otpCode: otpCode ? String(otpCode) : undefined,
     });
