@@ -333,14 +333,23 @@ export async function getOrderSecurely(params: {
   if (!order) {
     try {
       const supabase = createOrderAdminClient() || (await createClient());
-      const { data, error } = await supabase
+      const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const isUuid = UUID_REGEX.test(cleanId);
+
+      let queryBuilder = supabase
         .from('pedidos')
         .select(`
           *,
           pedido_items (*)
-        `)
-        .or(`id_pedido.eq.${cleanId},numero_pedido.eq.${cleanId}`)
-        .maybeSingle();
+        `);
+
+      if (isUuid) {
+        queryBuilder = queryBuilder.or(`id_pedido.eq.${cleanId},numero_pedido.eq.${cleanId}`);
+      } else {
+        queryBuilder = queryBuilder.eq('numero_pedido', cleanId);
+      }
+
+      const { data, error } = await queryBuilder.maybeSingle();
 
       if (data && !error) {
         order = {
@@ -502,15 +511,18 @@ export async function trackOrderPublicly(params: {
           pedido_items (*)
         `);
 
+      const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const isUuid = UUID_REGEX.test(cleanQuery);
+
       if (cleanQuery.includes('@')) {
         queryBuilder = queryBuilder
           .eq('cliente_email', cleanQuery.toLowerCase())
           .order('created_at', { ascending: false })
           .limit(1);
-      } else if (cleanQuery.includes('-') || cleanQuery.startsWith('MS-')) {
+      } else if (isUuid) {
         queryBuilder = queryBuilder.or(`id_pedido.eq.${cleanQuery},numero_pedido.eq.${cleanQuery}`);
       } else {
-        queryBuilder = queryBuilder.or(`id_pedido.eq.${cleanQuery},numero_pedido.ilike.%${cleanQuery}%`);
+        queryBuilder = queryBuilder.or(`numero_pedido.ilike.%${cleanQuery}%`);
       }
 
       const { data, error } = await queryBuilder.maybeSingle();

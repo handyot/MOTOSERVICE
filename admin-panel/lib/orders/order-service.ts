@@ -19,10 +19,13 @@ export async function updateOrderStatus(
   try {
     const supabase = (await createCatalogWriteClient()) || (await createClient());
 
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isUuid = UUID_REGEX.test(orderId);
+
     const { data: orderData, error: fetchError } = await supabase
       .from('pedidos')
       .select('id_pedido, estado_pedido, estado_pago, notas_admin')
-      .eq('id_pedido', orderId)
+      .match(isUuid ? { id_pedido: orderId } : { numero_pedido: orderId })
       .maybeSingle();
 
     if (fetchError || !orderData) {
@@ -62,7 +65,7 @@ export async function updateOrderStatus(
     const { error: updateError } = await supabase
       .from('pedidos')
       .update(updatePayload)
-      .eq('id_pedido', orderId);
+      .match(isUuid ? { id_pedido: orderId } : { numero_pedido: orderId });
 
     if (updateError) {
       return {
