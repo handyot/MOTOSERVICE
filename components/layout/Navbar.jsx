@@ -76,12 +76,6 @@ export function Navbar() {
             Motos
           </Link>
           <Link
-            href="/#categorias"
-            className="hover:text-blue-600 transition-colors"
-          >
-            Categorías
-          </Link>
-          <Link
             href="/#compatibilidad"
             className="hover:text-blue-600 transition-colors"
           >
@@ -207,13 +201,6 @@ export function Navbar() {
               className="px-3 py-1.5 hover:text-blue-600"
             >
               Motos Eléctricas
-            </Link>
-            <Link
-              href="/#categorias"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-1.5 hover:text-blue-600"
-            >
-              Categorías de Repuestos
             </Link>
             <Link
               href="/#compatibilidad"
