@@ -21,6 +21,7 @@ import {
   getVerifiedCatalogPart,
   validateOrderStatusTransition,
 } from './order-core.mjs';
+import { OFFICIAL_PARTS } from '../../data/ecomoto-data';
 import {
   GuestCheckoutInput,
   OrderRecord,
@@ -76,7 +77,27 @@ export async function createOrder(
   const verifiedItems: OrderItemRecord[] = [];
 
   for (const item of items) {
-    const verifiedPart = getVerifiedCatalogPart(item.sku);
+    let verifiedPart = getVerifiedCatalogPart(item.sku);
+
+    if (!verifiedPart) {
+      const normalizedItemSku = item.sku.trim().toUpperCase();
+      const official = OFFICIAL_PARTS.find(
+        (p) =>
+          (p.sku && p.sku.trim().toUpperCase() === normalizedItemSku) ||
+          (p.partKey && p.partKey.trim().toUpperCase() === normalizedItemSku)
+      );
+      if (official && typeof official.pricePen === 'number' && official.pricePen > 0) {
+        verifiedPart = {
+          sku: official.sku || official.partKey,
+          name: official.name,
+          price: official.pricePen,
+          currency: 'PEN',
+          category: official.category,
+          isDirectSale: true,
+          stockAvailable: official.stockStatus === 'AGOTADO_EN_PAGINA' ? 0 : 15,
+        };
+      }
+    }
 
     if (!verifiedPart) {
       throw new Error(`El repuesto con SKU ${item.sku} no fue encontrado en el catálogo oficial.`);

@@ -4,12 +4,13 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import {
   X,
-  ExternalLink,
   AlertTriangle,
   CheckCircle2,
   Wrench,
   HelpCircle,
-  Clock
+  Clock,
+  ShoppingCart,
+  MessageCircle
 } from 'lucide-react';
 import { MotoModel, SupplierPart } from '@/types';
 import { getMotoWithCompatibleParts } from '@/data/ecomoto-data';
@@ -232,7 +233,7 @@ export function MotoDetailModal({ moto, onClose, onSelectPart }: MotoDetailModal
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-              {compatibleParts.map(({ part, compatibilityStatus, evidenceNote, sourceUrl }) => {
+              {compatibleParts.map(({ part, compatibilityStatus, evidenceNote }) => {
                 const isConfirmed = compatibilityStatus === 'CONFIRMADA_EN_FUENTE';
                 const isConditional = compatibilityStatus === 'CONDICIONAL_FUENTE';
                 const isVariantConfirmed = confirmedVariantPartKey[part.partKey] || false;
@@ -349,31 +350,22 @@ export function MotoDetailModal({ moto, onClose, onSelectPart }: MotoDetailModal
 
                     {/* Acciones del repuesto */}
                     <div className="mt-3.5 pt-2.5 border-t border-gray-100 flex items-center justify-between gap-2">
-                      {sourceUrl ? (
-                        <a
-                          href={sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          <span>Fuente ({part.supplier})</span>
-                        </a>
-                      ) : (
-                        <span className="text-[11px] text-gray-500">Proveedor: {part.supplier}</span>
-                      )}
+                      <span className="text-[11px] text-emerald-700 font-medium bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                        ⚡ Venta MotoService Perú
+                      </span>
 
                       {onSelectPart && (
                         <button
                           type="button"
                           onClick={() => onSelectPart(part)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer shadow-2xs ${
+                          className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer shadow-2xs flex items-center gap-1.5 ${
                             isConditional && !isVariantConfirmed
-                              ? 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                              ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
                               : 'bg-blue-600 hover:bg-blue-700 text-white'
                           }`}
                         >
-                          {isConditional && !isVariantConfirmed ? 'Ver Ficha' : 'Ver / Consultar'}
+                          <ShoppingCart className="w-3.5 h-3.5" />
+                          <span>{isConditional && !isVariantConfirmed ? 'Ver Ficha' : 'Comprar Repuesto'}</span>
                         </button>
                       )}
                     </div>
@@ -387,19 +379,19 @@ export function MotoDetailModal({ moto, onClose, onSelectPart }: MotoDetailModal
         {/* Pie del modal */}
         <div className="mt-8 pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
           <div>
-            <span>Políticas EcoMoto: Los precios mostrados corresponden a capturas públicas del fabricante; no constituyen inventario propio de entrega garantizada.</span>
+            <span className="text-gray-600 font-medium">
+              🛡️ Servicio Técnico y Repuestos MotoService: Disponemos de refacciones originales y servicio de taller especializado para este modelo.
+            </span>
           </div>
-          {moto.sourceUrl && (
-            <a
-              href={moto.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold shrink-0 transition-colors border border-gray-200"
-            >
-              <ExternalLink className="w-3.5 h-3.5 text-gray-600" />
-              <span>Ver Ficha Oficial de {moto.model}</span>
-            </a>
-          )}
+          <a
+            href={`https://wa.me/51987654321?text=${encodeURIComponent(`Hola MotoService, deseo cotizar la moto eléctrica ${moto.brand} ${moto.model} y sus repuestos compatibles.`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shrink-0 transition-colors shadow-xs"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            <span>Consultar Disponibilidad con MotoService</span>
+          </a>
         </div>
       </div>
     </div>

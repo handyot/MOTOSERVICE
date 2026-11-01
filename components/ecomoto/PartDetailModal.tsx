@@ -1,18 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   X,
-  ExternalLink,
   CheckCircle2,
   Zap,
   Clock,
   Building2,
-  Info
+  Info,
+  ShoppingCart,
+  Check,
+  MessageCircle
 } from 'lucide-react';
 import { SupplierPart } from '@/types';
 import { getPartWithCompatibleMotos } from '@/data/ecomoto-data';
 import { formatCurrency } from '@/lib/utils';
+import { useCart } from '@/lib/cart/cart-context';
 
 interface PartDetailModalProps {
   part: SupplierPart | null;
@@ -21,7 +24,28 @@ interface PartDetailModalProps {
 }
 
 export function PartDetailModal({ part, onClose, onSelectMotoSlug }: PartDetailModalProps) {
+  const { addItem } = useCart();
+  const [addedToCart, setAddedToCart] = useState(false);
+
   if (!part) return null;
+
+  const handleAddToCart = () => {
+    addItem({
+      id: part.sku || part.partKey,
+      sku: part.sku || part.partKey,
+      partKey: part.partKey,
+      name: part.name,
+      price: part.pricePen || 0,
+      currency: 'PEN',
+      categoryName: part.category,
+      imageUrl: part.imageUrl,
+      isDirectSale: true,
+      stockAvailable: part.stockStatus === 'AGOTADO_EN_PAGINA' ? 0 : 15,
+      voltage: part.electricalVoltageV || part.outputVoltageV,
+    });
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2500);
+  };
 
   const data = getPartWithCompatibleMotos(part.partKey);
   const compatibleMotos = data?.compatibleMotos || [];
@@ -72,11 +96,11 @@ export function PartDetailModal({ part, onClose, onSelectMotoSlug }: PartDetailM
               <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-gray-500">
                 <div className="flex items-center gap-1.5 text-gray-700">
                   <Building2 className="w-4 h-4 text-blue-600" />
-                  <span>Proveedor Oficial: <strong>{part.supplier}</strong></span>
+                  <span>Línea Original: <strong>{part.brand}</strong> (Garantía MotoService)</span>
                 </div>
                 <div className="flex items-center gap-1 text-gray-400">
                   <Clock className="w-3.5 h-3.5" />
-                  <span>Fecha de consulta: {part.sourceCheckedOn || '2026-10-30'}</span>
+                  <span>Verificación técnica: {part.sourceCheckedOn || '2026-10-31'}</span>
                 </div>
               </div>
             </div>
@@ -84,13 +108,13 @@ export function PartDetailModal({ part, onClose, onSelectMotoSlug }: PartDetailM
         </div>
 
         {/* ============================================================ */}
-        {/* SEPARACIÓN DE PRECIO PROVEEDOR Y POLÍTICA COMERCIAL          */}
+        {/* PRECIO Y DISPONIBILIDAD EN MOTOSERVICE                      */}
         {/* ============================================================ */}
         <div className="my-5 p-4 rounded-xl bg-gray-50 border border-gray-200">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <span className="text-[11px] uppercase tracking-wider font-semibold text-gray-500 block mb-0.5">
-                Precio Referencial de Proveedor
+                Precio de Venta MotoService
               </span>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl sm:text-3xl font-extrabold text-gray-900">
@@ -103,21 +127,21 @@ export function PartDetailModal({ part, onClose, onSelectMotoSlug }: PartDetailM
                 )}
               </div>
               <p className="text-[11px] text-gray-500 mt-1 leading-snug">
-                Precio capturado de la tienda oficial del proveedor. No incluye costos de envío ni montaje salvo que el vendedor lo indique.
+                Precio con IGV incluido. Acepta pago seguro con Culqi, tarjeta y comprobantes SUNAT (Boleta / Factura).
               </p>
             </div>
 
             <div className="sm:border-l sm:border-gray-200 sm:pl-4">
               <span className="text-[11px] uppercase tracking-wider font-semibold text-gray-500 block mb-0.5">
-                Disponibilidad y Existencia
+                Disponibilidad en Tienda
               </span>
               <div className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                <span className={`inline-block w-2.5 h-2.5 rounded-full ${part.stockStatus === 'AGOTADO_EN_PAGINA' ? 'bg-rose-500' : 'bg-emerald-500'}`} />
-                <span>{part.stockStatus.replace(/_/g, ' ')}</span>
+                <span className={`inline-block w-2.5 h-2.5 rounded-full ${part.stockStatus === 'AGOTADO_EN_PAGINA' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                <span>{part.stockStatus === 'AGOTADO_EN_PAGINA' ? 'A Pedido / Consulta' : 'En Stock MotoService'}</span>
               </div>
-              <div className="mt-2 text-[11px] text-amber-900 bg-amber-50 p-2.5 rounded-lg border border-amber-200 leading-snug">
-                <Info className="w-3.5 h-3.5 inline mr-1 text-amber-600 shrink-0" />
-                NeroElectric Motors enlaza y orienta respecto al catálogo oficial del proveedor. Se deriva la consulta o compra a su tienda autorizada.
+              <div className="mt-2 text-[11px] text-blue-900 bg-blue-50 p-2.5 rounded-lg border border-blue-200 leading-snug">
+                <Info className="w-3.5 h-3.5 inline mr-1 text-blue-600 shrink-0" />
+                Venta y despacho directo por MotoService Perú. Contamos con técnicos certificados e instalación en taller.
               </div>
             </div>
           </div>
@@ -241,8 +265,8 @@ export function PartDetailModal({ part, onClose, onSelectMotoSlug }: PartDetailM
 
         {/* Botones de acción */}
         <div className="pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-[11px] text-gray-400">
-            Fuente oficial verificada al {part.sourceCheckedOn || '2026-10-30'}
+          <div className="text-[11px] text-gray-500 font-medium">
+            🛡️ Homologación y Garantía MotoService Perú
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -253,15 +277,37 @@ export function PartDetailModal({ part, onClose, onSelectMotoSlug }: PartDetailM
               Cerrar
             </button>
 
-            {part.sourceUrl && (
+            {part.pricePen && part.pricePen > 0 ? (
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                className={`inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-xs font-bold transition-all shadow-xs flex-1 sm:flex-initial cursor-pointer ${
+                  addedToCart
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
+              >
+                {addedToCart ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>¡Añadido al Carrito!</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="w-4 h-4" />
+                    <span>Comprar / Añadir al Carrito</span>
+                  </>
+                )}
+              </button>
+            ) : (
               <a
-                href={part.sourceUrl}
+                href={`https://wa.me/51987654321?text=${encodeURIComponent(`Hola MotoService, deseo cotizar y comprar el repuesto ${part.name} (SKU: ${part.sku || part.partKey}) de la marca ${part.brand}.`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all shadow-xs flex-1 sm:flex-initial cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs flex-1 sm:flex-initial cursor-pointer"
               >
-                <ExternalLink className="w-4 h-4" />
-                <span>Ir a Consulta / Compra en {part.supplier}</span>
+                <MessageCircle className="w-4 h-4" />
+                <span>Comprar por WhatsApp con MotoService</span>
               </a>
             )}
           </div>

@@ -7,9 +7,11 @@ import {
   Scale,
   Wrench,
   Filter,
-  ExternalLink,
   Eye,
-  Building2
+  Building2,
+  ShoppingCart,
+  Check,
+  MessageCircle
 } from 'lucide-react';
 import { MotoModel, SupplierPart } from '@/types';
 import {
@@ -19,6 +21,7 @@ import {
   getMotoWithCompatibleParts
 } from '@/data/ecomoto-data';
 import { formatCurrency } from '@/lib/utils';
+import { useCart } from '@/lib/cart/cart-context';
 import { MotoComparator } from './MotoComparator';
 import { MotoDetailModal } from './MotoDetailModal';
 import { PartDetailModal } from './PartDetailModal';
@@ -34,6 +37,39 @@ export function EcoMotoCatalogSection() {
   // Modales
   const [inspectedMoto, setInspectedMoto] = useState<MotoModel | null>(null);
   const [inspectedPart, setInspectedPart] = useState<SupplierPart | null>(null);
+
+  // Carrito de compras MotoService
+  const { addItem } = useCart();
+  const [cartFeedback, setCartFeedback] = useState<{ [key: string]: string }>({});
+
+  const handleAddToCart = (part: SupplierPart) => {
+    const res = addItem({
+      id: part.sku || part.partKey,
+      sku: part.sku || part.partKey,
+      partKey: part.partKey,
+      name: part.name,
+      price: part.pricePen || 0,
+      currency: 'PEN',
+      categoryName: part.category,
+      imageUrl: part.imageUrl,
+      isDirectSale: true,
+      stockAvailable: part.stockStatus === 'AGOTADO_EN_PAGINA' ? 0 : 15,
+      voltage: part.electricalVoltageV || part.outputVoltageV,
+    });
+
+    setCartFeedback((prev) => ({
+      ...prev,
+      [part.partKey]: res.success ? '¡Añadido!' : (res.message || 'No disponible'),
+    }));
+
+    setTimeout(() => {
+      setCartFeedback((prev) => {
+        const next = { ...prev };
+        delete next[part.partKey];
+        return next;
+      });
+    }, 2500);
+  };
 
   // Motos del catálogo oficial
   const allCatalogMotos = useMemo(() => getPublicCatalogMotos(), []);
@@ -289,21 +325,19 @@ export function EcoMotoCatalogSection() {
                           onClick={() => setInspectedMoto(moto)}
                           className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all cursor-pointer shadow-xs"
                         >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>Ficha y Repuestos</span>
+                          <Wrench className="w-3.5 h-3.5" />
+                          <span>Ver Repuestos Compatibles</span>
                         </button>
 
-                        {moto.sourceUrl && (
-                          <a
-                            href={moto.sourceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Ver en sitio web oficial"
-                            className="p-2 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-600 hover:text-gray-900 transition-colors"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        )}
+                        <a
+                          href={`https://wa.me/51987654321?text=${encodeURIComponent(`Hola MotoService, deseo cotizar la moto eléctrica ${moto.brand} ${moto.model}.`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Cotizar moto con un asesor de ventas de MotoService"
+                          className="p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 transition-colors"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                        </a>
                       </div>
                     </div>
                   );
@@ -388,22 +422,22 @@ export function EcoMotoCatalogSection() {
 
                       <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-3">
                         <Building2 className="w-3.5 h-3.5 text-blue-600" />
-                        <span>{part.supplier}</span>
+                        <span>Línea Original {part.brand} · Homologada MotoService</span>
                       </div>
 
-                      {/* Precio y stock del proveedor */}
+                      {/* Precio y stock de MotoService */}
                       <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 mb-3">
                         <div className="flex items-baseline justify-between">
                           <div>
-                            <span className="text-[10px] uppercase text-gray-400 block font-semibold">Precio Referencial:</span>
+                            <span className="text-[10px] uppercase text-gray-400 block font-semibold">Precio en Tienda:</span>
                             <span className="text-lg font-bold text-gray-900">
                               {part.pricePen ? formatCurrency(part.pricePen) : 'A Consultar'}
                             </span>
                           </div>
                           <div className="text-right">
-                            <span className="text-[10px] uppercase text-gray-400 block font-semibold">Stock Proveedor:</span>
-                            <span className={`text-xs font-medium ${part.stockStatus === 'AGOTADO_EN_PAGINA' ? 'text-red-600' : 'text-gray-700'}`}>
-                              {part.stockStatus.replace(/_/g, ' ')}
+                            <span className="text-[10px] uppercase text-gray-400 block font-semibold">Disponibilidad:</span>
+                            <span className={`text-xs font-semibold ${part.stockStatus === 'AGOTADO_EN_PAGINA' ? 'text-amber-600' : 'text-emerald-700'}`}>
+                              {part.stockStatus === 'AGOTADO_EN_PAGINA' ? 'A Pedido' : 'En Stock MotoService'}
                             </span>
                           </div>
                         </div>
@@ -425,26 +459,49 @@ export function EcoMotoCatalogSection() {
                       </div>
                     </div>
 
-                    {/* Acciones */}
+                    {/* Acciones de Venta Directa en MotoService */}
                     <div className="mt-4 pt-3 border-t border-gray-100 flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setInspectedPart(part)}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 text-xs font-semibold transition-colors cursor-pointer"
+                        className="px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 text-xs font-semibold transition-colors cursor-pointer"
+                        title="Ver especificaciones técnicas y compatibilidades"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        <span>Ficha Técnica</span>
+                        <span className="hidden sm:inline">Detalles</span>
                       </button>
 
-                      {part.sourceUrl && (
+                      {part.pricePen && part.pricePen > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => handleAddToCart(part)}
+                          className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                            cartFeedback[part.partKey]
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-blue-600 hover:bg-blue-700 text-white'
+                          }`}
+                        >
+                          {cartFeedback[part.partKey] ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              <span>{cartFeedback[part.partKey]}</span>
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingCart className="w-3.5 h-3.5" />
+                              <span>Añadir al Carrito</span>
+                            </>
+                          )}
+                        </button>
+                      ) : (
                         <a
-                          href={part.sourceUrl}
+                          href={`https://wa.me/51987654321?text=${encodeURIComponent(`Hola MotoService, deseo cotizar y comprar el repuesto ${part.name} (SKU: ${part.sku || part.partKey}) de la marca ${part.brand}.`)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all shadow-xs"
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs"
                         >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          <span>Ver en {part.supplier}</span>
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>Comprar por WhatsApp</span>
                         </a>
                       )}
                     </div>

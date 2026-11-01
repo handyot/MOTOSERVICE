@@ -5,10 +5,10 @@ import Image from 'next/image';
 import {
   Scale,
   X,
-  ExternalLink,
   CheckCircle,
   HelpCircle,
-  Wrench
+  Wrench,
+  MessageCircle
 } from 'lucide-react';
 import { MotoModel } from '@/types';
 import { getPublicCatalogMotos } from '@/data/ecomoto-data';
@@ -343,17 +343,15 @@ export function MotoComparator({ initialSlugs = ['tailg-n6-super-s', 'yadea-m6-p
                         <span>Ver Repuestos Compatibles</span>
                       </button>
                     )}
-                    {m.sourceUrl && (
-                      <a
-                        href={m.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 text-[11px] font-medium transition-colors"
-                      >
-                        <ExternalLink className="w-3 h-3 text-gray-500" />
-                        <span>Ver Ficha en {m.brand}</span>
-                      </a>
-                    )}
+                    <a
+                      href={`https://wa.me/51987654321?text=${encodeURIComponent(`Hola MotoService, deseo cotizar la moto eléctrica ${m.brand} ${m.model} y consultar repuestos compatibles.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-[11px] font-medium transition-colors"
+                    >
+                      <MessageCircle className="w-3 h-3 text-emerald-600" />
+                      <span>Cotizar en MotoService</span>
+                    </a>
                   </td>
                 ))}
               </tr>
