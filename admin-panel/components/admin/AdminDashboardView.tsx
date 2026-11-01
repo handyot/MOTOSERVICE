@@ -323,8 +323,8 @@ export function AdminDashboardView({
         items: [
           {
             id: 'pedidos',
-            label: 'Pedidos',
-            shortLabel: 'Pedidos',
+            label: 'Pedidos y Ventas POS',
+            shortLabel: 'Pedidos y POS',
             icon: 'shopping-bag',
             count: orders.length > 0 ? orders.length : undefined,
           },
@@ -446,6 +446,27 @@ export function AdminDashboardView({
       showFeedback('error', 'Error de comunicación con el servidor administrativo.');
     } finally {
       setIsUpdatingOrder(null);
+    }
+  };
+
+  // Acción real: Sincronizar pedidos en tiempo real con el POS
+  const [isRefreshingOrders, setIsRefreshingOrders] = useState(false);
+  const handleRefreshOrders = async () => {
+    setIsRefreshingOrders(true);
+    setStatusFeedback(null);
+    try {
+      const res = await fetch('/api/admin/orders/list');
+      const data = await res.json();
+      if (res.ok && data.success && Array.isArray(data.orders)) {
+        setOrders(data.orders);
+        showFeedback('success', `Se sincronizaron ${data.orders.length} pedidos en tiempo real con el POS.`);
+      } else {
+        showFeedback('error', data.error || 'No se pudieron sincronizar los pedidos.');
+      }
+    } catch {
+      showFeedback('error', 'Error de comunicación al sincronizar pedidos.');
+    } finally {
+      setIsRefreshingOrders(false);
     }
   };
 
@@ -761,23 +782,25 @@ export function AdminDashboardView({
   };
 
   const renderOrderStatusBadge = (status: OrderStatus) => {
-    const styles: Record<string, string> = {
-      pendiente_pago: 'bg-amber-50 text-amber-800 border-amber-200',
-      pagado: 'bg-blue-50 text-blue-800 border-blue-200',
-      confirmado: 'bg-amber-50 text-amber-900 border-amber-300',
-      en_preparacion: 'bg-blue-50 text-blue-800 border-blue-200',
-      despachado: 'bg-indigo-50 text-indigo-800 border-indigo-200',
-      entregado: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-      cancelado: 'bg-red-50 text-red-700 border-red-200',
-      reembolsado: 'bg-slate-100 text-slate-700 border-slate-300',
+    const badgeMap: Record<string, { label: string; style: string }> = {
+      pendiente_pago: { label: 'Pendiente Pago', style: 'bg-amber-50 text-amber-800 border-amber-200' },
+      pagado: { label: 'Pago Verificado', style: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+      confirmado: { label: 'Pago Confirmado', style: 'bg-blue-50 text-blue-900 border-blue-200' },
+      en_preparacion: { label: 'En Preparación', style: 'bg-amber-50 text-amber-900 border-amber-300' },
+      despachado: { label: 'En Tránsito', style: 'bg-indigo-50 text-indigo-900 border-indigo-200' },
+      entregado: { label: 'Completado / Entregado', style: 'bg-emerald-50 text-emerald-900 border-emerald-300' },
+      cancelado: { label: 'Cancelado', style: 'bg-red-50 text-red-700 border-red-200' },
+      reembolsado: { label: 'Reembolsado', style: 'bg-slate-100 text-slate-700 border-slate-300' },
+    };
+    const current = badgeMap[status] || {
+      label: status.replace(/_/g, ' '),
+      style: 'bg-slate-100 text-slate-700 border-slate-200',
     };
     return (
       <span
-        className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
-          styles[status] || 'bg-slate-100 text-slate-700 border-slate-200'
-        }`}
+        className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${current.style}`}
       >
-        {status.replace(/_/g, ' ')}
+        {current.label}
       </span>
     );
   };
@@ -2349,11 +2372,22 @@ export function AdminDashboardView({
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
                 <div>
                   <h1 className="text-xl font-bold tracking-tight text-slate-900">
-                    Pedidos y ciclo de compra
+                    Pedidos y Punto de Venta (POS)
                   </h1>
                   <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                    Gestión de órdenes con máquina de estados validada en servidor: Confirmado → En preparación → Despachado → Entregado.
+                    Control de órdenes comerciales y ventas de mostrador POS: Confirmado → En preparación → En tránsito → Completado / Entregado.
                   </p>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    disabled={isRefreshingOrders}
+                    onClick={handleRefreshOrders}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    <Icon name="search" className={`w-3.5 h-3.5 ${isRefreshingOrders ? 'animate-spin' : ''}`} />
+                    <span>{isRefreshingOrders ? 'Sincronizando...' : 'Sincronizar Pedidos POS'}</span>
+                  </button>
                 </div>
               </div>
 
@@ -2380,10 +2414,10 @@ export function AdminDashboardView({
                     className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 focus:border-slate-900 focus:outline-none"
                   >
                     <option value="ALL">Todos los estados ({orders.length})</option>
-                    <option value="confirmado">Confirmado</option>
-                    <option value="en_preparacion">En preparación</option>
-                    <option value="despachado">Despachado</option>
-                    <option value="entregado">Entregado</option>
+                    <option value="confirmado">Confirmado (Pago verificado)</option>
+                    <option value="en_preparacion">En preparación (Almacén)</option>
+                    <option value="despachado">En tránsito (Despachado)</option>
+                    <option value="entregado">Completado / Entregado</option>
                     <option value="cancelado">Cancelado</option>
                   </select>
                 </div>
@@ -2457,7 +2491,7 @@ export function AdminDashboardView({
                                     onClick={() => handleUpdateOrderStatus(o.id_pedido, 'en_preparacion')}
                                     className="rounded-lg bg-amber-400 hover:bg-amber-500 text-slate-950 px-2.5 py-1 text-[11px] font-bold transition-colors cursor-pointer disabled:opacity-50"
                                   >
-                                    Pasar a preparación
+                                    Pasar a En Preparación →
                                   </button>
                                 )}
                                 {o.estado_pedido === 'en_preparacion' && (
@@ -2467,7 +2501,7 @@ export function AdminDashboardView({
                                     onClick={() => handleUpdateOrderStatus(o.id_pedido, 'despachado')}
                                     className="rounded-lg bg-[#0B1528] hover:bg-slate-800 text-white px-2.5 py-1 text-[11px] font-bold transition-colors cursor-pointer disabled:opacity-50"
                                   >
-                                    Marcar despachado
+                                    Poner En Tránsito →
                                   </button>
                                 )}
                                 {o.estado_pedido === 'despachado' && (
@@ -2477,7 +2511,7 @@ export function AdminDashboardView({
                                     onClick={() => handleUpdateOrderStatus(o.id_pedido, 'entregado')}
                                     className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 text-[11px] font-bold transition-colors cursor-pointer disabled:opacity-50"
                                   >
-                                    Confirmar entrega
+                                    Marcar Completado / Entregado ✓
                                   </button>
                                 )}
                               </div>
@@ -2894,7 +2928,7 @@ export function AdminDashboardView({
                                   onClick={() => handleUpdateOrderStatus(o.id_pedido, 'en_preparacion')}
                                   className="rounded-lg bg-amber-400 hover:bg-amber-500 text-slate-950 px-3 py-1 text-[11px] font-bold cursor-pointer"
                                 >
-                                  Iniciar empaque
+                                  Iniciar preparación
                                 </button>
                               )}
                               {o.estado_pedido === 'en_preparacion' && (
@@ -2904,7 +2938,7 @@ export function AdminDashboardView({
                                   onClick={() => handleUpdateOrderStatus(o.id_pedido, 'despachado')}
                                   className="rounded-lg bg-[#0B1528] hover:bg-slate-800 text-white px-3 py-1 text-[11px] font-bold cursor-pointer"
                                 >
-                                  Registrar salida
+                                  Poner en tránsito
                                 </button>
                               )}
                               {o.estado_pedido === 'despachado' && (
@@ -2914,7 +2948,7 @@ export function AdminDashboardView({
                                   onClick={() => handleUpdateOrderStatus(o.id_pedido, 'entregado')}
                                   className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 text-[11px] font-bold cursor-pointer"
                                 >
-                                  Confirmar recepción
+                                  Completar y entregar
                                 </button>
                               )}
                             </td>

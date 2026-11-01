@@ -5,7 +5,7 @@
  * sobre los pedidos en public.pedidos.
  */
 
-import { createClient } from '../supabase/server';
+import { createClient, createCatalogWriteClient } from '../supabase/server';
 import { validateOrderStatusTransition } from './order-core.mjs';
 import type { OrderStatus } from '@/types';
 
@@ -17,7 +17,7 @@ export async function updateOrderStatus(
   adminNotes?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabase = await createClient();
+    const supabase = (await createCatalogWriteClient()) || (await createClient());
 
     const { data: orderData, error: fetchError } = await supabase
       .from('pedidos')
@@ -43,13 +43,25 @@ export async function updateOrderStatus(
     }
 
     const updatedAt = new Date().toISOString();
+    const dispatchStatusMap: Record<string, string> = {
+      en_preparacion: 'preparado',
+      despachado: 'despachado',
+      entregado: 'entregado',
+    };
+    const targetDispatch = dispatchStatusMap[targetStatus];
+
+    const updatePayload: Record<string, unknown> = {
+      estado_pedido: targetStatus,
+      notas_admin: adminNotes || orderData.notas_admin || null,
+      updated_at: updatedAt,
+    };
+    if (targetDispatch) {
+      updatePayload.estado_despacho = targetDispatch;
+    }
+
     const { error: updateError } = await supabase
       .from('pedidos')
-      .update({
-        estado_pedido: targetStatus,
-        notas_admin: adminNotes || orderData.notas_admin || null,
-        updated_at: updatedAt,
-      })
+      .update(updatePayload)
       .eq('id_pedido', orderId);
 
     if (updateError) {

@@ -49,12 +49,12 @@ export default async function OrderDetailPage({ params, searchParams }: PageProp
     );
   }
 
-  // Mapeo de estados del pedido
+  // Mapeo de estados del pedido (Trazabilidad en 4 fases)
   const steps = [
     { key: 'confirmado', label: 'Pago Confirmado' },
     { key: 'en_preparacion', label: 'En Preparación' },
-    { key: 'despachado', label: 'Despachado' },
-    { key: 'entregado', label: 'Entregado' },
+    { key: 'despachado', label: order.deliveryMethod === 'recojo_tienda' ? 'Listo para Recojo' : 'En Tránsito' },
+    { key: 'entregado', label: 'Completado / Entregado' },
   ];
 
   const getStepIndex = (status: string) => {

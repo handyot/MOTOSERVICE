@@ -12,7 +12,7 @@
  */
 
 import crypto from 'crypto';
-import { createClient } from '../supabase/server';
+import { createClient, createOrderAdminClient } from '../supabase/server';
 import { validateCoupon, recordCouponRedemption } from '../promotions/discount-service';
 import { calculateTaxBreakdown, validateFiscalDocument } from '../documents/fiscal-service';
 import {
@@ -215,7 +215,7 @@ export async function createOrder(
 
   // 6. Persistir en base de datos o fallback en memoria
   try {
-    const supabase = await createClient();
+    const supabase = createOrderAdminClient() || (await createClient());
     const { error: orderError } = await supabase.from('pedidos').insert({
       id_pedido: orderId,
       numero_pedido: orderNumber,
@@ -332,7 +332,7 @@ export async function getOrderSecurely(params: {
 
   if (!order) {
     try {
-      const supabase = await createClient();
+      const supabase = createOrderAdminClient() || (await createClient());
       const { data, error } = await supabase
         .from('pedidos')
         .select(`
@@ -494,7 +494,7 @@ export async function trackOrderPublicly(params: {
   // 2. Si no está en memoria, buscar en Supabase
   if (!found) {
     try {
-      const supabase = await createClient();
+      const supabase = createOrderAdminClient() || (await createClient());
       let queryBuilder = supabase
         .from('pedidos')
         .select(`
@@ -578,28 +578,28 @@ export async function trackOrderPublicly(params: {
     {
       key: 'confirmado',
       label: 'Pago Confirmado',
-      description: 'El pago con Culqi ha sido verificado satisfactoriamente.',
+      description: 'El cobro con Culqi ha sido verificado satisfactoriamente.',
       idx: 1,
     },
     {
       key: 'en_preparacion',
-      label: 'En Preparación de Almacén',
-      description: 'Componentes validados, empaquetados y con control de calidad.',
+      label: 'En Preparación',
+      description: 'Componentes validados, empaquetados y en control de calidad de almacén.',
       idx: 2,
     },
     {
       key: 'despachado',
-      label: found.deliveryMethod === 'recojo_tienda' ? 'Listo para Recojo' : 'En Ruta de Despacho',
+      label: found.deliveryMethod === 'recojo_tienda' ? 'Listo para Recojo' : 'En Tránsito',
       description:
         found.deliveryMethod === 'recojo_tienda'
           ? 'Disponible para retiro en almacén central de Lima.'
-          : 'Motorizado en trayecto hacia tu dirección.',
+          : 'Motorizado en trayecto de entrega hacia tu dirección.',
       idx: 3,
     },
     {
       key: 'entregado',
-      label: 'Entregado con Conformidad',
-      description: 'Repuesto entregado con guía y garantía oficial activada.',
+      label: 'Completado / Entregado',
+      description: 'Repuesto entregado con conformidad y garantía oficial activada.',
       idx: 4,
     },
   ];
@@ -680,11 +680,19 @@ export async function updateOrderStatus(
   memoryOrders.set(orderId, order);
 
   try {
-    const supabase = await createClient();
+    const supabase = createOrderAdminClient() || (await createClient());
     await supabase
       .from('pedidos')
       .update({
         estado_pedido: targetStatus,
+        estado_despacho:
+          targetStatus === 'en_preparacion'
+            ? 'preparado'
+            : targetStatus === 'despachado'
+            ? 'despachado'
+            : targetStatus === 'entregado'
+            ? 'entregado'
+            : 'pendiente',
         notas_admin: adminNotes || order.adminNotes,
         updated_at: order.updatedAt,
       })

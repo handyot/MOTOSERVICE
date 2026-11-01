@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { processCulqiCharge } from '@/lib/payments/culqi';
 import { getOrderSecurely, recordOrderPaymentInMemory } from '@/lib/orders/order-service';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createOrderAdminClient } from '@/lib/supabase/server';
 import { generateProvisionalFiscalReceipt, calculateTaxBreakdown } from '@/lib/documents/fiscal-service';
 
 export async function POST(request: Request) {
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
 
     // Registrar pago y actualizar estados del pedido en base de datos
     try {
-      const supabase = await createClient();
+      const supabase = createOrderAdminClient() || (await createClient());
 
       await supabase.from('pagos_intentos').insert({
         id_pedido: order.id,

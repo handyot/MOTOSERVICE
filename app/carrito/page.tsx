@@ -149,6 +149,21 @@ export default function CartPage() {
   const discountAmount = couponApplied ? Math.round(subtotal * 0.05 * 100) / 100 : 0;
   const estimatedTotal = Math.max(0, subtotal - discountAmount);
 
+  const formatOrderStatus = (status: string) => {
+    switch (status) {
+      case 'confirmado':
+        return 'PAGO CONFIRMADO';
+      case 'en_preparacion':
+        return 'EN PREPARACIÓN';
+      case 'despachado':
+        return 'EN TRÁNSITO';
+      case 'entregado':
+        return 'COMPLETADO / ENTREGADO';
+      default:
+        return status.replace(/_/g, ' ').toUpperCase();
+    }
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-12">
       {/* Breadcrumb */}
@@ -201,7 +216,7 @@ export default function CartPage() {
                 Tu Pedido Reciente: {recentOrder.orderNumber}
               </span>
               <span className="rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5">
-                Pago Confirmado (Culqi)
+                {formatOrderStatus(recentOrder.status)}
               </span>
             </div>
             <p className="text-xs text-gray-600">
@@ -540,7 +555,7 @@ export default function CartPage() {
 
               <div className="flex flex-wrap gap-2 items-center">
                 <span className="text-xs rounded-xl bg-blue-100 text-blue-800 px-3 py-1.5 font-bold">
-                  Estado: {trackingData.orderStatus.replace('_', ' ').toUpperCase()}
+                  Estado: {formatOrderStatus(trackingData.orderStatus)}
                 </span>
                 <Link
                   href={`/pedido/${trackingData.id}`}

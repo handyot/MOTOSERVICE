@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { requireAdmin } from '../lib/auth/server';
-import { createClient } from '../lib/supabase/server';
+import { createClient, createCatalogWriteClient } from '../lib/supabase/server';
 import { AdminDashboardView } from '../components/admin/AdminDashboardView';
 import { mergeCatalogWithMaster } from '../lib/catalog/catalog-fallback';
 
@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminHomePage() {
   const account = await requireAdmin();
-  const supabase = await createClient();
+  const supabase = (await createCatalogWriteClient()) || (await createClient());
 
   const [
     { count: countMarcas, data: brandsData },
