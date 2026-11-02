@@ -217,14 +217,14 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, totalCount, clearCart, isLoaded } = useCart();
 
-  // Datos del comprador
-  const [customerName, setCustomerName] = useState('Carlos Mendoza');
-  const [customerEmail, setCustomerEmail] = useState('review@culqi.com');
-  const [customerPhone, setCustomerPhone] = useState('987654321');
-  const [shippingAddress, setShippingAddress] = useState('Av. Larco 1234, Dpto 402');
-  const [department, setDepartment] = useState('Lima');
-  const [province, setProvince] = useState('Lima');
-  const [district, setDistrict] = useState('Miraflores');
+  // Datos del comprador (Vacíos por defecto para invitados; autocompletados para usuarios autenticados)
+  const [customerName, setCustomerName] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [shippingAddress, setShippingAddress] = useState('');
+  const [department, setDepartment] = useState('');
+  const [province, setProvince] = useState('');
+  const [district, setDistrict] = useState('');
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('envio_domicilio');
   const [isAuthenticatedUser, setIsAuthenticatedUser] = useState(false);
 
@@ -237,6 +237,11 @@ export default function CheckoutPage() {
   const [recipientProvince] = useState('');
   const [recipientDistrict] = useState('');
   const [recipientNotes, setRecipientNotes] = useState('');
+
+  // Comprobante electrónico
+  const [invoiceType, setInvoiceType] = useState<InvoiceType>('boleta');
+  const [docNumber, setDocNumber] = useState('');
+  const [docBusinessName, setDocBusinessName] = useState('');
 
   // Autocompletar datos del comprador autenticado si existe sesión activa
   useEffect(() => {
@@ -256,6 +261,7 @@ export default function CheckoutPage() {
           if (meta.department) setDepartment(meta.department);
           if (meta.province) setProvince(meta.province);
           if (meta.district) setDistrict(meta.district);
+          if (meta.dni || meta.doc_number) setDocNumber(meta.dni || meta.doc_number);
 
           // Consultar tabla profiles si está disponible
           try {
@@ -267,6 +273,7 @@ export default function CheckoutPage() {
               if (profile.department) setDepartment(profile.department);
               if (profile.province) setProvince(profile.province);
               if (profile.district) setDistrict(profile.district);
+              if (profile.dni || profile.doc_number) setDocNumber(profile.dni || profile.doc_number);
             }
           } catch {
             // Ignorar error si la tabla profiles no existe o está inaccesible
@@ -280,25 +287,20 @@ export default function CheckoutPage() {
     return () => { isMounted = false; };
   }, []);
 
-  // Comprobante electrónico
-  const [invoiceType, setInvoiceType] = useState<InvoiceType>('boleta');
-  const [docNumber, setDocNumber] = useState('12345678');
-  const [docBusinessName, setDocBusinessName] = useState('');
-
   // Promoción de primera compra (5%)
   const [subscribeNewsletter, setSubscribeNewsletter] = useState(true);
 
-  // Pago Culqi
-  const [cardNumber, setCardNumber] = useState('4111 1111 1111 1111');
-  const [cardExp, setCardExp] = useState('09/30');
-  const [cardCvv, setCardCvv] = useState('123');
-  const [selectedTestCardId, setSelectedTestCardId] = useState('visa-debito-exito');
+  // Pago Culqi (Vacío por defecto; se completa solo si el usuario ingresa su tarjeta o elige un preset de prueba)
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExp, setCardExp] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [selectedTestCardId, setSelectedTestCardId] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Estado del Reto 3DS (Challenge Modal)
   const [show3dsModal, setShow3dsModal] = useState(false);
-  const [otpCode, setOtpCode] = useState('123456');
+  const [otpCode, setOtpCode] = useState('');
   const [isProcessing3ds, setIsProcessing3ds] = useState(false);
   const [pending3dsData, setPending3dsData] = useState<{
     orderId: string;
@@ -335,7 +337,7 @@ export default function CheckoutPage() {
     setCardNumber(card.number);
     setCardExp(card.exp);
     setCardCvv(card.cvv);
-    if (card.email) {
+    if (card.email && !customerEmail) {
       setCustomerEmail(card.email);
     }
     setErrorMessage(null);
@@ -1175,10 +1177,15 @@ export default function CheckoutPage() {
                 value={selectedTestCardId}
                 onChange={(e) => {
                   const card = CULQI_TEST_CARDS.find((c) => c.id === e.target.value);
-                  if (card) applyTestCardPreset(card);
+                  if (card) {
+                    applyTestCardPreset(card);
+                  } else {
+                    setSelectedTestCardId('');
+                  }
                 }}
                 className="w-full rounded-lg bg-white border border-blue-200 px-2.5 py-1.5 text-xs text-gray-900 font-medium focus:outline-none focus:border-blue-600"
               >
+                <option value="">-- Ingresar tarjeta propia o seleccionar prueba (opcional) --</option>
                 <optgroup label="✅ Compras Exitosas Directas">
                   {CULQI_TEST_CARDS.filter((c) => c.category === 'exito').map((c) => (
                     <option key={c.id} value={c.id}>
