@@ -286,6 +286,32 @@ test('Issue #15: searchCatalogItems excluye productos con estado BLOQUEADO u OCU
   assert.strictEqual(res.parts[0].sku, 'PART-ACTIVA');
 });
 
+test('Issue #15: isProductVisibleInCatalog incluye repuestos de catálogo verificados y preserva exclusión de bloqueados', () => {
+  // Los estados de verificación de origen de catálogo deben ser visibles
+  const verifiedStatuses = [
+    'VERIFICADO_EN_FUENTE',
+    'VERIFICADO_CON_CONDICIONES',
+    'PARCIAL',
+    'PENDIENTE_DE_COMPATIBILIDAD',
+    'VERIFICAR_VARIANTE',
+    'ACTIVO',
+    'PAUSADO',
+  ];
+  for (const st of verifiedStatuses) {
+    assert.strictEqual(
+      isProductVisibleInCatalog(st, true),
+      true,
+      `El estado ${st} debe ser visible en el catálogo público`
+    );
+  }
+
+  // Estados comerciales restrictivos deben ser excluidos
+  assert.strictEqual(isProductVisibleInCatalog('BLOQUEADO', true), false);
+  assert.strictEqual(isProductVisibleInCatalog('OCULTO', true), false);
+  assert.strictEqual(isProductVisibleInCatalog('ARCHIVADO', true), false);
+  assert.strictEqual(isProductVisibleInCatalog('VERIFICADO_EN_FUENTE', false), false);
+});
+
 test('Issue #15: searchCatalogItems encuentra motos eléctricas por marca, modelo y voltaje', () => {
   const mockMotos = [
     {
