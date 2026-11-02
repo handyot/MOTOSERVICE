@@ -37,7 +37,7 @@ export function ArchitectureStatusBanner() {
       icon: <Code2 className="w-5 h-5 text-gray-700" />,
       status: 'Esquema Oficial',
       badgeClass: 'bg-gray-100 text-gray-700 border-gray-200',
-      description: 'Catálogo inicial con RLS estricto y restricciones íntegras, más migraciones y seed aditivo de datos reales EcoMoto Perú.',
+      description: 'Catálogo Maestro Oficial con RLS estricto y restricciones íntegras, más migraciones y seed aditivo de datos reales EcoMoto Perú.',
       path: 'supabase/migrations/',
     },
   ];

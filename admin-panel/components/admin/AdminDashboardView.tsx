@@ -417,7 +417,7 @@ export function AdminDashboardView({
           {
             id: 'catalogo_db',
             label: 'Marcas, modelos, repuestos y compatibilidades',
-            shortLabel: 'Catálogo base',
+            shortLabel: 'Catálogo Maestro',
             icon: 'database',
             count: stats.totalModelos + stats.totalRepuestos > 0 ? stats.totalModelos + stats.totalRepuestos : undefined,
           },
