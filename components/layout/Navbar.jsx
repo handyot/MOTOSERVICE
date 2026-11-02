@@ -26,9 +26,11 @@ export function Navbar() {
   useEffect(() => {
     const trimmed = searchQuery.trim();
     if (!trimmed || trimmed.length < 2) {
-      setSearchResults(null);
-      setIsDropdownOpen(false);
-      return;
+      const resetTimer = setTimeout(() => {
+        setSearchResults(null);
+        setIsDropdownOpen(false);
+      }, 0);
+      return () => clearTimeout(resetTimer);
     }
 
     const timer = setTimeout(async () => {

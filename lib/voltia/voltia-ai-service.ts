@@ -11,7 +11,9 @@ import {
   executeSearchCatalog as coreExecuteSearchCatalog,
   executeCheckCompatibility as coreExecuteCheckCompatibility,
   executeTrackOrder as coreExecuteTrackOrder,
-} from './voltia-ai-tools-core.mjs';
+  type ToolSecurityContext,
+  type VoltIARecommendedProduct,
+} from './voltia-ai-tools';
 import { OFFICIAL_PARTS, getPublicCatalogMotos } from '../../data/ecomoto-data';
 import { getOrderSecurely } from '../orders/order-service';
 
@@ -30,21 +32,24 @@ export interface VoltIAChatRequest {
   };
 }
 
+export interface VoltIASafetyAlert {
+  title: string;
+  warning: string;
+  immediateActions: string[];
+}
+
 export interface VoltIAChatResponse {
   success: boolean;
   message: string;
-  safetyAlert?: any;
-  recommendedProducts?: any[];
+  safetyAlert?: VoltIASafetyAlert;
+  recommendedProducts?: VoltIARecommendedProduct[];
   suggestedQuestions?: string[];
   toolCallsExecuted?: string[];
   error?: string;
   isAiEnabled: boolean;
 }
 
-export interface ToolSecurityContext {
-  authenticatedUserId?: string | null;
-  isAdmin?: boolean;
-}
+export type { ToolSecurityContext, VoltIARecommendedProduct };
 
 export async function processVoltIAChat(
   req: VoltIAChatRequest,
@@ -61,7 +66,15 @@ export async function processVoltIAChat(
     getOrderSecurely,
   };
 
-  return (coreProcessVoltIAChat as any)(req, fullSecurityContext, customFetch, toolOptions);
+  type CoreChatFn = (
+    r: VoltIAChatRequest,
+    sec: ToolSecurityContext,
+    cf: typeof fetch,
+    opts: typeof toolOptions
+  ) => Promise<VoltIAChatResponse>;
+
+  const runCore = coreProcessVoltIAChat as unknown as CoreChatFn;
+  return runCore(req, fullSecurityContext, customFetch, toolOptions);
 }
 
 export const executeSearchCatalog = coreExecuteSearchCatalog;

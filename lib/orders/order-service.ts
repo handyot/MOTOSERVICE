@@ -132,8 +132,9 @@ export async function createOrder(
     }
 
     // Validación de estado comercial y ciclo de vida del repuesto (Issue #9)
-    const partStatus = (verifiedPart as any).dataStatus || 'ACTIVO';
-    const partEstado = (verifiedPart as any).estado !== undefined ? (verifiedPart as any).estado : true;
+    const partRecord = verifiedPart as unknown as { dataStatus?: string; estado?: boolean };
+    const partStatus = partRecord.dataStatus || 'ACTIVO';
+    const partEstado = partRecord.estado !== undefined ? partRecord.estado : true;
     if (!canPurchaseProduct(partStatus, partEstado)) {
       throw new Error(
         `El repuesto «${verifiedPart.name}» no está disponible para compra (${partStatus}).`

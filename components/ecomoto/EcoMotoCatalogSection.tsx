@@ -133,7 +133,8 @@ export function EcoMotoCatalogSection({
   // Filtrado de repuestos
   const filteredParts = useMemo(() => {
     return OFFICIAL_PARTS.filter((p) => {
-      const isVisible = isProductVisibleInCatalog((p as any).dataStatus || 'ACTIVO', true);
+      const partDataStatus = (p as unknown as { dataStatus?: string }).dataStatus || 'ACTIVO';
+      const isVisible = isProductVisibleInCatalog(partDataStatus, true);
       if (!isVisible) return false;
 
       const matchBrand = selectedBrand === 'todas' || p.brand === selectedBrand;

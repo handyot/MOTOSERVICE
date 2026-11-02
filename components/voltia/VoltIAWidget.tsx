@@ -1,16 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Icon } from '../ui/Icons';
 import { useCart } from '@/lib/cart/cart-context';
 import {
   DiagnosticSymptom,
   VoltIADiagnosisResult,
-  VoltIARecommendedPart,
 } from '@/types';
 import { executeDiagnosticEvaluation } from '@/lib/voltia/voltia-engine';
+import type {
+  VoltIARecommendedProduct,
+  VoltIASafetyAlert,
+} from '@/lib/voltia/voltia-ai-service';
 
 export function openVoltIAChat(detail: {
   brand?: string;
@@ -43,8 +45,8 @@ interface ChatItem {
   sender: 'user' | 'voltia';
   text: string;
   timestamp: Date;
-  safetyAlert?: any;
-  recommendedProducts?: any[];
+  safetyAlert?: VoltIASafetyAlert;
+  recommendedProducts?: VoltIARecommendedProduct[];
   suggestedQuestions?: string[];
   isError?: boolean;
 }
@@ -88,28 +90,117 @@ export function VoltIAWidget() {
   const { addItem } = useCart();
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
+  // Envío de mensaje a la IA conversacional
+  const handleSendMessage = useCallback(
+    async (
+      textToSend?: string,
+      overrideContext?: { brand?: string; model?: string; voltage?: number | string }
+    ) => {
+      const text = (textToSend || inputText).trim();
+      if (!text || isLoading) return;
+
+      const userMessage: ChatItem = {
+        id: `user-${Date.now()}`,
+        sender: 'user',
+        text,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, userMessage]);
+      setInputText('');
+      setIsLoading(true);
+      setLastFailedMessage(null);
+
+      // Preparar historial previo para el backend (últimos 6 mensajes)
+      const historyPayload = messages.slice(-6).map((m) => ({
+        sender: m.sender,
+        text: m.text,
+      }));
+
+      try {
+        const res = await fetch('/api/voltia/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: text,
+            history: historyPayload,
+            context: {
+              brand: overrideContext?.brand || vehicleBrand,
+              model: overrideContext?.model || vehicleModel,
+              voltage: overrideContext?.voltage,
+              pagePath: typeof window !== 'undefined' ? window.location.pathname : '',
+            },
+          }),
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          const aiMessage: ChatItem = {
+            id: `voltia-${Date.now()}`,
+            sender: 'voltia',
+            text: data.message,
+            timestamp: new Date(),
+            safetyAlert: data.safetyAlert,
+            recommendedProducts: data.recommendedProducts,
+            suggestedQuestions: data.suggestedQuestions,
+          };
+          setMessages((prev) => [...prev, aiMessage]);
+        } else {
+          const errorMsg: ChatItem = {
+            id: `voltia-err-${Date.now()}`,
+            sender: 'voltia',
+            text:
+              data.message ||
+              'No pudimos completar tu consulta en este momento. Puedes reintentar o solicitar asistencia técnica con un especialista.',
+            timestamp: new Date(),
+            isError: true,
+          };
+          setMessages((prev) => [...prev, errorMsg]);
+          setLastFailedMessage(text);
+        }
+      } catch {
+        const networkErrMsg: ChatItem = {
+          id: `voltia-neterr-${Date.now()}`,
+          sender: 'voltia',
+          text: 'Error de conexión al contactar a VoltIA. Por favor verifica tu conexión a internet e intenta nuevamente.',
+          timestamp: new Date(),
+          isError: true,
+        };
+        setMessages((prev) => [...prev, networkErrMsg]);
+        setLastFailedMessage(text);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [inputText, isLoading, messages, vehicleBrand, vehicleModel]
+  );
+
   // Escuchar evento open-voltia desde cualquier botón de la tienda
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleOpenEvent = (e: any) => {
+    const handleOpenEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<{
+        brand?: string;
+        model?: string;
+        voltage?: number | string;
+        prompt?: string;
+      }>;
       setIsOpen(true);
       setActiveTab('chat');
-      if (e.detail?.brand) setVehicleBrand(e.detail.brand);
-      if (e.detail?.model) setVehicleModel(e.detail.model);
-      if (e.detail?.prompt) {
-        handleSendMessage(e.detail.prompt, {
-          brand: e.detail.brand,
-          model: e.detail.model,
-          voltage: e.detail.voltage,
+      if (customEvent.detail?.brand) setVehicleBrand(customEvent.detail.brand);
+      if (customEvent.detail?.model) setVehicleModel(customEvent.detail.model);
+      if (customEvent.detail?.prompt) {
+        handleSendMessage(customEvent.detail.prompt, {
+          brand: customEvent.detail.brand,
+          model: customEvent.detail.model,
+          voltage: customEvent.detail.voltage,
         });
       }
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    window.addEventListener('open-voltia' as any, handleOpenEvent);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return () => window.removeEventListener('open-voltia' as any, handleOpenEvent);
-  }, []);
+    window.addEventListener('open-voltia', handleOpenEvent);
+    return () => window.removeEventListener('open-voltia', handleOpenEvent);
+  }, [handleSendMessage]);
 
   // Auto-scroll al final del chat al recibir mensajes
   useEffect(() => {
@@ -118,93 +209,10 @@ export function VoltIAWidget() {
     }
   }, [messages, isLoading, activeTab, isOpen]);
 
-  // Envío de mensaje a la IA conversacional
-  const handleSendMessage = async (
-    textToSend?: string,
-    overrideContext?: { brand?: string; model?: string; voltage?: number | string }
-  ) => {
-    const text = (textToSend || inputText).trim();
-    if (!text || isLoading) return;
-
-    const userMessage: ChatItem = {
-      id: `user-${Date.now()}`,
-      sender: 'user',
-      text,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInputText('');
-    setIsLoading(true);
-    setLastFailedMessage(null);
-
-    // Preparar historial previo para el backend (últimos 6 mensajes)
-    const historyPayload = messages.slice(-6).map((m) => ({
-      sender: m.sender,
-      text: m.text,
-    }));
-
-    try {
-      const res = await fetch('/api/voltia/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: text,
-          history: historyPayload,
-          context: {
-            brand: overrideContext?.brand || vehicleBrand,
-            model: overrideContext?.model || vehicleModel,
-            voltage: overrideContext?.voltage,
-            pagePath: typeof window !== 'undefined' ? window.location.pathname : '',
-          },
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        const aiMessage: ChatItem = {
-          id: `voltia-${Date.now()}`,
-          sender: 'voltia',
-          text: data.message,
-          timestamp: new Date(),
-          safetyAlert: data.safetyAlert,
-          recommendedProducts: data.recommendedProducts,
-          suggestedQuestions: data.suggestedQuestions,
-        };
-        setMessages((prev) => [...prev, aiMessage]);
-      } else {
-        const errorMsg: ChatItem = {
-          id: `voltia-err-${Date.now()}`,
-          sender: 'voltia',
-          text:
-            data.message ||
-            'No pudimos completar tu consulta en este momento. Puedes reintentar o solicitar asistencia técnica con un especialista.',
-          timestamp: new Date(),
-          isError: true,
-        };
-        setMessages((prev) => [...prev, errorMsg]);
-        setLastFailedMessage(text);
-      }
-    } catch {
-      const networkErrMsg: ChatItem = {
-        id: `voltia-neterr-${Date.now()}`,
-        sender: 'voltia',
-        text: 'Error de conexión al contactar a VoltIA. Por favor verifica tu conexión a internet e intenta nuevamente.',
-        timestamp: new Date(),
-        isError: true,
-      };
-      setMessages((prev) => [...prev, networkErrMsg]);
-      setLastFailedMessage(text);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   // Agregar al carrito desde tarjeta recomendada
-  const handleAddToCart = (part: any) => {
+  const handleAddToCart = (part: VoltIARecommendedProduct) => {
     const res = addItem({
-      id: part.sku || part.id,
+      id: part.sku,
       sku: part.sku,
       name: part.name,
       price: part.pricePen || part.price || 0,
@@ -440,7 +448,7 @@ export function VoltIAWidget() {
                                 setActiveTab('humano');
                                 setHumanForm((prev) => ({
                                   ...prev,
-                                  details: `EMERGENCIA TÉCNICA: ${msg.safetyAlert.title || 'Riesgo eléctrico detectado'}`,
+                                  details: `EMERGENCIA TÉCNICA: ${msg.safetyAlert?.title || 'Riesgo eléctrico detectado'}`,
                                 }));
                               }}
                               className="w-full mt-2 rounded-lg bg-red-600 hover:bg-red-500 text-white font-black py-2 px-3 text-xs transition-colors cursor-pointer shadow-sm"
@@ -457,7 +465,7 @@ export function VoltIAWidget() {
                               Repuestos y Componentes Disponibles:
                             </span>
                             <div className="grid grid-cols-1 gap-2.5">
-                              {msg.recommendedProducts.map((prod: any, idx: number) => (
+                              {msg.recommendedProducts.map((prod: VoltIARecommendedProduct, idx: number) => (
                                 <div
                                   key={prod.sku || idx}
                                   className="rounded-xl border border-slate-800 bg-slate-900/90 p-3 flex flex-col gap-2"

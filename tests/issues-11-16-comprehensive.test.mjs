@@ -27,7 +27,6 @@ import {
 
 import {
   isProductVisibleInCatalog,
-  canPurchaseProduct,
 } from '../lib/catalog/product-status-core.mjs';
 
 import {

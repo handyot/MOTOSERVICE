@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useCart } from '../../lib/cart/cart-context';
 import { Icon } from '../../components/ui/Icons';
@@ -58,7 +58,22 @@ export default function CartPage() {
   const [couponError, setCouponError] = useState<string | null>(null);
 
   // Pedido reciente guardado en navegador
-  const [recentOrder, setRecentOrder] = useState<StoredOrder | null>(null);
+  const [recentOrder] = useState<StoredOrder | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const rawLast = localStorage.getItem('motoservice_last_order');
+        if (rawLast) {
+          const parsed = JSON.parse(rawLast);
+          if (parsed && (parsed.id || parsed.orderNumber)) {
+            return parsed;
+          }
+        }
+      } catch {
+        // Ignorar fallo de almacenamiento
+      }
+    }
+    return null;
+  });
 
   // Estado de Rastrear Pedido
   const [trackingQuery, setTrackingQuery] = useState('');
@@ -66,35 +81,7 @@ export default function CartPage() {
   const [trackingError, setTrackingError] = useState<string | null>(null);
   const [trackingData, setTrackingData] = useState<TrackingResult | null>(null);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const rawLast = localStorage.getItem('motoservice_last_order');
-        if (rawLast) {
-          const parsed = JSON.parse(rawLast);
-          if (parsed && (parsed.id || parsed.orderNumber)) {
-            setRecentOrder(parsed);
-          }
-        }
-      } catch {
-        // Ignorar fallo de almacenamiento
-      }
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const queryParam =
-        urlParams.get('rastreo') ||
-        urlParams.get('q') ||
-        urlParams.get('order') ||
-        urlParams.get('pedido');
-
-      if (queryParam) {
-        setTrackingQuery(queryParam);
-        handleExecuteTracking(queryParam);
-      }
-    }
-  }, []);
-
-  const handleExecuteTracking = async (code: string) => {
+  const handleExecuteTracking = useCallback(async (code: string) => {
     const cleanCode = code.trim();
     if (!cleanCode) return;
 
@@ -117,7 +104,26 @@ export default function CartPage() {
     } finally {
       setTrackingLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryParam =
+        urlParams.get('rastreo') ||
+        urlParams.get('q') ||
+        urlParams.get('order') ||
+        urlParams.get('pedido');
+
+      if (queryParam) {
+        const timer = setTimeout(() => {
+          setTrackingQuery(queryParam);
+          handleExecuteTracking(queryParam);
+        }, 0);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [handleExecuteTracking]);
 
   const handleTrackingSubmit = (e: React.FormEvent) => {
     e.preventDefault();

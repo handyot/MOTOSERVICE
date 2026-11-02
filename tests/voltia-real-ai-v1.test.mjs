@@ -23,7 +23,6 @@ import fs from 'node:fs';
 import {
   processVoltIAChat,
   VOLTIA_TOOLS,
-  VOLTIA_SYSTEM_PROMPT,
 } from '../lib/voltia/voltia-ai-core.mjs';
 import {
   executeSearchCatalog,

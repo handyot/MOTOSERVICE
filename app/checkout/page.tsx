@@ -232,10 +232,10 @@ export default function CheckoutPage() {
   const [recipientType, setRecipientType] = useState<'self' | 'other'>('self');
   const [recipientName, setRecipientName] = useState('');
   const [recipientPhone, setRecipientPhone] = useState('');
-  const [recipientAddress, setRecipientAddress] = useState('');
-  const [recipientDepartment, setRecipientDepartment] = useState('');
-  const [recipientProvince, setRecipientProvince] = useState('');
-  const [recipientDistrict, setRecipientDistrict] = useState('');
+  const [recipientAddress] = useState('');
+  const [recipientDepartment] = useState('');
+  const [recipientProvince] = useState('');
+  const [recipientDistrict] = useState('');
   const [recipientNotes, setRecipientNotes] = useState('');
 
   // Autocompletar datos del comprador autenticado si existe sesión activa
