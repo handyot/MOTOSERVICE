@@ -45,27 +45,27 @@ export default async function CuentaPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Breadcrumb */}
-      <nav aria-label="Ruta de navegación" className="mb-6 flex items-center gap-2 text-xs text-slate-400">
-        <Link href="/" className="hover:text-cyan-400 transition-colors">
+      {/* Breadcrumb con alto contraste */}
+      <nav aria-label="Ruta de navegación" className="mb-6 flex items-center gap-2 text-xs text-slate-500 font-medium">
+        <Link href="/" className="hover:text-slate-900 transition-colors">
           Inicio
         </Link>
-        <span>/</span>
-        <span className="text-white font-medium">Mi Cuenta</span>
+        <span className="text-slate-400">/</span>
+        <span className="text-slate-900 font-bold">Mi Cuenta</span>
       </nav>
 
-      {/* Cabecera */}
+      {/* Cabecera unificada y armónica */}
       <div className="mb-8">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-950 border border-cyan-800 text-cyan-400">
-            <Icon name="check-circle" className="w-5 h-5" />
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white shadow-xs">
+            <Icon name="user" className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white">
-              Portal del Cliente NeroElectric Motors
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+              Portal del Cliente
             </h1>
-            <p className="text-xs text-slate-400">
-              Gestión de motos eléctricas registradas, pedidos, documentos y diagnósticos con VoltIA.
+            <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
+              Administración de vehículos registrados, seguimiento de pedidos y consultas técnicas con VoltIA.
             </p>
           </div>
         </div>

@@ -28,6 +28,7 @@ import {
   maskName,
   maskAddress,
 } from './order-core.mjs';
+import { canPurchaseProduct } from '../catalog/product-status-core.mjs';
 import { OFFICIAL_PARTS } from '../../data/ecomoto-data';
 import {
   GuestCheckoutInput,
@@ -102,12 +103,23 @@ export async function createOrder(
           category: official.category,
           isDirectSale: true,
           stockAvailable: official.stockStatus === 'AGOTADO_EN_PAGINA' ? 0 : 15,
+          dataStatus: 'ACTIVO',
+          estado: true,
         };
       }
     }
 
     if (!verifiedPart) {
       throw new Error(`El repuesto con SKU ${item.sku} no fue encontrado en el catálogo oficial.`);
+    }
+
+    // Validación de estado comercial y ciclo de vida del repuesto (Issue #9)
+    const partStatus = (verifiedPart as any).dataStatus || 'ACTIVO';
+    const partEstado = (verifiedPart as any).estado !== undefined ? (verifiedPart as any).estado : true;
+    if (!canPurchaseProduct(partStatus, partEstado)) {
+      throw new Error(
+        `El repuesto «${verifiedPart.name}» no está disponible para compra (${partStatus}).`
+      );
     }
 
     if (!verifiedPart.isDirectSale || verifiedPart.stockAvailable <= 0) {

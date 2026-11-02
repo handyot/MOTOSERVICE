@@ -8,6 +8,7 @@ import { NextResponse } from 'next/server';
 import { requireAdminApi } from '@/lib/auth/server';
 import { createCatalogWriteClient } from '@/lib/supabase/server';
 import { mergeCatalogWithMaster } from '@/lib/catalog/catalog-fallback';
+import { validateProductAction } from '@/lib/catalog/product-status-core.mjs';
 
 export async function GET() {
   const auth = await requireAdminApi();
@@ -37,7 +38,7 @@ export async function GET() {
         .limit(100),
       supabase
         .from('repuestos')
-        .select('id_repuesto, id_categoria, codigo_sku, nombre, precio, moneda, imagen_url, estado', { count: 'exact' })
+        .select('id_repuesto, id_categoria, codigo_sku, nombre, precio, moneda, imagen_url, estado, data_status, notas', { count: 'exact' })
         .order('id_repuesto', { ascending: false })
         .limit(100),
       supabase
@@ -174,6 +175,7 @@ export async function POST(request: Request) {
           moneda: 'PEN',
           imagen_url: imagenUrl,
           estado: true,
+          data_status: 'ACTIVO',
         })
         .select('*')
         .single();
@@ -182,6 +184,161 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
       return NextResponse.json({ success: true, record: data });
+    }
+
+    if (entity === 'repuestos' && operation === 'update_status') {
+      const idRepuesto = Number(payload?.id_repuesto);
+      const action = String(payload?.action || '').toUpperCase();
+      const motivoBloqueo = payload?.motivo_bloqueo ? String(payload.motivo_bloqueo).trim() : '';
+
+      if (!idRepuesto) {
+        return NextResponse.json(
+          { success: false, error: 'ID de repuesto no especificado.' },
+          { status: 400 }
+        );
+      }
+
+      // Obtener el registro actual
+      const { data: currentPart, error: fetchError } = await supabase
+        .from('repuestos')
+        .select('*')
+        .eq('id_repuesto', idRepuesto)
+        .maybeSingle();
+
+      if (fetchError || !currentPart) {
+        return NextResponse.json(
+          { success: false, error: 'No se encontró el repuesto solicitado en la base de datos.' },
+          { status: 404 }
+        );
+      }
+
+      const validation = validateProductAction(
+        currentPart.data_status || (currentPart.estado ? 'ACTIVO' : 'OCULTO'),
+        action,
+        {
+          motivoBloqueo,
+          confirmedUnlock: payload?.confirmed_unlock === true,
+          price: currentPart.precio,
+          name: currentPart.nombre,
+        }
+      );
+
+      if (!validation.allowed) {
+        return NextResponse.json(
+          { success: false, error: validation.error },
+          { status: 400 }
+        );
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updatePayload: Record<string, any> = {
+        estado: validation.targetEstado,
+        data_status: validation.targetStatus,
+      };
+
+      if (validation.motivoBloqueo) {
+        updatePayload.notas = `[BLOQUEO ${new Date().toISOString().split('T')[0]}] ${validation.motivoBloqueo}`;
+      } else if (action === 'ACTIVAR' || action === 'DESBLOQUEAR') {
+        updatePayload.notas = null;
+      }
+
+      const { data: updatedPart, error: updateError } = await supabase
+        .from('repuestos')
+        .update(updatePayload)
+        .eq('id_repuesto', idRepuesto)
+        .select('*')
+        .single();
+
+      if (updateError) {
+        return NextResponse.json(
+          { success: false, error: updateError.message },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `Estado de producto actualizado a ${validation.targetStatus} exitosamente.`,
+        record: updatedPart,
+      });
+    }
+
+    if (entity === 'repuestos' && operation === 'delete') {
+      const idRepuesto = Number(payload?.id_repuesto);
+      if (!idRepuesto) {
+        return NextResponse.json(
+          { success: false, error: 'ID de repuesto no especificado para eliminación.' },
+          { status: 400 }
+        );
+      }
+
+      const { data: part, error: fetchErr } = await supabase
+        .from('repuestos')
+        .select('id_repuesto, codigo_sku, nombre')
+        .eq('id_repuesto', idRepuesto)
+        .maybeSingle();
+
+      if (fetchErr || !part) {
+        return NextResponse.json(
+          { success: false, error: 'El repuesto a eliminar no fue encontrado.' },
+          { status: 404 }
+        );
+      }
+
+      // Verificar si tiene referencias históricas en ventas o pedidos
+      let hasHistory = false;
+      if (part.codigo_sku) {
+        const { count } = await supabase
+          .from('pedido_items')
+          .select('id', { count: 'exact', head: true })
+          .eq('sku', part.codigo_sku);
+        if (count && count > 0) hasHistory = true;
+      }
+
+      if (hasHistory) {
+        // Protección de integridad comercial: BAJA LÓGICA / ARCHIVADO
+        const { error: archiveErr } = await supabase
+          .from('repuestos')
+          .update({
+            estado: false,
+            data_status: 'ARCHIVADO',
+            notas: `[ARCHIVADO ${new Date().toISOString().split('T')[0]}] Baja lógica automática para preservar trazabilidad de pedidos históricos.`,
+          })
+          .eq('id_repuesto', idRepuesto);
+
+        if (archiveErr) {
+          return NextResponse.json(
+            { success: false, error: archiveErr.message },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json({
+          success: true,
+          archived: true,
+          message: `El repuesto «${part.nombre}» cuenta con pedidos registrados. Ha sido archivado (baja lógica) para proteger la trazabilidad comercial.`,
+        });
+      }
+
+      // Si no tiene historial de ventas, eliminar de compatibilidades y luego de repuestos
+      await supabase.from('compatibilidades').delete().eq('id_repuesto', idRepuesto);
+      const { error: deleteErr } = await supabase
+        .from('repuestos')
+        .delete()
+        .eq('id_repuesto', idRepuesto);
+
+      if (deleteErr) {
+        return NextResponse.json(
+          { success: false, error: deleteErr.message },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        deleted: true,
+        message: `El repuesto «${part.nombre}» (SKU ${part.codigo_sku}) fue eliminado permanentemente sin relaciones residuales.`,
+      });
     }
 
     if (entity === 'compatibilidades' && operation === 'create') {

@@ -9,6 +9,7 @@ import { Icon } from '../ui/Icons';
 import { formatCurrency } from '../../lib/formatters.js';
 import { FEATURED_PARTS } from '../../lib/constants.js';
 import { CatalogImporterView, ImportHistoryRecord } from './CatalogImporterView';
+import { getProductStatusBadge, PRODUCT_STATUSES } from '../../lib/catalog/product-status-core.mjs';
 
 export interface AdminStats {
   totalMarcas: number;
@@ -163,6 +164,8 @@ export interface AdminPartRecord {
   moneda: string;
   imagen_url?: string | null;
   estado: boolean;
+  data_status?: string;
+  notas?: string | null;
 }
 
 export interface AdminCompatibilityRecord {
@@ -322,6 +325,13 @@ export function AdminDashboardView({
   const [newPartSku, setNewPartSku] = useState('');
   const [newPartName, setNewPartName] = useState('');
   const [newPartPrice, setNewPartPrice] = useState('');
+
+  // Estados para acciones de gestión de repuestos (Issue #9)
+  const [activePartMenuId, setActivePartMenuId] = useState<number | null>(null);
+  const [blockModalPart, setBlockModalPart] = useState<AdminPartRecord | null>(null);
+  const [blockReason, setBlockReason] = useState('');
+  const [deleteModalPart, setDeleteModalPart] = useState<AdminPartRecord | null>(null);
+  const [isProcessingPartAction, setIsProcessingPartAction] = useState(false);
 
   const [newCompatPartId, setNewCompatPartId] = useState(
     initialParts[0]?.id_repuesto ? String(initialParts[0].id_repuesto) : ''
@@ -709,6 +719,126 @@ export function AdminDashboardView({
       showFeedback('error', 'Error conectando con el servidor administrativo.');
     } finally {
       setIsSubmittingCatalog(false);
+    }
+  };
+
+  // Gestión de ciclo de vida de repuestos (Issue #9)
+  const handleProductAction = async (part: AdminPartRecord, action: string, extraPayload: any = {}) => {
+    setActivePartMenuId(null);
+    if (action === 'BLOQUEAR') {
+      setBlockModalPart(part);
+      setBlockReason('');
+      return;
+    }
+    if (action === 'ELIMINAR' || action === 'ARCHIVAR') {
+      setDeleteModalPart(part);
+      return;
+    }
+
+    setIsProcessingPartAction(true);
+    try {
+      const res = await fetch('/api/admin/catalog/manage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entity: 'repuestos',
+          operation: 'update_status',
+          payload: {
+            id_repuesto: part.id_repuesto,
+            action,
+            ...extraPayload,
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showFeedback('success', data.message || `Estado de «${part.nombre}» actualizado.`);
+        await refreshCatalogData();
+      } else {
+        showFeedback('error', data.error || 'No se pudo actualizar el estado del repuesto.');
+      }
+    } catch {
+      showFeedback('error', 'Error al conectar con el servidor administrativo.');
+    } finally {
+      setIsProcessingPartAction(false);
+    }
+  };
+
+  const handleConfirmBlock = async () => {
+    if (!blockModalPart) return;
+    if (!blockReason.trim() || blockReason.trim().length < 5) {
+      showFeedback('warning', 'El motivo de bloqueo es obligatorio y debe tener al menos 5 caracteres.');
+      return;
+    }
+
+    setIsProcessingPartAction(true);
+    try {
+      const res = await fetch('/api/admin/catalog/manage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entity: 'repuestos',
+          operation: 'update_status',
+          payload: {
+            id_repuesto: blockModalPart.id_repuesto,
+            action: 'BLOQUEAR',
+            motivo_bloqueo: blockReason.trim(),
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showFeedback('success', `Repuesto «${blockModalPart.nombre}» bloqueado administrativamente.`);
+        setBlockModalPart(null);
+        setBlockReason('');
+        await refreshCatalogData();
+      } else {
+        showFeedback('error', data.error || 'No se pudo bloquear el repuesto.');
+      }
+    } catch {
+      showFeedback('error', 'Error al conectar con el servidor.');
+    } finally {
+      setIsProcessingPartAction(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteModalPart) return;
+
+    setIsProcessingPartAction(true);
+    try {
+      const res = await fetch('/api/admin/catalog/manage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entity: 'repuestos',
+          operation: 'delete',
+          payload: {
+            id_repuesto: deleteModalPart.id_repuesto,
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showFeedback(
+          'success',
+          data.message ||
+            (data.archived
+              ? `Repuesto «${deleteModalPart.nombre}» archivado (baja lógica) por trazabilidad.`
+              : `Repuesto «${deleteModalPart.nombre}» eliminado definitivamente.`)
+        );
+        setDeleteModalPart(null);
+        await refreshCatalogData();
+      } else {
+        showFeedback('error', data.error || 'No se pudo eliminar el repuesto.');
+      }
+    } catch {
+      showFeedback('error', 'Error al conectar con el servidor.');
+    } finally {
+      setIsProcessingPartAction(false);
     }
   };
 
@@ -2339,38 +2469,248 @@ export function AdminDashboardView({
                             <th className="px-4 py-3">Descripción del Repuesto</th>
                             <th className="px-4 py-3 text-right">Precio Unitario</th>
                             <th className="px-4 py-3">Estado</th>
+                            <th className="px-4 py-3 text-right">Acciones</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200 text-slate-700">
-                          {filteredParts.map((p) => (
-                            <tr key={p.id_repuesto} className="hover:bg-slate-50/80">
-                              <td className="px-4 py-2.5">
-                                <div className="h-10 w-14 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center p-0.5">
-                                  <SafeCatalogImage src={p.imagen_url} alt={p.nombre} />
-                                </div>
-                              </td>
-                              <td className="px-4 py-3 font-mono font-bold text-slate-900">
-                                {p.codigo_sku}
-                              </td>
-                              <td className="px-4 py-3 font-medium text-slate-900">{p.nombre}</td>
-                              <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
-                                {formatCurrency(Number(p.precio), p.moneda || 'PEN')}
-                              </td>
-                              <td className="px-4 py-3">
-                                <span
-                                  className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase border ${
-                                    p.estado
-                                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                      : 'bg-slate-100 text-slate-600 border-slate-200'
-                                  }`}
-                                >
-                                  {p.estado ? 'Publicado' : 'Oculto'}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
+                          {filteredParts.map((p) => {
+                            const badge = getProductStatusBadge(p.data_status, p.estado);
+                            const isMenuOpen = activePartMenuId === p.id_repuesto;
+                            const currentStatus = String(p.data_status || (p.estado ? 'ACTIVO' : 'OCULTO')).toUpperCase();
+                            const isBlocked = currentStatus === PRODUCT_STATUSES.BLOQUEADO;
+                            const isPaused = currentStatus === PRODUCT_STATUSES.PAUSADO;
+                            const isHidden = currentStatus === PRODUCT_STATUSES.OCULTO;
+                            const isArchived = currentStatus === PRODUCT_STATUSES.ARCHIVADO;
+
+                            return (
+                              <tr key={p.id_repuesto} className="hover:bg-slate-50/80">
+                                <td className="px-4 py-2.5">
+                                  <div className="h-10 w-14 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center p-0.5">
+                                    <SafeCatalogImage src={p.imagen_url} alt={p.nombre} />
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3 font-mono font-bold text-slate-900">
+                                  {p.codigo_sku}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="font-medium text-slate-900">{p.nombre}</div>
+                                  {p.notas && (
+                                    <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1 italic" title={p.notas}>
+                                      {p.notas}
+                                    </p>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
+                                  {formatCurrency(Number(p.precio), p.moneda || 'PEN')}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span
+                                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase border ${badge.bgColor} ${badge.textColor} ${badge.borderColor}`}
+                                    title={badge.description}
+                                  >
+                                    {badge.label}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-right relative">
+                                  <div className="inline-block text-left">
+                                    <button
+                                      type="button"
+                                      aria-label={`Acciones para ${p.nombre}`}
+                                      onClick={() => setActivePartMenuId(isMenuOpen ? null : p.id_repuesto)}
+                                      disabled={isProcessingPartAction}
+                                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shadow-2xs transition-colors cursor-pointer"
+                                    >
+                                      <Icon name="more-vertical" className="w-4 h-4" />
+                                    </button>
+
+                                    {isMenuOpen && (
+                                      <div className="absolute right-0 mt-1 w-52 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl z-30 text-left text-xs space-y-0.5">
+                                        {isBlocked ? (
+                                          <button
+                                            type="button"
+                                            onClick={() => handleProductAction(p, 'DESBLOQUEAR', { confirmed_unlock: true })}
+                                            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-amber-700 hover:bg-amber-50 font-medium transition-colors"
+                                          >
+                                            <Icon name="unlock" className="w-3.5 h-3.5" />
+                                            <span>Desbloquear repuesto</span>
+                                          </button>
+                                        ) : (
+                                          <>
+                                            {(!p.estado || isPaused || isHidden || isArchived) && (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleProductAction(p, 'ACTIVAR')}
+                                                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-emerald-700 hover:bg-emerald-50 font-medium transition-colors"
+                                              >
+                                                <Icon name="check-circle" className="w-3.5 h-3.5" />
+                                                <span>Activar / En venta</span>
+                                              </button>
+                                            )}
+
+                                            {p.estado && !isPaused && !isHidden && (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleProductAction(p, 'PAUSAR')}
+                                                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-amber-700 hover:bg-amber-50 font-medium transition-colors"
+                                              >
+                                                <Icon name="pause" className="w-3.5 h-3.5" />
+                                                <span>Pausar venta</span>
+                                              </button>
+                                            )}
+
+                                            {isHidden ? (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleProductAction(p, 'PUBLICAR')}
+                                                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-blue-700 hover:bg-blue-50 font-medium transition-colors"
+                                              >
+                                                <Icon name="filter" className="w-3.5 h-3.5" />
+                                                <span>Publicar en catálogo</span>
+                                              </button>
+                                            ) : (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleProductAction(p, 'OCULTAR')}
+                                                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium transition-colors"
+                                              >
+                                                <Icon name="x" className="w-3.5 h-3.5" />
+                                                <span>Ocultar de tienda</span>
+                                              </button>
+                                            )}
+
+                                            <button
+                                              type="button"
+                                              onClick={() => handleProductAction(p, 'BLOQUEAR')}
+                                              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-red-700 hover:bg-red-50 font-medium transition-colors"
+                                            >
+                                              <Icon name="lock" className="w-3.5 h-3.5" />
+                                              <span>Bloquear producto...</span>
+                                            </button>
+                                          </>
+                                        )}
+
+                                        <div className="border-t border-slate-100 my-1" />
+
+                                        <button
+                                          type="button"
+                                          onClick={() => handleProductAction(p, 'ELIMINAR')}
+                                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-rose-700 hover:bg-rose-50 font-medium transition-colors"
+                                        >
+                                          <Icon name="trash" className="w-3.5 h-3.5" />
+                                          <span>Eliminar / Archivar...</span>
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
+                    </div>
+                  )}
+
+                  {/* Modal Bloqueo Administrativo (Issue #9) */}
+                  {blockModalPart && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+                      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-700 border border-red-200">
+                            <Icon name="lock" className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-slate-900">Bloquear Repuesto</h3>
+                            <p className="text-xs text-slate-500">
+                              {blockModalPart.codigo_sku} — {blockModalPart.nombre}
+                            </p>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          Al bloquear este producto, se retirará de inmediato de la tienda pública, carrito, pasarela de pagos y sugerencias de VoltIA. Requiere ingresar una justificación técnica o de seguridad.
+                        </p>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 mb-1">
+                            Motivo obligatorio de bloqueo *
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={blockReason}
+                            onChange={(e) => setBlockReason(e.target.value)}
+                            placeholder="Ej. Incidencia de calidad en lote de fábrica / Pendiente de revisión técnica con proveedor."
+                            className="w-full rounded-xl border border-slate-300 bg-white p-3 text-xs text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setBlockModalPart(null);
+                              setBlockReason('');
+                            }}
+                            disabled={isProcessingPartAction}
+                            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleConfirmBlock}
+                            disabled={isProcessingPartAction || blockReason.trim().length < 5}
+                            className="rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold px-4 py-2 text-xs shadow-2xs transition-colors"
+                          >
+                            {isProcessingPartAction ? 'Bloqueando...' : 'Confirmar Bloqueo'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Modal Eliminar / Archivar con Protección de Trazabilidad (Issue #9) */}
+                  {deleteModalPart && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+                      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-700 border border-rose-200">
+                            <Icon name="trash" className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-slate-900">Eliminar o Archivar Repuesto</h3>
+                            <p className="text-xs text-slate-500">
+                              {deleteModalPart.codigo_sku} — {deleteModalPart.nombre}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 text-xs text-amber-900 space-y-1">
+                          <p className="font-bold">Protección de integridad contable y fiscal:</p>
+                          <p className="text-[11px] leading-relaxed">
+                            Si este repuesto cuenta con registros en ventas o pedidos pasados, el sistema aplicará automáticamente una <strong>baja lógica (Archivado)</strong> para conservar la trazabilidad legal exigida por SUNAT. Si no cuenta con pedidos históricos, se eliminará permanentemente.
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                          <button
+                            type="button"
+                            onClick={() => setDeleteModalPart(null)}
+                            disabled={isProcessingPartAction}
+                            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleConfirmDelete}
+                            disabled={isProcessingPartAction}
+                            className="rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-bold px-4 py-2 text-xs shadow-2xs transition-colors"
+                          >
+                            {isProcessingPartAction ? 'Procesando...' : 'Confirmar Eliminación'}
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
 

@@ -134,6 +134,7 @@ test('Sincronización de contratos compartidos entre Tienda Pública y Panel Adm
     ['lib/importers/importer-core.mjs', 'admin-panel/lib/importers/importer-core.mjs'],
     ['lib/constants.js', 'admin-panel/lib/constants.js'],
     ['lib/formatters.js', 'admin-panel/lib/formatters.js'],
+    ['lib/catalog/product-status-core.mjs', 'admin-panel/lib/catalog/product-status-core.mjs'],
   ];
 
   for (const [storeFile, adminFile] of sharedPairs) {

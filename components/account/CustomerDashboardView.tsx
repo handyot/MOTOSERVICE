@@ -75,54 +75,54 @@ export function CustomerDashboardView({
 
   return (
     <div className="space-y-6">
-      {/* Navegación por pestañas */}
-      <div className="flex border-b border-slate-800 text-xs sm:text-sm font-bold gap-2 overflow-x-auto">
+      {/* Navegación por pestañas unificada con alto contraste */}
+      <div className="flex border-b border-slate-200 text-xs sm:text-sm font-semibold gap-1 overflow-x-auto">
         <button
           onClick={() => setActiveTab('perfil')}
-          className={`py-3 px-4 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+          className={`py-3 px-4 border-b-2 rounded-t-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'perfil'
-              ? 'border-cyan-400 text-cyan-400 bg-cyan-950/20'
-              : 'border-transparent text-slate-400 hover:text-white'
+              ? 'border-slate-900 text-slate-900 bg-slate-100/70 font-bold'
+              : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50'
           }`}
         >
           <Icon name="user" className="w-4 h-4" />
-          Mi Perfil
+          <span>Mi Perfil</span>
         </button>
 
         <button
           onClick={() => setActiveTab('vehiculos')}
-          className={`py-3 px-4 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+          className={`py-3 px-4 border-b-2 rounded-t-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'vehiculos'
-              ? 'border-cyan-400 text-cyan-400 bg-cyan-950/20'
-              : 'border-transparent text-slate-400 hover:text-white'
+              ? 'border-slate-900 text-slate-900 bg-slate-100/70 font-bold'
+              : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50'
           }`}
         >
           <Icon name="zap" className="w-4 h-4" />
-          Mis Vehículos ({vehicles.length})
+          <span>Mis Vehículos ({vehicles.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('pedidos')}
-          className={`py-3 px-4 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+          className={`py-3 px-4 border-b-2 rounded-t-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'pedidos'
-              ? 'border-cyan-400 text-cyan-400 bg-cyan-950/20'
-              : 'border-transparent text-slate-400 hover:text-white'
+              ? 'border-slate-900 text-slate-900 bg-slate-100/70 font-bold'
+              : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50'
           }`}
         >
           <Icon name="cart" className="w-4 h-4" />
-          Historial de Pedidos ({orders.length})
+          <span>Historial de Pedidos ({orders.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('voltia')}
-          className={`py-3 px-4 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
+          className={`py-3 px-4 border-b-2 rounded-t-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
             activeTab === 'voltia'
-              ? 'border-cyan-400 text-cyan-400 bg-cyan-950/20'
-              : 'border-transparent text-slate-400 hover:text-white'
+              ? 'border-slate-900 text-slate-900 bg-slate-100/70 font-bold'
+              : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50'
           }`}
         >
           <Icon name="circuit" className="w-4 h-4" />
-          Diagnósticos VoltIA
+          <span>Diagnósticos VoltIA</span>
         </button>
       </div>
 
@@ -134,32 +134,32 @@ export function CustomerDashboardView({
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-white">Mis Motos Eléctricas Registradas</h2>
-              <p className="text-xs text-slate-400 mt-1">
+              <h2 className="text-xl font-extrabold text-slate-900">Mis Motos Eléctricas Registradas</h2>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1">
                 Registra tu vehículo para recibir diagnósticos de VoltIA y recomendaciones exactas de voltaje y compatibilidad.
               </p>
             </div>
 
             <button
               onClick={() => setShowAddVehicle(!showAddVehicle)}
-              className="rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-4 py-2 text-xs transition-colors flex items-center gap-1.5 self-start sm:self-auto"
+              className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2 text-xs transition-colors flex items-center gap-1.5 self-start sm:self-auto shadow-2xs cursor-pointer"
             >
               <Icon name="plus" className="w-4 h-4" />
-              {showAddVehicle ? 'Cancelar' : 'Registrar Moto'}
+              <span>{showAddVehicle ? 'Cancelar' : 'Registrar Moto'}</span>
             </button>
           </div>
 
           {showAddVehicle && (
-            <form onSubmit={handleAddVehicle} className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 space-y-4 max-w-xl text-xs">
-              <h3 className="text-sm font-bold text-white">Datos de la Moto Eléctrica</h3>
+            <form onSubmit={handleAddVehicle} className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4 max-w-xl text-xs shadow-xs">
+              <h3 className="text-sm font-extrabold text-slate-900">Datos de la Moto Eléctrica</h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-400 block mb-1">Marca *</label>
+                  <label className="text-slate-700 font-bold block mb-1">Marca *</label>
                   <select
                     value={vehicleBrand}
                     onChange={(e) => setVehicleBrand(e.target.value)}
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-white"
+                    className="w-full rounded-xl bg-white border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-900 focus:outline-none"
                   >
                     <option value="TAILG">TAILG</option>
                     <option value="YADEA">YADEA</option>
@@ -172,33 +172,33 @@ export function CustomerDashboardView({
                 </div>
 
                 <div>
-                  <label className="text-slate-400 block mb-1">Modelo *</label>
+                  <label className="text-slate-700 font-bold block mb-1">Modelo *</label>
                   <input
                     type="text"
                     required
                     value={vehicleModel}
                     onChange={(e) => setVehicleModel(e.target.value)}
                     placeholder="Ej: Lion, G5 Pro, Tiger"
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-white"
+                    className="w-full rounded-xl bg-white border border-slate-300 px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-slate-400 block mb-1">Año Comercial</label>
+                  <label className="text-slate-700 font-bold block mb-1">Año Comercial</label>
                   <input
                     type="number"
                     value={vehicleYear}
                     onChange={(e) => setVehicleYear(e.target.value)}
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-white"
+                    className="w-full rounded-xl bg-white border border-slate-300 px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-slate-400 block mb-1">Tensión Operativa (V)</label>
+                  <label className="text-slate-700 font-bold block mb-1">Tensión Operativa (V)</label>
                   <select
                     value={vehicleVoltage}
                     onChange={(e) => setVehicleVoltage(e.target.value)}
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-white"
+                    className="w-full rounded-xl bg-white border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-900 focus:outline-none"
                   >
                     <option value="48">48V</option>
                     <option value="60">60V</option>
@@ -209,11 +209,11 @@ export function CustomerDashboardView({
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="text-slate-400 block mb-1">Química de Batería</label>
+                  <label className="text-slate-700 font-bold block mb-1">Química de Batería</label>
                   <select
                     value={vehicleChemistry}
                     onChange={(e) => setVehicleChemistry(e.target.value)}
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-white"
+                    className="w-full rounded-xl bg-white border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-900 focus:outline-none"
                   >
                     <option value="Litio NMC">Litio NMC (Ternario)</option>
                     <option value="Litio LiFePO4">Litio LiFePO4 (Fosfato de Hierro)</option>
@@ -223,13 +223,13 @@ export function CustomerDashboardView({
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="text-slate-400 block mb-1">Notas técnicas adicionales</label>
+                  <label className="text-slate-700 font-bold block mb-1">Notas técnicas adicionales</label>
                   <input
                     type="text"
                     value={vehicleNotes}
                     onChange={(e) => setVehicleNotes(e.target.value)}
                     placeholder="Ej: Conector Anderson, controlador modificado 45A"
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-white"
+                    className="w-full rounded-xl bg-white border border-slate-300 px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
                   />
                 </div>
               </div>
@@ -237,7 +237,7 @@ export function CustomerDashboardView({
               <button
                 type="submit"
                 disabled={isSavingVehicle}
-                className="rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold px-4 py-2"
+                className="rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-bold px-4 py-2 shadow-2xs transition-colors cursor-pointer"
               >
                 {isSavingVehicle ? 'Guardando...' : 'Guardar Moto'}
               </button>
@@ -245,35 +245,37 @@ export function CustomerDashboardView({
           )}
 
           {vehicles.length === 0 ? (
-            <div className="rounded-2xl border border-slate-800 bg-slate-950 p-8 text-center text-slate-400 space-y-2">
-              <Icon name="circuit" className="w-8 h-8 text-cyan-400 mx-auto" />
-              <p className="font-bold text-white text-sm">No tienes motos registradas</p>
-              <p className="text-xs">
+            <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-600 space-y-2 shadow-xs">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-700 mx-auto">
+                <Icon name="circuit" className="w-6 h-6" />
+              </div>
+              <p className="font-bold text-slate-900 text-sm">No tienes motos registradas</p>
+              <p className="text-xs text-slate-600">
                 Haz clic en «Registrar Moto» para asociar tu vehículo eléctrico y consultar repuestos compatibles.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {vehicles.map((v) => (
-                <div key={v.id} className="rounded-2xl border border-slate-800 bg-slate-950 p-5 space-y-3">
+                <div key={v.id} className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3 shadow-xs">
                   <div className="flex items-center justify-between">
-                    <span className="rounded bg-cyan-950 text-cyan-400 border border-cyan-800 text-[10px] font-bold px-2 py-0.5">
+                    <span className="rounded-md bg-slate-100 text-slate-900 border border-slate-200 text-[10px] font-bold px-2 py-0.5">
                       {v.brand}
                     </span>
-                    <span className="text-xs font-bold text-white">{v.nominalVoltageV}V</span>
+                    <span className="text-xs font-bold text-slate-900 font-mono">{v.nominalVoltageV}V</span>
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-white">{v.model}</h3>
-                    <p className="text-xs text-slate-400">{v.year ? `Año ${v.year}` : 'Año no declarado'} • {v.batteryChemistry}</p>
+                    <h3 className="text-base font-bold text-slate-900">{v.model}</h3>
+                    <p className="text-xs text-slate-600 mt-0.5">{v.year ? `Año ${v.year}` : 'Año no declarado'} • {v.batteryChemistry}</p>
                   </div>
                   {v.notes && (
-                    <p className="text-[11px] text-slate-500 bg-slate-900 p-2 rounded-lg border border-slate-800">
+                    <p className="text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                       {v.notes}
                     </p>
                   )}
                   <Link
                     href="/#compatibilidad"
-                    className="block text-center rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-400 font-bold py-2 text-xs transition-colors border border-slate-800"
+                    className="block text-center rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-900 font-bold py-2 text-xs transition-colors border border-slate-200"
                   >
                     Ver Repuestos Compatibles →
                   </Link>
@@ -288,49 +290,51 @@ export function CustomerDashboardView({
       {activeTab === 'pedidos' && (
         <div className="space-y-6">
           <div>
-            <h2 className="text-xl font-bold text-white">Historial de Compras</h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <h2 className="text-xl font-extrabold text-slate-900">Historial de Compras</h2>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1">
               Consulta el estado de preparación, pago y comprobantes fiscales de tus pedidos.
             </p>
           </div>
 
           {orders.length === 0 ? (
-            <div className="rounded-2xl border border-slate-800 bg-slate-950 p-8 text-center text-slate-400 space-y-2">
-              <Icon name="cart" className="w-8 h-8 text-cyan-400 mx-auto" />
-              <p className="font-bold text-white text-sm">No registras compras en tu cuenta</p>
-              <p className="text-xs">
+            <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-600 space-y-2 shadow-xs">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-700 mx-auto">
+                <Icon name="cart" className="w-6 h-6" />
+              </div>
+              <p className="font-bold text-slate-900 text-sm">No registras compras en tu cuenta</p>
+              <p className="text-xs text-slate-600">
                 Cuando realices un pedido con tu cuenta iniciada, aparecerá detallado aquí.
               </p>
               <Link
                 href="/#catalogo"
-                className="inline-block rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-4 py-2 text-xs transition-colors mt-2"
+                className="inline-block rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2 text-xs transition-colors shadow-2xs mt-2"
               >
                 Explorar Repuestos
               </Link>
             </div>
           ) : (
-            <div className="divide-y divide-slate-800 rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden">
+            <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs">
               {orders.map((o) => (
-                <div key={o.id_pedido} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+                <div key={o.id_pedido} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs hover:bg-slate-50/60 transition-colors">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-white text-sm">{o.numero_pedido}</span>
-                      <span className="rounded bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold px-2 py-0.5">
+                      <span className="font-bold font-mono text-slate-900 text-sm">{o.numero_pedido}</span>
+                      <span className="rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold px-2 py-0.5">
                         {o.estado_pago.toUpperCase()}
                       </span>
                     </div>
-                    <p className="text-slate-400">
+                    <p className="text-slate-600">
                       Fecha: {new Date(o.created_at).toLocaleDateString('es-PE')} • Estado: {o.estado_pedido}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <span className="text-base font-black text-cyan-400">
+                    <span className="text-base font-black font-mono text-slate-900">
                       {formatCurrency(Number(o.total), o.moneda || 'PEN')}
                     </span>
                     <Link
                       href={`/pedido/${o.id_pedido}`}
-                      className="rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold px-3 py-1.5 transition-colors"
+                      className="rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-bold px-3.5 py-1.5 transition-colors shadow-2xs"
                     >
                       Ver Detalle →
                     </Link>
@@ -346,21 +350,21 @@ export function CustomerDashboardView({
       {activeTab === 'voltia' && (
         <div className="space-y-6">
           <div>
-            <h2 className="text-xl font-bold text-white">Asistencias y Diagnósticos de VoltIA</h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <h2 className="text-xl font-extrabold text-slate-900">Asistencias y Diagnósticos de VoltIA</h2>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1">
               Registro de evaluaciones técnicas y solicitudes de soporte en taller para tu motocicleta.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-cyan-800/40 bg-cyan-950/20 p-6 space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-400">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-3 shadow-xs">
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-900 border border-slate-200">
                 <Icon name="circuit" className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-white text-sm">VoltIA está disponible las 24 horas</h3>
-                <p className="text-xs text-slate-400">
-                  Puedes abrir el widget flotante en la esquina inferior derecha para iniciar una nueva consulta técnica.
+                <h3 className="font-bold text-slate-900 text-sm">VoltIA está disponible las 24 horas</h3>
+                <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                  Puedes abrir el widget flotante en la esquina inferior derecha para iniciar una nueva consulta técnica con diagnóstico asistido.
                 </p>
               </div>
             </div>

@@ -34,6 +34,8 @@ export function getVerifiedCatalogPart(sku) {
       category: found.categorySlug,
       isDirectSale: true,
       stockAvailable: found.inStock ? 15 : 0,
+      dataStatus: found.dataStatus || found.data_status || 'ACTIVO',
+      estado: found.estado !== undefined ? found.estado : true,
     };
   }
 
