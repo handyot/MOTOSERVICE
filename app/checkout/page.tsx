@@ -8,6 +8,7 @@ import { useCart } from '../../lib/cart/cart-context';
 import { Icon } from '../../components/ui/Icons';
 import { formatCurrency } from '../../lib/formatters.js';
 import { InvoiceType, DeliveryMethod } from '../../types';
+import { createClient } from '../../lib/supabase/client';
 
 interface TestCardOption {
   id: string;
@@ -225,6 +226,59 @@ export default function CheckoutPage() {
   const [province, setProvince] = useState('Lima');
   const [district, setDistrict] = useState('Miraflores');
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('envio_domicilio');
+  const [isAuthenticatedUser, setIsAuthenticatedUser] = useState(false);
+
+  // Destinatario del pedido (Issue #13: ¿Quién recibirá el pedido?)
+  const [recipientType, setRecipientType] = useState<'self' | 'other'>('self');
+  const [recipientName, setRecipientName] = useState('');
+  const [recipientPhone, setRecipientPhone] = useState('');
+  const [recipientAddress, setRecipientAddress] = useState('');
+  const [recipientDepartment, setRecipientDepartment] = useState('');
+  const [recipientProvince, setRecipientProvince] = useState('');
+  const [recipientDistrict, setRecipientDistrict] = useState('');
+  const [recipientNotes, setRecipientNotes] = useState('');
+
+  // Autocompletar datos del comprador autenticado si existe sesión activa
+  useEffect(() => {
+    let isMounted = true;
+    async function loadUserProfile() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && isMounted) {
+          setIsAuthenticatedUser(true);
+          if (user.email) setCustomerEmail(user.email);
+          const meta = user.user_metadata || {};
+          const metaName = meta.full_name || meta.name || meta.nombre;
+          if (metaName) setCustomerName(metaName);
+          if (meta.phone) setCustomerPhone(meta.phone);
+          if (meta.shipping_address || meta.address) setShippingAddress(meta.shipping_address || meta.address);
+          if (meta.department) setDepartment(meta.department);
+          if (meta.province) setProvince(meta.province);
+          if (meta.district) setDistrict(meta.district);
+
+          // Consultar tabla profiles si está disponible
+          try {
+            const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+            if (profile && isMounted) {
+              if (profile.full_name) setCustomerName(profile.full_name);
+              if (profile.phone) setCustomerPhone(profile.phone);
+              if (profile.shipping_address) setShippingAddress(profile.shipping_address);
+              if (profile.department) setDepartment(profile.department);
+              if (profile.province) setProvince(profile.province);
+              if (profile.district) setDistrict(profile.district);
+            }
+          } catch {
+            // Ignorar error si la tabla profiles no existe o está inaccesible
+          }
+        }
+      } catch {
+        // Ignorar fallo de cliente Supabase en checkout
+      }
+    }
+    loadUserProfile();
+    return () => { isMounted = false; };
+  }, []);
 
   // Comprobante electrónico
   const [invoiceType, setInvoiceType] = useState<InvoiceType>('boleta');
@@ -356,6 +410,16 @@ export default function CheckoutPage() {
         throw new Error('La Razón Social es obligatoria para emitir Factura.');
       }
 
+      // Validación de destinatario alternativo (Issue #13)
+      if (recipientType === 'other') {
+        if (!recipientName.trim() || recipientName.trim().length < 3) {
+          throw new Error('Debe ingresar los nombres y apellidos de la persona que recibirá el pedido.');
+        }
+        if (!recipientPhone.trim() || recipientPhone.trim().length < 6) {
+          throw new Error('Debe ingresar un teléfono de contacto válido para la persona que recibirá el pedido.');
+        }
+      }
+
       // 2. Si aceptó suscripción, registrar consentimiento
       if (subscribeNewsletter) {
         try {
@@ -390,6 +454,14 @@ export default function CheckoutPage() {
           docNumber,
           docBusinessName,
           couponCode: subscribeNewsletter ? 'BIENVENIDO5' : undefined,
+          recipientType,
+          recipientName: recipientType === 'other' ? recipientName.trim() : null,
+          recipientPhone: recipientType === 'other' ? recipientPhone.trim() : null,
+          recipientAddress: recipientType === 'other' ? (recipientAddress.trim() || shippingAddress) : null,
+          recipientDepartment: recipientType === 'other' ? (recipientDepartment.trim() || department) : null,
+          recipientProvince: recipientType === 'other' ? (recipientProvince.trim() || province) : null,
+          recipientDistrict: recipientType === 'other' ? (recipientDistrict.trim() || district) : null,
+          recipientNotes: recipientType === 'other' ? recipientNotes.trim() : null,
           items: items.map((i) => ({ sku: i.sku, quantity: i.quantity })),
         }),
       });
@@ -695,6 +767,12 @@ export default function CheckoutPage() {
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-xs font-bold">1</span>
                 Datos del Comprador (Invitado o Registrado)
               </h2>
+              {isAuthenticatedUser && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <Icon name="check" className="w-3 h-3" />
+                  Autocompletado con tu cuenta NERO
+                </span>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
@@ -838,11 +916,115 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          {/* 3. Comprobante de Pago Electrónico (SUNAT) */}
+          {/* 3. ¿Quién recibirá el pedido? (Issue #13) */}
           <div className="rounded-xl border border-gray-200 bg-white p-5 sm:p-6 space-y-4 shadow-xs">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <h2 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-xs font-bold">3</span>
+                ¿Quién recibirá el pedido?
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <label
+                className={`rounded-lg border p-3.5 flex flex-col justify-between cursor-pointer transition-all ${
+                  recipientType === 'self'
+                    ? 'border-blue-600 bg-blue-50/40 text-gray-900'
+                    : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-bold flex items-center gap-1.5">
+                    <Icon name="user" className="w-4 h-4 text-blue-600" />
+                    Yo recibiré el pedido
+                  </span>
+                  <input
+                    type="radio"
+                    name="recipientType"
+                    checked={recipientType === 'self'}
+                    onChange={() => setRecipientType('self')}
+                    className="accent-blue-600"
+                  />
+                </div>
+                <span className="text-[11px] text-gray-500">
+                  La entrega o despacho se coordinará directamente a nombre del comprador ({customerName || 'titular'}).
+                </span>
+              </label>
+
+              <label
+                className={`rounded-lg border p-3.5 flex flex-col justify-between cursor-pointer transition-all ${
+                  recipientType === 'other'
+                    ? 'border-blue-600 bg-blue-50/40 text-gray-900'
+                    : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-bold flex items-center gap-1.5">
+                    <Icon name="users" className="w-4 h-4 text-purple-600" />
+                    Otra persona recibirá el pedido
+                  </span>
+                  <input
+                    type="radio"
+                    name="recipientType"
+                    checked={recipientType === 'other'}
+                    onChange={() => setRecipientType('other')}
+                    className="accent-blue-600"
+                  />
+                </div>
+                <span className="text-[11px] text-gray-500">
+                  Registra el contacto del destinatario final sin modificar los datos de tu cuenta ni perfil.
+                </span>
+              </label>
+            </div>
+
+            {recipientType === 'other' && (
+              <div className="mt-2 p-4 rounded-lg bg-gray-50 border border-gray-200 space-y-3.5 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-gray-700 block mb-1 font-semibold">Nombres y Apellidos del Destinatario *</label>
+                    <input
+                      type="text"
+                      required
+                      value={recipientName}
+                      onChange={(e) => setRecipientName(e.target.value)}
+                      placeholder="Ej: María Fernanda López"
+                      className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-gray-700 block mb-1 font-semibold">Teléfono de contacto del Destinatario *</label>
+                    <input
+                      type="tel"
+                      required
+                      value={recipientPhone}
+                      onChange={(e) => setRecipientPhone(e.target.value)}
+                      placeholder="912 345 678"
+                      className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-gray-700 block mb-1 font-semibold">
+                    Instrucciones o Referencia de Entrega (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={recipientNotes}
+                    onChange={(e) => setRecipientNotes(e.target.value)}
+                    placeholder="Ej: Dejar en recepción o avisar antes de llegar"
+                    className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 4. Comprobante de Pago Electrónico (SUNAT) */}
+          <div className="rounded-xl border border-gray-200 bg-white p-5 sm:p-6 space-y-4 shadow-xs">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <h2 className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white text-xs font-bold">4</span>
                 Comprobante Electrónico (SUNAT)
               </h2>
             </div>

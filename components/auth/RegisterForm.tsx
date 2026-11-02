@@ -10,6 +10,7 @@ import {
   validateFullName,
   validatePhone,
 } from '../../lib/auth/validations';
+import { generateUsername } from '../../lib/auth/username-core.mjs';
 import { Icon } from '../ui/Icons';
 
 export function RegisterForm() {
@@ -69,12 +70,15 @@ export function RegisterForm() {
           ? `${window.location.origin}/auth/callback?next=/cuenta`
           : undefined;
 
+      const generatedUsername = generateUsername(fullName.trim());
+
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
           data: {
             full_name: fullName.trim(),
+            username: generatedUsername,
             phone: phone.trim() || undefined,
           },
           emailRedirectTo: redirectUrl,

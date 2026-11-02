@@ -46,7 +46,7 @@ export function Hero() {
           {/* Botones Principales */}
           <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <Link
-              href="/#catalogo"
+              href="/repuestos"
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 active:scale-95 px-6 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-2xs transition-all"
             >
               <Icon name="cart" className="w-4 h-4 text-white" />

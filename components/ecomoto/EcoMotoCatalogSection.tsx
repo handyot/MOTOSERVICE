@@ -22,17 +22,36 @@ import {
 } from '@/data/ecomoto-data';
 import { formatCurrency } from '@/lib/utils';
 import { useCart } from '@/lib/cart/cart-context';
+import { isProductVisibleInCatalog } from '@/lib/catalog/product-status-core.mjs';
 import { MotoComparator } from './MotoComparator';
+import { openVoltIAChat } from '../voltia/VoltIAWidget';
 import { MotoDetailModal } from './MotoDetailModal';
 import { PartDetailModal } from './PartDetailModal';
 import { CompatibilityFinder } from '../home/CompatibilityFinder';
 
-export function EcoMotoCatalogSection() {
-  const [activeTab, setActiveTab] = useState<'motos' | 'repuestos' | 'comparador'>('motos');
-  const [selectedBrand, setSelectedBrand] = useState<string>('todas');
+export interface EcoMotoCatalogSectionProps {
+  initialTab?: 'motos' | 'repuestos' | 'comparador';
+  showFinder?: boolean;
+  showHeader?: boolean;
+  initialQuery?: string;
+  initialBrand?: string;
+  initialCategory?: string;
+}
+
+export function EcoMotoCatalogSection({
+  initialTab = 'motos',
+  showFinder = true,
+  showHeader = true,
+  initialQuery = '',
+  initialBrand = 'todas',
+  initialCategory = 'todas',
+}: EcoMotoCatalogSectionProps = {}) {
+  const [activeTab, setActiveTab] = useState<'motos' | 'repuestos' | 'comparador'>(initialTab);
+  const [selectedBrand, setSelectedBrand] = useState<string>(initialBrand);
   const [selectedVehicleType, setSelectedVehicleType] = useState<string>('todos');
-  const [selectedPartCategory, setSelectedPartCategory] = useState<string>('todas');
+  const [selectedPartCategory, setSelectedPartCategory] = useState<string>(initialCategory);
   const [selectedVoltage, setSelectedVoltage] = useState<string>('todas');
+  const [searchFilter, setSearchFilter] = useState<string>(initialQuery);
 
   // Modales
   const [inspectedMoto, setInspectedMoto] = useState<MotoModel | null>(null);
@@ -99,13 +118,24 @@ export function EcoMotoCatalogSection() {
       const matchVoltage =
         selectedVoltage === 'todas' ||
         (m.batteryVoltageV && `${m.batteryVoltageV}V` === selectedVoltage);
-      return matchBrand && matchType && matchVoltage;
+
+      const q = searchFilter.trim().toLowerCase();
+      const matchQuery =
+        !q ||
+        m.model.toLowerCase().includes(q) ||
+        m.brand.toLowerCase().includes(q) ||
+        m.slug.toLowerCase().includes(q);
+
+      return matchBrand && matchType && matchVoltage && matchQuery;
     });
-  }, [allCatalogMotos, selectedBrand, selectedVehicleType, selectedVoltage]);
+  }, [allCatalogMotos, selectedBrand, selectedVehicleType, selectedVoltage, searchFilter]);
 
   // Filtrado de repuestos
   const filteredParts = useMemo(() => {
     return OFFICIAL_PARTS.filter((p) => {
+      const isVisible = isProductVisibleInCatalog((p as any).dataStatus || 'ACTIVO', true);
+      if (!isVisible) return false;
+
       const matchBrand = selectedBrand === 'todas' || p.brand === selectedBrand;
       const matchCat = selectedPartCategory === 'todas' || p.category === selectedPartCategory;
       const matchVoltage =
@@ -114,33 +144,46 @@ export function EcoMotoCatalogSection() {
         (p.outputVoltageV && selectedVoltage === '72V' && p.outputVoltageV >= 70 && p.outputVoltageV <= 84) ||
         (p.outputVoltageV && selectedVoltage === '60V' && p.outputVoltageV >= 58 && p.outputVoltageV <= 72) ||
         (p.outputVoltageV && selectedVoltage === '48V' && p.outputVoltageV >= 48 && p.outputVoltageV <= 56);
-      return matchBrand && matchCat && matchVoltage;
+
+      const q = searchFilter.trim().toLowerCase();
+      const matchQuery =
+        !q ||
+        (p.name && p.name.toLowerCase().includes(q)) ||
+        (p.sku && p.sku.toLowerCase().includes(q)) ||
+        (p.brand && p.brand.toLowerCase().includes(q)) ||
+        (p.notes && p.notes.toLowerCase().includes(q));
+
+      return matchBrand && matchCat && matchVoltage && matchQuery;
     });
-  }, [selectedBrand, selectedPartCategory, selectedVoltage]);
+  }, [selectedBrand, selectedPartCategory, selectedVoltage, searchFilter]);
 
   return (
     <div className="flex flex-col">
       {/* Buscador interactivo conectado directamente al catálogo */}
-      <CompatibilityFinder onFilterChange={handleCompatibilityFilterChange} />
+      {showFinder && <CompatibilityFinder onFilterChange={handleCompatibilityFilterChange} />}
 
-      <section id="catalogo-ecomoto" className="py-16 bg-white text-gray-900 border-b border-gray-200">
+      <section id="catalogo-ecomoto" className="py-12 bg-white text-gray-900 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* Cabecera de la sección */}
-          <div className="text-center max-w-3xl mx-auto mb-8 pt-4">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-semibold mb-2 shadow-2xs">
-              <span>🚲</span>
-              <span>Modelos Disponibles</span>
+          {showHeader && (
+            <div className="text-center max-w-3xl mx-auto mb-8 pt-4">
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-semibold mb-2 shadow-2xs">
+                <span>🚲</span>
+                <span>Modelos Disponibles</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                Motos Eléctricas y Repuestos Compatibles
+              </h2>
+              <p className="text-gray-600 text-xs sm:text-sm mt-1.5 max-w-2xl mx-auto">
+                Explora nuestros modelos y encuentra los repuestos compatibles con verificación técnica.
+              </p>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-              Motos Eléctricas y Repuestos Compatibles
-            </h2>
-            <p className="text-gray-600 text-xs sm:text-sm mt-1.5 max-w-2xl mx-auto">
-              Explora nuestros modelos y encuentra los repuestos compatibles con verificación técnica.
-            </p>
+          )}
 
-            {/* Selector de Pestañas Principales */}
-            <div className="inline-flex p-1 rounded-xl bg-gray-100 border border-gray-200 mt-5 gap-1 shadow-xs">
+          {/* Selector de Pestañas Principales */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex p-1 rounded-xl bg-gray-100 border border-gray-200 gap-1 shadow-xs">
               <button
                 onClick={() => setActiveTab('motos')}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
@@ -206,6 +249,23 @@ export function EcoMotoCatalogSection() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={searchFilter}
+                    onChange={(e) => setSearchFilter(e.target.value)}
+                    placeholder="Buscar modelo o marca..."
+                    className="bg-white border border-gray-300 text-xs text-gray-900 rounded-md px-2.5 py-1 focus:ring-1 focus:ring-blue-600 focus:outline-none"
+                  />
+                  {searchFilter && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchFilter('')}
+                      className="text-xs text-gray-400 hover:text-gray-600 px-1 cursor-pointer"
+                      title="Limpiar filtro"
+                    >
+                      ✕
+                    </button>
+                  )}
                   <span className="text-xs text-gray-600">Tipo:</span>
                   <select
                     value={selectedVehicleType}
@@ -348,15 +408,23 @@ export function EcoMotoCatalogSection() {
                             <span>Ver Repuestos Compatibles</span>
                           </button>
 
-                          <a
-                            href={`https://wa.me/51987654321?text=${encodeURIComponent(`Hola MotoService, deseo cotizar la moto eléctrica ${moto.brand} ${moto.model}.`)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Cotizar moto con un asesor de ventas de MotoService"
-                            className="p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 transition-colors"
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openVoltIAChat({
+                                brand: moto.brand,
+                                model: moto.model,
+                                voltage: moto.batteryVoltageV || moto.batteryVoltage,
+                                power: moto.motorNominalW || moto.motorPower,
+                              });
+                            }}
+                            title={`Consultar a VoltIA sobre repuestos compatibles para ${moto.brand} ${moto.model}`}
+                            aria-label={`Consultar a VoltIA sobre repuestos compatibles para ${moto.brand} ${moto.model}`}
+                            className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 transition-colors cursor-pointer"
                           >
                             <MessageCircle className="w-3.5 h-3.5" />
-                          </a>
+                          </button>
                         </div>
                       </div>
                     );
@@ -393,6 +461,23 @@ export function EcoMotoCatalogSection() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={searchFilter}
+                    onChange={(e) => setSearchFilter(e.target.value)}
+                    placeholder="Filtrar por SKU o nombre..."
+                    className="bg-white border border-gray-300 text-xs text-gray-900 rounded-md px-2.5 py-1 focus:ring-1 focus:ring-blue-600 focus:outline-none"
+                  />
+                  {searchFilter && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchFilter('')}
+                      className="text-xs text-gray-400 hover:text-gray-600 px-1 cursor-pointer"
+                      title="Limpiar filtro"
+                    >
+                      ✕
+                    </button>
+                  )}
                   <span className="text-xs text-gray-600">Marca:</span>
                   <select
                     value={selectedBrand}

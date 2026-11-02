@@ -232,9 +232,11 @@ export interface MotoModel {
   priceMinPen?: number;
   priceMaxPen?: number;
   motorNominalW?: number;
+  motorPower?: number;
   motorMaxW?: number;
   batteryChemistry?: string;
   batteryVoltageV?: number;
+  batteryVoltage?: number;
   batteryCapacityAh?: number;
   batteryRemovable?: 'SI' | 'NO' | 'NO_DECLARADO' | string;
   maxSpeedKmh?: number;
@@ -309,6 +311,7 @@ export type AppRole = 'customer' | 'admin';
 export interface UserProfile {
   id: string;
   fullName: string;
+  username?: string | null;
   phone?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -324,6 +327,7 @@ export interface AuthAccount {
   id: string;
   email: string;
   fullName: string;
+  username?: string | null;
   phone?: string | null;
   role: AppRole;
   createdAt: string;
@@ -417,6 +421,14 @@ export interface OrderRecord {
   total: number;
   currency: string;
   couponCode?: string | null;
+  recipientType?: 'self' | 'other';
+  recipientName?: string | null;
+  recipientPhone?: string | null;
+  recipientAddress?: string | null;
+  recipientDepartment?: string | null;
+  recipientProvince?: string | null;
+  recipientDistrict?: string | null;
+  recipientNotes?: string | null;
   orderStatus: OrderStatus;
   paymentStatus: PaymentStatus;
   documentStatus: FiscalDocumentStatus;
@@ -442,6 +454,14 @@ export interface GuestCheckoutInput {
   docBusinessName?: string;
   couponCode?: string;
   subscribeNewsletter?: boolean;
+  recipientType?: 'self' | 'other';
+  recipientName?: string;
+  recipientPhone?: string;
+  recipientAddress?: string;
+  recipientDepartment?: string;
+  recipientProvince?: string;
+  recipientDistrict?: string;
+  recipientNotes?: string;
   items: {
     sku: string;
     quantity: number;
@@ -566,12 +586,19 @@ export interface CustomerVehicle {
   userId: string;
   brand: string;
   model: string;
+  vehicleType?: string | null;
+  origin?: 'CATALOGO' | 'PERSONALIZADO';
   year?: number | null;
   nominalVoltageV?: number | null;
+  motorPowerW?: number | null;
   batteryChemistry?: string | null;
   capacityAh?: number | null;
+  customNickname?: string | null;
+  controllerAmps?: number | null;
+  controllerModel?: string | null;
   notes?: string | null;
   createdAt: string;
+  updatedAt?: string;
 }
 
 // ===================================================

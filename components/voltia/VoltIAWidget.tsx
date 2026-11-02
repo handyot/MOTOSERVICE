@@ -12,6 +12,32 @@ import {
 } from '@/types';
 import { executeDiagnosticEvaluation } from '@/lib/voltia/voltia-engine';
 
+export function openVoltIAChat(detail: {
+  brand?: string;
+  model?: string;
+  voltage?: number | string;
+  power?: number | string;
+  prompt?: string;
+}) {
+  if (typeof window !== 'undefined') {
+    const defaultPrompt =
+      detail.prompt ||
+      (detail.brand && detail.model
+        ? `Hola, quiero consultar sobre los repuestos compatibles con mi ${detail.brand} ${detail.model}${
+            detail.voltage ? ` de ${detail.voltage}V` : ''
+          }${detail.power ? ` y ${detail.power}W` : ''}.`
+        : 'Hola VoltIA, tengo una consulta técnica sobre compatibilidad de repuestos.');
+    window.dispatchEvent(
+      new CustomEvent('open-voltia', {
+        detail: {
+          ...detail,
+          prompt: defaultPrompt,
+        },
+      })
+    );
+  }
+}
+
 export function VoltIAWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -25,6 +51,20 @@ export function VoltIAWidget() {
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
   const { addItem } = useCart();
+
+  React.useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleOpenEvent = (e: any) => {
+      setIsOpen(true);
+      if (e.detail?.brand) setVehicleBrand(e.detail.brand);
+      if (e.detail?.model) setVehicleModel(e.detail.model);
+      if (e.detail?.prompt) setInputText(e.detail.prompt);
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    window.addEventListener('open-voltia' as any, handleOpenEvent);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return () => window.removeEventListener('open-voltia' as any, handleOpenEvent);
+  }, []);
 
   const handleSymptomSelect = (symptom: DiagnosticSymptom) => {
     const result = executeDiagnosticEvaluation({

@@ -67,11 +67,29 @@ export async function createOrder(
     docNumber,
     docBusinessName,
     couponCode,
+    recipientType = 'self',
+    recipientName,
+    recipientPhone,
+    recipientAddress,
+    recipientDepartment,
+    recipientProvince,
+    recipientDistrict,
+    recipientNotes,
     items,
   } = input;
 
   if (!items || items.length === 0) {
     throw new Error('El carrito no contiene productos.');
+  }
+
+  // Validación de destinatario alternativo (Issue #13)
+  if (recipientType === 'other') {
+    if (!recipientName || recipientName.trim().length < 3) {
+      throw new Error('Debe ingresar los nombres y apellidos de la persona que recibirá el pedido.');
+    }
+    if (!recipientPhone || recipientPhone.trim().length < 6) {
+      throw new Error('Debe ingresar un teléfono de contacto válido para la persona que recibirá el pedido.');
+    }
   }
 
   // 1. Validar comprobante según SUNAT
@@ -223,6 +241,14 @@ export async function createOrder(
     total,
     currency: 'PEN',
     couponCode: validatedCouponCode,
+    recipientType,
+    recipientName: recipientType === 'other' ? recipientName?.trim() : null,
+    recipientPhone: recipientType === 'other' ? recipientPhone?.trim() : null,
+    recipientAddress: recipientType === 'other' ? recipientAddress?.trim() : null,
+    recipientDepartment: recipientType === 'other' ? recipientDepartment?.trim() : null,
+    recipientProvince: recipientType === 'other' ? recipientProvince?.trim() : null,
+    recipientDistrict: recipientType === 'other' ? recipientDistrict?.trim() : null,
+    recipientNotes: recipientType === 'other' ? recipientNotes?.trim() : null,
     orderStatus: 'pendiente_pago',
     paymentStatus: 'pendiente',
     documentStatus: 'pendiente',

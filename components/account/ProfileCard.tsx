@@ -32,6 +32,11 @@ export function ProfileCard({ account }: ProfileCardProps) {
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h2 className="text-xl font-extrabold text-slate-900">{account.fullName}</h2>
+                {account.username && (
+                  <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200" title="Nombre de usuario generado">
+                    @{account.username}
+                  </span>
+                )}
                 <span
                   className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border ${
                     account.role === 'admin'

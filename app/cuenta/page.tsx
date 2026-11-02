@@ -62,7 +62,7 @@ export default async function CuentaPage() {
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-              Portal del Cliente
+              {account.username ? `¡Hola, ${account.username}!` : 'Portal del Cliente'}
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
               Administración de vehículos registrados, seguimiento de pedidos y consultas técnicas con VoltIA.

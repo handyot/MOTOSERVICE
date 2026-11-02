@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '../supabase/server';
 import { validateFullName, validatePhone } from './validations';
+import { generateUsername } from './username-core.mjs';
 
 export interface ActionState {
   success?: boolean;
@@ -50,11 +51,14 @@ export async function updateProfileAction(
     return { success: false, error: phoneValidation.error };
   }
 
+  const newUsername = generateUsername(fullName);
+
   // 1. Sincronizar metadatos en Supabase Auth de forma segura
   try {
     await supabase.auth.updateUser({
       data: {
         full_name: fullName,
+        username: newUsername,
         phone: phone || null,
       },
     });
@@ -67,6 +71,7 @@ export async function updateProfileAction(
     .from('profiles')
     .update({
       full_name: fullName,
+      username: newUsername,
       phone: phone || null,
       updated_at: new Date().toISOString(),
     })

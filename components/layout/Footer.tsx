@@ -46,32 +46,32 @@ export function Footer() {
             </h3>
             <ul className="space-y-2 text-xs">
               <li>
-                <Link href="/#catalogo-ecomoto" className="hover:text-blue-600 transition-colors">
+                <Link href="/repuestos?categoria=BATERIA" className="hover:text-blue-600 transition-colors">
                   Baterías de Litio NMC y LiFePO4
                 </Link>
               </li>
               <li>
-                <Link href="/#catalogo-ecomoto" className="hover:text-blue-600 transition-colors">
+                <Link href="/repuestos?categoria=ELECTRICO" className="hover:text-blue-600 transition-colors">
                   Controladores Senoidales ESC
                 </Link>
               </li>
               <li>
-                <Link href="/#catalogo-ecomoto" className="hover:text-blue-600 transition-colors">
+                <Link href="/repuestos?categoria=ELECTRICO" className="hover:text-blue-600 transition-colors">
                   Motores HUB Brushless y Centrales
                 </Link>
               </li>
               <li>
-                <Link href="/#catalogo-ecomoto" className="hover:text-blue-600 transition-colors">
+                <Link href="/repuestos?categoria=CARGADOR" className="hover:text-blue-600 transition-colors">
                   Cargadores Rápidos 48V - 72V
                 </Link>
               </li>
               <li>
-                <Link href="/#catalogo-ecomoto" className="hover:text-blue-600 transition-colors">
+                <Link href="/repuestos?categoria=FRENOS" className="hover:text-blue-600 transition-colors">
                   Frenos con Corte Regenerativo
                 </Link>
               </li>
               <li>
-                <Link href="/#catalogo-ecomoto" className="hover:text-blue-600 transition-colors">
+                <Link href="/repuestos?categoria=LLANTA" className="hover:text-blue-600 transition-colors">
                   Neumáticos Urbanos Reforzados
                 </Link>
               </li>
@@ -138,7 +138,7 @@ export function Footer() {
             © {new Date().getFullYear()} NeroElectric Motors. Todos los derechos reservados. Lima, Perú.
           </p>
           <div className="flex gap-4 text-gray-600">
-            <Link href="/#compatibilidad" className="hover:text-blue-600 transition-colors">
+            <Link href="/compatibilidad" className="hover:text-blue-600 transition-colors">
               Compatibilidad
             </Link>
             <Link href="/cuenta" className="hover:text-blue-600 transition-colors">

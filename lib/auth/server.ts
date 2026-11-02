@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '../supabase/server';
 import type { AppRole, AuthAccount, UserProfile } from '../../types';
+import { generateUsername } from './username-core.mjs';
 
 export interface ServerUserResult {
   user: {
@@ -48,7 +49,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, full_name, phone, created_at, updated_at')
+      .select('id, full_name, username, phone, created_at, updated_at')
       .eq('id', userId)
       .maybeSingle();
 
@@ -59,6 +60,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     return {
       id: data.id,
       fullName: data.full_name,
+      username: data.username || generateUsername(data.full_name),
       phone: data.phone,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
@@ -146,13 +148,20 @@ export async function getAuthenticatedAccount(): Promise<AuthAccount | null> {
     typeof user.user_metadata?.phone === 'string' && user.user_metadata.phone.trim()
       ? (user.user_metadata.phone.trim() as string)
       : null;
+  const metaUsername =
+    typeof user.user_metadata?.username === 'string' && user.user_metadata.username.trim()
+      ? (user.user_metadata.username.trim() as string)
+      : null;
 
+  const resolvedFullName = profile?.fullName || metaFullName || user.email?.split('@')[0] || 'Cliente';
+  const resolvedUsername = profile?.username || metaUsername || generateUsername(resolvedFullName);
   const resolvedRole = role || (isConfiguredAdminEmail(user.email) ? 'admin' : 'customer');
 
   return {
     id: user.id,
     email: user.email || '',
-    fullName: profile?.fullName || metaFullName || user.email?.split('@')[0] || 'Cliente',
+    fullName: resolvedFullName,
+    username: resolvedUsername,
     phone: profile?.phone || metaPhone || null,
     role: resolvedRole,
     createdAt: profile?.createdAt || new Date().toISOString(),
