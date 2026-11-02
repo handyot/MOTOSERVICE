@@ -26,7 +26,7 @@ INSERT INTO modelos_moto (
     2026,
     60,
     1000,
-    'https://centurymotors.pe/wp-content/uploads/2026/10/w1200h1200fitpad.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/10/w1200h1200fitpad.jpg',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -38,7 +38,7 @@ INSERT INTO modelos_moto (
     2026,
     16,
     800,
-    'https://centurymotors.pe/wp-content/uploads/2026/05/image_1-80.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/05/image_1-80.jpg',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -62,7 +62,7 @@ INSERT INTO modelos_moto (
     2026,
     60,
     1000,
-    'https://centurymotors.pe/wp-content/uploads/2025/07/www.centurymotors.pe-4.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/07/www.centurymotors.pe-4.jpg',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -74,7 +74,7 @@ INSERT INTO modelos_moto (
     2026,
     12,
     800,
-    'https://centurymotors.pe/wp-content/uploads/2025/05/cuatrimoto-utilitaria-125-cc-ploma-1-scaled-1.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/05/cuatrimoto-utilitaria-125-cc-ploma-1-scaled-1.jpg',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -86,7 +86,7 @@ INSERT INTO modelos_moto (
     2026,
     60,
     1000,
-    'https://centurymotors.pe/wp-content/uploads/2025/03/image_1-85.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/03/image_1-85.jpg',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -98,7 +98,7 @@ INSERT INTO modelos_moto (
     2026,
     24,
     800,
-    'https://centurymotors.pe/wp-content/uploads/2025/03/image_36.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/03/image_36.jpg',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -110,7 +110,7 @@ INSERT INTO modelos_moto (
     2026,
     60,
     1000,
-    'https://centurymotors.pe/wp-content/uploads/2025/03/a9f1f00c-0398-43a5-ade5-d965652e68e0.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/03/a9f1f00c-0398-43a5-ade5-d965652e68e0.jpg',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -122,7 +122,7 @@ INSERT INTO modelos_moto (
     2026,
     72,
     1200,
-    'https://centurymotors.pe/wp-content/uploads/2024/11/trimoto-negra-centurymotors.pe_.webp',
+    'https://centurymotors.pe/wp-content/uploads/2024/11/trimoto-negra-centurymotors.pe_.jpg',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -134,7 +134,7 @@ INSERT INTO modelos_moto (
     2026,
     60,
     1000,
-    'https://centurymotors.pe/wp-content/uploads/2023/05/century-motors-tbk-105-rojo.webp',
+    'https://centurymotors.pe/wp-content/uploads/2023/05/century-motors-tbk-105-rojo.jpg',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -146,7 +146,7 @@ INSERT INTO modelos_moto (
     2026,
     60,
     1000,
-    'https://centurymotors.pe/wp-content/uploads/2023/05/trimoto-a-bateria-januca-x01-blanco.webp',
+    'https://centurymotors.pe/wp-content/uploads/2023/05/trimoto-a-bateria-januca-x01-blanco.jpg',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -158,7 +158,7 @@ INSERT INTO modelos_moto (
     2026,
     60,
     1000,
-    'https://centurymotors.pe/wp-content/uploads/2022/10/71iCDEjLGpL._AC_SL1200_.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/10/71iCDEjLGpL._AC_SL1200_.jpg',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -170,7 +170,7 @@ INSERT INTO modelos_moto (
     2026,
     36,
     800,
-    'https://centurymotors.pe/wp-content/uploads/2022/08/scooter-electrico-36v.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/08/scooter-electrico-36v.jpg',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -182,7 +182,7 @@ INSERT INTO modelos_moto (
     2026,
     60,
     1000,
-    'https://centurymotors.pe/wp-content/uploads/2022/08/487123289_2852703024938376_5077274790239202149_n.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/08/487123289_2852703024938376_5077274790239202149_n.jpg',
     true
 ) ON CONFLICT DO NOTHING;
 
@@ -272,7 +272,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2026/10/24V-Kids-Electric-Dirt-Bike-with-300W-Motor-16in-Wheels-Handle-Acceleration-Adjustable-Seat-Power-Display-Hand-Brakes.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/10/24V-Kids-Electric-Dirt-Bike-with-300W-Motor-16in-Wheels-Handle-Acceleration-Adjustable-Seat-Power-Display-Hand-Brakes.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -307,7 +307,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2026/08/H5f0aef14596341cdbf7f2001d7623c9fe.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/08/H5f0aef14596341cdbf7f2001d7623c9fe.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -342,7 +342,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2026/06/XCS_9366.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/06/XCS_9366.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -377,7 +377,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2026/06/image_1-2026-06-02T160733.857-scaled.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/06/image_1-2026-06-02T160733.857-scaled.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -412,7 +412,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2026/06/image_1-2026-06-03T135353.308.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/06/image_1-2026-06-03T135353.308.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -447,7 +447,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2026/05/image_1-91.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/05/image_1-91.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -482,7 +482,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2026/05/image_1-2026-05-31T153523.566.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/05/image_1-2026-05-31T153523.566.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -517,7 +517,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2026/05/71iwKzRbnhL._AC_SL1500_.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/05/71iwKzRbnhL._AC_SL1500_.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -552,7 +552,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2026/05/image_1-86.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/05/image_1-86.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -622,7 +622,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2026/05/664357965_1907319133235294_8433895358544345680_n.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/05/664357965_1907319133235294_8433895358544345680_n.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -657,7 +657,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2026/05/image_1-2026-05-28T234206.764-1.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/05/image_1-2026-05-28T234206.764-1.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -692,7 +692,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2026/05/454505619_1030243198726371_6949391567673916658_n.webp',
+    'https://centurymotors.pe/wp-content/uploads/2026/05/454505619_1030243198726371_6949391567673916658_n.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -727,7 +727,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/12/WhatsApp-Image-2025-11-30-at-11.49.49-AM-2.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/12/WhatsApp-Image-2025-11-30-at-11.49.49-AM-2.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -762,7 +762,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/11/onemoto-200w-electric-motorbike-24v-kids-dirt-bike-Kids-Electric-Ride-On-Motorbike-Toys-2-1.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/11/onemoto-200w-electric-motorbike-24v-kids-dirt-bike-Kids-Electric-Ride-On-Motorbike-Toys-2-1.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -797,7 +797,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/11/981028523-2l.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/11/981028523-2l.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -832,7 +832,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/10/image_1-2025-10-16T204004.586.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/10/image_1-2025-10-16T204004.586.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -867,7 +867,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/10/image_1-38.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/10/image_1-38.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -902,7 +902,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/08/image_1-2025-08-29T164639.804-1.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/08/image_1-2025-08-29T164639.804-1.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -937,7 +937,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/08/527579370_778875294667071_2394729507726862025_n-1.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/08/527579370_778875294667071_2394729507726862025_n-1.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -972,7 +972,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/08/WhatsApp-Image-2025-08-22-at-12.14.15-PM.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/08/WhatsApp-Image-2025-08-22-at-12.14.15-PM.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1007,7 +1007,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/08/image_1-2025-08-20T164151.053.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/08/image_1-2025-08-20T164151.053.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1042,7 +1042,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/07/513742290_1376792350073252_8300465781573087065_n.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/07/513742290_1376792350073252_8300465781573087065_n.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1077,7 +1077,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/07/513558022_707048038708347_7926313068087728579_n.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/07/513558022_707048038708347_7926313068087728579_n.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1112,7 +1112,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/07/www.centurymotors.pe_.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/07/www.centurymotors.pe_.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1182,7 +1182,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/06/image_33.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/06/image_33.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1217,7 +1217,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/03/image_1-15.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/03/image_1-15.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1252,7 +1252,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/02/image_1-49.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/02/image_1-49.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1287,7 +1287,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/02/71Z2jetEzRL._AC_SL1500_.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/02/71Z2jetEzRL._AC_SL1500_.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1322,7 +1322,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/01/image_1-23.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/01/image_1-23.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1357,7 +1357,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/01/image_32.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/01/image_32.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1392,7 +1392,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/01/image_1-2.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/01/image_1-2.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1427,7 +1427,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2025/01/H5fc055f554b042e3bc6bc750c95c541aU.webp',
+    'https://centurymotors.pe/wp-content/uploads/2025/01/H5fc055f554b042e3bc6bc750c95c541aU.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1462,7 +1462,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2024/10/H4fe3683ec30c4a7b834ae503896723a5V.webp',
+    'https://centurymotors.pe/wp-content/uploads/2024/10/H4fe3683ec30c4a7b834ae503896723a5V.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1497,7 +1497,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2024/08/D_NQ_NP_2X_684866-MPE69949211041_062023-F.webp',
+    'https://centurymotors.pe/wp-content/uploads/2024/08/D_NQ_NP_2X_684866-MPE69949211041_062023-F.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1532,7 +1532,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2024/04/cf06d271-9300-4474-8d00-c613e7a12473.webp',
+    'https://centurymotors.pe/wp-content/uploads/2024/04/cf06d271-9300-4474-8d00-c613e7a12473.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1567,7 +1567,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2024/04/super73-s1-e-bike.webp',
+    'https://centurymotors.pe/wp-content/uploads/2024/04/super73-s1-e-bike.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1602,7 +1602,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2023/11/71xVy-UUl9L._AC_SL1500_.webp',
+    'https://centurymotors.pe/wp-content/uploads/2023/11/71xVy-UUl9L._AC_SL1500_.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1637,7 +1637,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2023/11/tractor-2-1.webp',
+    'https://centurymotors.pe/wp-content/uploads/2023/11/tractor-2-1.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1672,7 +1672,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/12/Hdd21db97b9ea4784b5ca1b476322442cE.jpg_960x960.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/12/Hdd21db97b9ea4784b5ca1b476322442cE.jpg_960x960.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1707,7 +1707,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/11/2022-New-Model-Boyi-Factory-988-12V-4-Motors-Big-Kids-Children-Battery-Electric-Toy-Driving-Car-2.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/11/2022-New-Model-Boyi-Factory-988-12V-4-Motors-Big-Kids-Children-Battery-Electric-Toy-Driving-Car-2.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1742,7 +1742,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/11/716m5OI9oUL._AC_SL1500_.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/11/716m5OI9oUL._AC_SL1500_.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1812,7 +1812,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/10/web-maverick.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/10/web-maverick.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1847,7 +1847,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/10/Scooter-Plegable-Patin2.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/10/Scooter-Plegable-Patin2.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1882,7 +1882,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/09/H5ab1d42a1686424b9ab4a0bdf326c836O.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/09/H5ab1d42a1686424b9ab4a0bdf326c836O.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1917,7 +1917,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/09/H00a4d4123ee949e9ae8ac06fd23be9411.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/09/H00a4d4123ee949e9ae8ac06fd23be9411.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1952,7 +1952,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/09/298294528_1984278621962706_3475201095668243621_n.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/09/298294528_1984278621962706_3475201095668243621_n.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -1987,7 +1987,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/09/298467007_4864125893692755_3656167639756867302_n.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/09/298467007_4864125893692755_3656167639756867302_n.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2022,7 +2022,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/09/bateria-de-litio-60v-20ah-maleta-red.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/09/bateria-de-litio-60v-20ah-maleta-red.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2057,7 +2057,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/09/298525260_1408256519671390_2857251968738267585_n-scaled.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/09/298525260_1408256519671390_2857251968738267585_n-scaled.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2092,7 +2092,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/09/298567027_3390877941199164_5653578506951289474_n-scaled.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/09/298567027_3390877941199164_5653578506951289474_n-scaled.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2127,7 +2127,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/09/High-Quality-36V-48V-350W-BLDC-Motor-Controller-for-Electric-Bicycle-and-Scooter.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/09/High-Quality-36V-48V-350W-BLDC-Motor-Controller-for-Electric-Bicycle-and-Scooter.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2162,7 +2162,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/09/6743094d-3169-4ddc-b8da-52d1ac20521a-1.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/09/6743094d-3169-4ddc-b8da-52d1ac20521a-1.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2232,7 +2232,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/08/8ba66722-61a9-47d3-8bab-dfa8f5b8679f.fdf12e27fd1d76f15535cf3900be703a.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/08/8ba66722-61a9-47d3-8bab-dfa8f5b8679f.fdf12e27fd1d76f15535cf3900be703a.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2267,7 +2267,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/08/megastar_sport_edition_2_seater_12v_green_buggy_utv_style_kids_electric_rideon_car.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/08/megastar_sport_edition_2_seater_12v_green_buggy_utv_style_kids_electric_rideon_car.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2337,7 +2337,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/08/H36ea87cfdd9d4efeb65036969b221d3cQ.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/08/H36ea87cfdd9d4efeb65036969b221d3cQ.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2372,7 +2372,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/07/1337129_20200823054228_5528_600x600.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/07/1337129_20200823054228_5528_600x600.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2442,7 +2442,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/07/Hba25f5fe7f5d4486847dafdfc7b5208cM.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/07/Hba25f5fe7f5d4486847dafdfc7b5208cM.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2477,7 +2477,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/07/Ha8c1bb63788e4d3596e0d9a207744618D.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/07/Ha8c1bb63788e4d3596e0d9a207744618D.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2512,7 +2512,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/07/s-l1600.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/07/s-l1600.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2547,7 +2547,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/07/H83df4740e250496e857c6c1a9kk09934f18.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/07/H83df4740e250496e857c6c1a9kk09934f18.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2582,7 +2582,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/07/5b83b7ef-fddf-47e9-b5d3-ad11ed15f2d6.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/07/5b83b7ef-fddf-47e9-b5d3-ad11ed15f2d6.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2617,7 +2617,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/07/61lrJ2kcmL._AC_SL1500_.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/07/61lrJ2kcmL._AC_SL1500_.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2652,7 +2652,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/07/Go-Kart-Ferrari-century-kids4.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/07/Go-Kart-Ferrari-century-kids4.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2687,7 +2687,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/06/pack-bateria-12v-15ah-li-ion-samsung-lg.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/06/pack-bateria-12v-15ah-li-ion-samsung-lg.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2722,7 +2722,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/06/2016-New-P1-Licensed-Best-Ride-on-c2.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/06/2016-New-P1-Licensed-Best-Ride-on-c2.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2757,7 +2757,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/06/128738168_203836981298670_1675278411822741683_n.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/06/128738168_203836981298670_1675278411822741683_n.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2792,7 +2792,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/06/78325600-a9b8-42c7-82f4-3115d379412c.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/06/78325600-a9b8-42c7-82f4-3115d379412c.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2827,7 +2827,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/06/61D83VrczXL._AC_SL1000_.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/06/61D83VrczXL._AC_SL1000_.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2897,7 +2897,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/06/nave-espacial-2.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/06/nave-espacial-2.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2932,7 +2932,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/06/a0a145c425b1c320e72a9fbb44348767_tn.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/06/a0a145c425b1c320e72a9fbb44348767_tn.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -2967,7 +2967,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/06/H9150ce6f2d0d4d63b1907f3592d7f3feb.jpg_.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/06/H9150ce6f2d0d4d63b1907f3592d7f3feb.jpg_.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -3002,7 +3002,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/06/6.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/06/6.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -3037,7 +3037,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/06/ducati-12v.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/06/ducati-12v.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -3072,7 +3072,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/06/Hbdb4942a77ac4401b551a85d382007fbf.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/06/Hbdb4942a77ac4401b551a85d382007fbf.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,
@@ -3107,7 +3107,7 @@ INSERT INTO repuestos (
     '2026-10-31',
     'VERIFICADO_EN_FUENTE',
     'Registrado automáticamente desde https://centurymotors.pe',
-    'https://centurymotors.pe/wp-content/uploads/2022/06/81090552_2096788053757151_241847735832018944_o.webp',
+    'https://centurymotors.pe/wp-content/uploads/2022/06/81090552_2096788053757151_241847735832018944_o.jpg',
     true
 ) ON CONFLICT (part_key) DO UPDATE SET
     nombre = EXCLUDED.nombre,

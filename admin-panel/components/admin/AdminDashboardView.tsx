@@ -42,18 +42,83 @@ export interface AdminOrderRecord {
 
 export interface AdminDocumentRecord {
   id_documento: string;
+  id_pedido?: string;
   tipo: string;
   serie?: string;
   numero?: string;
   datos_receptor?: {
     businessName?: string;
     docNumber?: string;
+    docType?: string;
+    direccion?: string;
   };
   total_gravada?: number | string;
   total_igv?: number | string;
   total_comprobante?: number | string;
   estado: string;
+  observaciones?: string;
+  metadatos?: any;
   created_at?: string;
+}
+
+function SafeCatalogImage({
+  src,
+  alt,
+  className,
+}: {
+  src?: string | null;
+  alt: string;
+  className?: string;
+}) {
+  const [imgSrc, setImgSrc] = useState<string | null>(() => {
+    if (!src) return null;
+    if (src.includes('centurymotors.pe') && src.endsWith('.webp')) {
+      return src.replace(/\.webp$/, '.jpg');
+    }
+    return src;
+  });
+  const [hasError, setHasError] = useState(false);
+
+  React.useEffect(() => {
+    if (!src) {
+      setImgSrc(null);
+      setHasError(false);
+      return;
+    }
+    const resolved =
+      src.includes('centurymotors.pe') && src.endsWith('.webp')
+        ? src.replace(/\.webp$/, '.jpg')
+        : src;
+    setImgSrc(resolved);
+    setHasError(false);
+  }, [src]);
+
+  if (!imgSrc || hasError) {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 p-0.5 select-none rounded">
+        <Icon name="bike" className="w-5 h-5 text-slate-400" />
+        <span className="text-[8px] font-semibold text-slate-500 uppercase tracking-tighter text-center">
+          NERO EV
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={imgSrc}
+      alt={alt}
+      className={className || 'h-full w-full object-contain'}
+      loading="lazy"
+      onError={() => {
+        if (imgSrc.includes('centurymotors.pe') && imgSrc.endsWith('.webp')) {
+          setImgSrc(imgSrc.replace(/\.webp$/, '.jpg'));
+        } else {
+          setHasError(true);
+        }
+      }}
+    />
+  );
 }
 
 export interface AdminAssistanceRecord {
@@ -174,6 +239,43 @@ export function AdminDashboardView({
   const [compatibilities, setCompatibilities] = useState<AdminCompatibilityRecord[]>(
     initialCompatibilities
   );
+  const [documents, setDocuments] = useState<AdminDocumentRecord[]>(initialDocuments);
+  const [downloadingDocId, setDownloadingDocId] = useState<string | null>(null);
+
+  const handleDownloadDocument = (docId: string, format: 'a4' | '80mm' | 'xml') => {
+    setDownloadingDocId(`${docId}-${format}`);
+    try {
+      const url = `/api/admin/documents/${encodeURIComponent(docId)}/download?format=${format}`;
+      window.open(url, '_blank');
+    } finally {
+      setTimeout(() => setDownloadingDocId(null), 1200);
+    }
+  };
+
+  // Estados operativos de Despachos y Guías de Remisión (GRE)
+  const [despachoSearch, setDespachoSearch] = useState('');
+  const [despachoStatusFilter, setDespachoStatusFilter] = useState('ALL');
+  const [isGreModalOpen, setIsGreModalOpen] = useState(false);
+  const [selectedOrderForGre, setSelectedOrderForGre] = useState<AdminOrderRecord | null>(null);
+  const [isSubmittingGre, setIsSubmittingGre] = useState(false);
+  const [greFormError, setGreFormError] = useState<string | null>(null);
+  const [greFormSuccess, setGreFormSuccess] = useState<string | null>(null);
+
+  const [greForm, setGreForm] = useState({
+    motivoTraslado: 'VENTA',
+    modalidadTransporte: 'PRIVADO' as 'PRIVADO' | 'PUBLICO',
+    fechaInicioTraslado: new Date().toISOString().split('T')[0],
+    puntoPartida: 'Av. César Canevaro 1332, Lince, Lima',
+    puntoLlegada: '',
+    pesoBrutoTotalKg: 5.0,
+    conductorNombre: 'Carlos Ramos Quispe',
+    conductorDni: '45892134',
+    conductorLicencia: 'Q45892134',
+    conductorPlaca: 'B12-890',
+    conductorMarca: 'Haojue Express',
+    transportistaRazonSocial: 'OLVA COURIER S.A.C.',
+    transportistaRuc: '20100686814',
+  });
 
   const refreshCatalogData = async () => {
     try {
@@ -708,9 +810,29 @@ export function AdminDashboardView({
     });
   }, [orders, customerSearch, customerTypeFilter]);
 
+  const docByOrderId = useMemo(() => {
+    const map = new Map<string, AdminDocumentRecord>();
+    documents.forEach((d) => {
+      if (d.id_pedido && d.tipo !== 'GUIA_REMISION') {
+        map.set(d.id_pedido, d);
+      }
+    });
+    return map;
+  }, [documents]);
+
+  const guiaByOrderId = useMemo(() => {
+    const map = new Map<string, AdminDocumentRecord>();
+    documents.forEach((d) => {
+      if (d.id_pedido && d.tipo === 'GUIA_REMISION') {
+        map.set(d.id_pedido, d);
+      }
+    });
+    return map;
+  }, [documents]);
+
   const filteredDocuments = useMemo(() => {
     const q = documentSearch.trim().toLowerCase();
-    return initialDocuments.filter((d) => {
+    return documents.filter((d) => {
       const matchesType =
         documentTypeFilter === 'ALL' ||
         (d.tipo || '').toUpperCase() === documentTypeFilter;
@@ -719,7 +841,7 @@ export function AdminDashboardView({
       const matchesQ = !q || serieNum.includes(q) || receptor.includes(q);
       return matchesType && matchesQ;
     });
-  }, [initialDocuments, documentSearch, documentTypeFilter]);
+  }, [documents, documentSearch, documentTypeFilter]);
 
   const filteredAssistance = useMemo(() => {
     const q = assistanceSearch.trim().toLowerCase();
@@ -762,6 +884,143 @@ export function AdminDashboardView({
       ),
     [orders]
   );
+
+  const filteredLogisticsOrders = useMemo(() => {
+    const q = despachoSearch.trim().toLowerCase();
+    return orders.filter((o) => {
+      const matchesStatus =
+        despachoStatusFilter === 'ALL'
+          ? (o.estado_pedido === 'confirmado' || o.estado_pedido === 'en_preparacion' || o.estado_pedido === 'despachado' || o.estado_pedido === 'entregado')
+          : o.estado_pedido === despachoStatusFilter;
+      const guia = guiaByOrderId.get(o.id_pedido);
+      const guiaNum = guia ? `${guia.serie || ''}-${guia.numero || ''}`.toLowerCase() : '';
+      const matchesQ =
+        !q ||
+        o.numero_pedido.toLowerCase().includes(q) ||
+        o.cliente_nombre.toLowerCase().includes(q) ||
+        (o.doc_numero || '').toLowerCase().includes(q) ||
+        guiaNum.includes(q);
+      return matchesStatus && matchesQ;
+    });
+  }, [orders, despachoSearch, despachoStatusFilter, guiaByOrderId]);
+
+  const handleOpenGreModal = (order: AdminOrderRecord) => {
+    setSelectedOrderForGre(order);
+    setGreFormError(null);
+    setGreFormSuccess(null);
+    setGreForm({
+      motivoTraslado: 'VENTA',
+      modalidadTransporte: 'PRIVADO',
+      fechaInicioTraslado: new Date().toISOString().split('T')[0],
+      puntoPartida: 'Av. César Canevaro 1332, Lince, Lima',
+      puntoLlegada: order.cliente_telefono ? `${order.cliente_nombre} - Modalidad: ${order.modalidad_entrega}` : 'Lima Metropolitana, Perú',
+      pesoBrutoTotalKg: 4.5,
+      conductorNombre: 'Carlos Ramos Quispe',
+      conductorDni: '45892134',
+      conductorLicencia: 'Q45892134',
+      conductorPlaca: 'B12-890',
+      conductorMarca: 'Haojue Express',
+      transportistaRazonSocial: 'OLVA COURIER S.A.C.',
+      transportistaRuc: '20100686814',
+    });
+    setIsGreModalOpen(true);
+  };
+
+  const handleSubmitGre = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedOrderForGre) return;
+    setIsSubmittingGre(true);
+    setGreFormError(null);
+    setGreFormSuccess(null);
+
+    try {
+      const docAsociado = docByOrderId.get(selectedOrderForGre.id_pedido);
+      const payload = {
+        orderId: selectedOrderForGre.id_pedido,
+        orderNumber: selectedOrderForGre.numero_pedido,
+        motivoTraslado: greForm.motivoTraslado,
+        modalidadTransporte: greForm.modalidadTransporte,
+        fechaInicioTraslado: greForm.fechaInicioTraslado,
+        puntoPartida: greForm.puntoPartida,
+        puntoLlegada: greForm.puntoLlegada,
+        destinatario: {
+          docType: (selectedOrderForGre.doc_numero?.length === 11 ? 'RUC' : 'DNI') as 'DNI' | 'RUC',
+          docNumber: selectedOrderForGre.doc_numero || '00000000',
+          nombre: selectedOrderForGre.cliente_nombre,
+          direccion: greForm.puntoLlegada,
+        },
+        conductor:
+          greForm.modalidadTransporte === 'PRIVADO'
+            ? {
+                nombre: greForm.conductorNombre,
+                docType: 'DNI' as const,
+                docNumber: greForm.conductorDni,
+                licencia: greForm.conductorLicencia,
+                placaVehiculo: greForm.conductorPlaca,
+                marcaVehiculo: greForm.conductorMarca,
+              }
+            : undefined,
+        transportista:
+          greForm.modalidadTransporte === 'PUBLICO'
+            ? {
+                razonSocial: greForm.transportistaRazonSocial,
+                ruc: greForm.transportistaRuc,
+              }
+            : undefined,
+        pesoBrutoTotalKg: Number(greForm.pesoBrutoTotalKg) || 1,
+        items: [
+          {
+            sku: 'MS-ORDER-PACK',
+            nombre: `Bienes del pedido ${selectedOrderForGre.numero_pedido}`,
+            cantidad: 1,
+            unidad: 'NIU',
+            pesoKg: Number(greForm.pesoBrutoTotalKg) || 1,
+          },
+        ],
+        comprobanteAsociado: docAsociado
+          ? {
+              tipo: docAsociado.tipo as 'BOLETA' | 'FACTURA',
+              serieNumero: `${docAsociado.serie || ''}-${docAsociado.numero || ''}`,
+            }
+          : undefined,
+      };
+
+      const res = await fetch('/api/admin/despacho/guia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'No se pudo generar la Guía de Remisión');
+      }
+
+      setGreFormSuccess(data.message || 'Guía de Remisión generada con éxito');
+      if (data.guia) {
+        setDocuments((prev) => [data.guia, ...prev]);
+      }
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id_pedido === selectedOrderForGre.id_pedido
+            ? { ...o, estado_pedido: 'en_preparacion' }
+            : o
+        )
+      );
+      setStatusFeedback({
+        type: 'success',
+        text: `Guía generada con éxito para el pedido ${selectedOrderForGre.numero_pedido}.`,
+      });
+      setTimeout(() => {
+        setIsGreModalOpen(false);
+      }, 1500);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error inesperado';
+      setGreFormError(msg);
+    } finally {
+      setIsSubmittingGre(false);
+    }
+  };
 
   const formattedCurrentDate = useMemo(() => {
     try {
@@ -2031,19 +2290,9 @@ export function AdminDashboardView({
                             <tr key={m.id_modelo} className="hover:bg-slate-50/80">
                               <td className="px-4 py-3 font-mono text-slate-500">#{m.id_modelo}</td>
                               <td className="px-4 py-2.5">
-                                {m.imagen_url ? (
-                                  <div className="h-10 w-14 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center p-1">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
-                                      src={m.imagen_url}
-                                      alt={m.nombre}
-                                      className="h-full w-full object-contain"
-                                      loading="lazy"
-                                    />
-                                  </div>
-                                ) : (
-                                  <span className="text-[11px] text-slate-400">Sin foto</span>
-                                )}
+                                <div className="h-10 w-14 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center p-0.5">
+                                  <SafeCatalogImage src={m.imagen_url} alt={m.nombre} />
+                                </div>
                               </td>
                               <td className="px-4 py-3 font-bold text-slate-900">
                                 {brandNameById.get(m.id_marca) || `Marca #${m.id_marca}`}
@@ -2096,19 +2345,9 @@ export function AdminDashboardView({
                           {filteredParts.map((p) => (
                             <tr key={p.id_repuesto} className="hover:bg-slate-50/80">
                               <td className="px-4 py-2.5">
-                                {p.imagen_url ? (
-                                  <div className="h-10 w-14 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center p-1">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
-                                      src={p.imagen_url}
-                                      alt={p.nombre}
-                                      className="h-full w-full object-contain"
-                                      loading="lazy"
-                                    />
-                                  </div>
-                                ) : (
-                                  <span className="text-[11px] text-slate-400">Sin foto</span>
-                                )}
+                                <div className="h-10 w-14 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center p-0.5">
+                                  <SafeCatalogImage src={p.imagen_url} alt={p.nombre} />
+                                </div>
                               </td>
                               <td className="px-4 py-3 font-mono font-bold text-slate-900">
                                 {p.codigo_sku}
@@ -2816,41 +3055,90 @@ export function AdminDashboardView({
                           <th className="px-4 py-3 text-right">IGV (18%)</th>
                           <th className="px-4 py-3 text-right">Importe Total</th>
                           <th className="px-4 py-3">Estado</th>
+                          <th className="px-4 py-3 text-right">Descargas SUNAT</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200 text-slate-700">
-                        {filteredDocuments.map((doc) => (
-                          <tr key={doc.id_documento} className="hover:bg-slate-50/80">
-                            <td className="px-4 py-3 font-bold uppercase text-slate-900">
-                              {doc.tipo}
-                            </td>
-                            <td className="px-4 py-3 font-mono font-semibold text-slate-900">
-                              {doc.serie}-{doc.numero}
-                            </td>
-                            <td className="px-4 py-3">
-                              <span className="font-medium text-slate-900 block">
-                                {doc.datos_receptor?.businessName || 'Cliente'}
-                              </span>
-                              <span className="font-mono text-[11px] text-slate-500">
-                                Doc: {doc.datos_receptor?.docNumber || 'S/N'}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-right font-mono text-slate-700">
-                              {formatCurrency(Number(doc.total_gravada), 'PEN')}
-                            </td>
-                            <td className="px-4 py-3 text-right font-mono text-slate-700">
-                              {formatCurrency(Number(doc.total_igv), 'PEN')}
-                            </td>
-                            <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
-                              {formatCurrency(Number(doc.total_comprobante), 'PEN')}
-                            </td>
-                            <td className="px-4 py-3">
-                              <span className="inline-flex rounded-md bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-900">
-                                {doc.estado}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
+                        {filteredDocuments.map((doc) => {
+                          const linkedGuia = doc.id_pedido ? guiaByOrderId.get(doc.id_pedido) : null;
+                          return (
+                            <tr key={doc.id_documento} className="hover:bg-slate-50/80">
+                              <td className="px-4 py-3 font-bold uppercase text-slate-900">
+                                <div className="flex items-center gap-2">
+                                  <span>{doc.tipo}</span>
+                                  {linkedGuia && (
+                                    <span
+                                      className="inline-flex items-center gap-1 rounded bg-sky-50 border border-sky-200 px-1.5 py-0.5 text-[10px] font-bold text-sky-800"
+                                      title={`GRE vinculada: ${linkedGuia.serie}-${linkedGuia.numero}`}
+                                    >
+                                      <Icon name="truck" className="w-3 h-3 text-sky-600" />
+                                      {linkedGuia.serie}-{linkedGuia.numero}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 font-mono font-semibold text-slate-900">
+                                {doc.serie}-{doc.numero}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className="font-medium text-slate-900 block">
+                                  {doc.datos_receptor?.businessName || 'Cliente'}
+                                </span>
+                                <span className="font-mono text-[11px] text-slate-500">
+                                  {doc.datos_receptor?.docType || 'Doc'}: {doc.datos_receptor?.docNumber || 'S/N'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-right font-mono text-slate-700">
+                                {formatCurrency(Number(doc.total_gravada), 'PEN')}
+                              </td>
+                              <td className="px-4 py-3 text-right font-mono text-slate-700">
+                                {formatCurrency(Number(doc.total_igv), 'PEN')}
+                              </td>
+                              <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
+                                {formatCurrency(Number(doc.total_comprobante), 'PEN')}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className="inline-flex rounded-md bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-900">
+                                  {doc.estado}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadDocument(doc.id_documento, 'a4')}
+                                    disabled={downloadingDocId === `${doc.id_documento}-a4`}
+                                    title={`Descargar ${doc.serie}-${doc.numero}-A4.pdf`}
+                                    className="px-2 py-1 rounded bg-white hover:bg-slate-100 border border-slate-300 text-[11px] font-bold text-slate-700 inline-flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                                  >
+                                    <Icon name="download" className="w-3 h-3 text-slate-500" />
+                                    <span>PDF A4</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadDocument(doc.id_documento, '80mm')}
+                                    disabled={downloadingDocId === `${doc.id_documento}-80mm`}
+                                    title={`Descargar ${doc.serie}-${doc.numero}-80mm.pdf`}
+                                    className="px-2 py-1 rounded bg-white hover:bg-slate-100 border border-slate-300 text-[11px] font-bold text-slate-700 inline-flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                                  >
+                                    <Icon name="receipt" className="w-3 h-3 text-slate-500" />
+                                    <span>80 mm</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadDocument(doc.id_documento, 'xml')}
+                                    disabled={downloadingDocId === `${doc.id_documento}-xml`}
+                                    title={`Descargar ${doc.serie}-${doc.numero}.xml`}
+                                    className="px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 border border-amber-300 text-[11px] font-bold text-amber-900 inline-flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                                  >
+                                    <Icon name="file-text" className="w-3 h-3 text-amber-700" />
+                                    <span>XML</span>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -2867,33 +3155,66 @@ export function AdminDashboardView({
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
                 <div>
                   <h1 className="text-xl font-bold tracking-tight text-slate-900">
-                    Despachos y guías de remisión
+                    Despachos y Guías de Remisión SUNAT (GRE)
                   </h1>
                   <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                    Seguimiento de envíos activos y lineamientos de seguridad para el transporte de baterías de litio y componentes de tracción.
+                    Trazabilidad integral de pedidos confirmados, documentación tributaria y emisión de Guías de Remisión Remitente (Serie <code className="font-mono font-semibold">T001</code>) bajo R.S. N° 000123-2022/SUNAT.
                   </p>
                 </div>
               </div>
 
-              {/* Órdenes en etapa logística real */}
+              {/* Filtros operativos y búsqueda */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs">
+                <div className="relative flex-1 max-w-md">
+                  <Icon
+                    name="search"
+                    className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  />
+                  <input
+                    type="search"
+                    value={despachoSearch}
+                    onChange={(e) => setDespachoSearch(e.target.value)}
+                    placeholder="Buscar por orden, cliente, DNI/RUC o guía..."
+                    className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500 font-medium hidden sm:inline">Estado:</span>
+                  <select
+                    aria-label="Filtrar despachos por estado"
+                    value={despachoStatusFilter}
+                    onChange={(e) => setDespachoStatusFilter(e.target.value)}
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 focus:border-slate-900 focus:outline-none"
+                  >
+                    <option value="ALL">Todos los despachos ({orders.filter(o => o.estado_pedido !== 'cancelado').length})</option>
+                    <option value="confirmado">Confirmados (Pendiente empaque)</option>
+                    <option value="en_preparacion">En preparación (Almacén)</option>
+                    <option value="despachado">Despachados (En tránsito)</option>
+                    <option value="entregado">Entregados (Completados)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Tabla de órdenes en flujo logístico */}
               <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
                 <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
                   <div>
                     <h2 className="text-sm font-bold text-slate-900">
-                      Órdenes en etapa de preparación y despacho
+                      Flujo de Despacho y Trazabilidad Comercial
                     </h2>
                     <p className="text-xs text-slate-500">
-                      Pedidos confirmados, en preparación o despachados desde almacén
+                      Vinculación en tiempo real: Pedido ➔ Comprobante (B001/F001) ➔ Guía de Remisión (T001)
                     </p>
                   </div>
                   <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-mono font-bold text-slate-700">
-                    {logisticsOrders.length} activos
+                    {filteredLogisticsOrders.length} registros
                   </span>
                 </div>
 
-                {logisticsOrders.length === 0 ? (
+                {filteredLogisticsOrders.length === 0 ? (
                   <div className="p-8 text-center text-xs text-slate-500">
-                    No existen órdenes pendientes de empaque o despacho en este momento.
+                    No se encontraron pedidos en la etapa logística seleccionada.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
@@ -2902,63 +3223,260 @@ export function AdminDashboardView({
                         <tr>
                           <th className="px-4 py-3">Orden</th>
                           <th className="px-4 py-3">Destinatario</th>
-                          <th className="px-4 py-3">Modalidad de Entrega</th>
-                          <th className="px-4 py-3">Estado Actual</th>
-                          <th className="px-4 py-3 text-right">Acción Logística</th>
+                          <th className="px-4 py-3">Comprobante SUNAT</th>
+                          <th className="px-4 py-3">Guía de Remisión (GRE)</th>
+                          <th className="px-4 py-3">Estado</th>
+                          <th className="px-4 py-3 text-right">Acción Operativa</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200 text-slate-700">
-                        {logisticsOrders.map((o) => (
-                          <tr key={o.id_pedido} className="hover:bg-slate-50/80">
-                            <td className="px-4 py-3 font-mono font-bold text-slate-900">
-                              {o.numero_pedido}
-                            </td>
-                            <td className="px-4 py-3 font-medium text-slate-900">
-                              {o.cliente_nombre}
-                            </td>
-                            <td className="px-4 py-3 text-slate-600">{o.modalidad_entrega}</td>
-                            <td className="px-4 py-3">
-                              {renderOrderStatusBadge(o.estado_pedido)}
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              {o.estado_pedido === 'confirmado' && (
-                                <button
-                                  type="button"
-                                  disabled={isUpdatingOrder === o.id_pedido}
-                                  onClick={() => handleUpdateOrderStatus(o.id_pedido, 'en_preparacion')}
-                                  className="rounded-lg bg-amber-400 hover:bg-amber-500 text-slate-950 px-3 py-1 text-[11px] font-bold cursor-pointer"
-                                >
-                                  Iniciar preparación
-                                </button>
-                              )}
-                              {o.estado_pedido === 'en_preparacion' && (
-                                <button
-                                  type="button"
-                                  disabled={isUpdatingOrder === o.id_pedido}
-                                  onClick={() => handleUpdateOrderStatus(o.id_pedido, 'despachado')}
-                                  className="rounded-lg bg-[#0B1528] hover:bg-slate-800 text-white px-3 py-1 text-[11px] font-bold cursor-pointer"
-                                >
-                                  Poner en tránsito
-                                </button>
-                              )}
-                              {o.estado_pedido === 'despachado' && (
-                                <button
-                                  type="button"
-                                  disabled={isUpdatingOrder === o.id_pedido}
-                                  onClick={() => handleUpdateOrderStatus(o.id_pedido, 'entregado')}
-                                  className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 text-[11px] font-bold cursor-pointer"
-                                >
-                                  Completar y entregar
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
+                        {filteredLogisticsOrders.map((o) => {
+                          const docAsociado = docByOrderId.get(o.id_pedido);
+                          const guiaAsociada = guiaByOrderId.get(o.id_pedido);
+
+                          return (
+                            <tr key={o.id_pedido} className="hover:bg-slate-50/80">
+                              <td className="px-4 py-3 font-mono font-bold text-slate-900">
+                                <div>{o.numero_pedido}</div>
+                                <div className="text-[10px] font-normal text-slate-400">
+                                  {o.modalidad_entrega}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className="font-semibold text-slate-900 block">
+                                  {o.cliente_nombre}
+                                </span>
+                                <span className="font-mono text-[11px] text-slate-500">
+                                  Doc: {o.doc_numero || 'S/N'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                {docAsociado ? (
+                                  <div className="space-y-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-bold text-slate-900">
+                                        {docAsociado.tipo} {docAsociado.serie}-{docAsociado.numero}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDownloadDocument(docAsociado.id_documento, 'a4')}
+                                        title="Descargar comprobante en PDF A4"
+                                        className="text-[10px] text-blue-700 hover:underline font-medium inline-flex items-center gap-0.5 cursor-pointer"
+                                      >
+                                        [PDF A4]
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDownloadDocument(docAsociado.id_documento, 'xml')}
+                                        title="Descargar comprobante en XML UBL 2.1"
+                                        className="text-[10px] text-amber-700 hover:underline font-medium inline-flex items-center gap-0.5 cursor-pointer"
+                                      >
+                                        [XML]
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span className="text-[11px] text-slate-400 italic">
+                                    Sin comprobante
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3">
+                                {guiaAsociada ? (
+                                  <div className="space-y-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="inline-flex items-center gap-1 rounded bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-bold text-emerald-900 font-mono">
+                                        <Icon name="truck" className="w-3.5 h-3.5 text-emerald-700" />
+                                        {guiaAsociada.serie}-{guiaAsociada.numero}
+                                      </span>
+                                      <span className="text-[9px] font-bold text-emerald-700 uppercase">
+                                        Emitida
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDownloadDocument(guiaAsociada.id_documento, 'a4')}
+                                        className="px-1.5 py-0.5 text-[10px] rounded bg-slate-100 hover:bg-slate-200 border border-slate-300 font-bold text-slate-700 cursor-pointer"
+                                      >
+                                        PDF A4
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDownloadDocument(guiaAsociada.id_documento, '80mm')}
+                                        className="px-1.5 py-0.5 text-[10px] rounded bg-slate-100 hover:bg-slate-200 border border-slate-300 font-bold text-slate-700 cursor-pointer"
+                                      >
+                                        80 mm
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDownloadDocument(guiaAsociada.id_documento, 'xml')}
+                                        className="px-1.5 py-0.5 text-[10px] rounded bg-amber-50 hover:bg-amber-100 border border-amber-300 font-bold text-amber-900 cursor-pointer"
+                                      >
+                                        XML GRE
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenGreModal(o)}
+                                    className="inline-flex items-center gap-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-300 px-2.5 py-1 text-[11px] font-bold text-sky-900 cursor-pointer transition-colors shadow-2xs"
+                                  >
+                                    <Icon name="plus" className="w-3 h-3 text-sky-700" />
+                                    Generar Guía GRE
+                                  </button>
+                                )}
+                              </td>
+                              <td className="px-4 py-3">
+                                {renderOrderStatusBadge(o.estado_pedido)}
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                {o.estado_pedido === 'confirmado' && (
+                                  <button
+                                    type="button"
+                                    disabled={isUpdatingOrder === o.id_pedido}
+                                    onClick={() => handleUpdateOrderStatus(o.id_pedido, 'en_preparacion')}
+                                    className="rounded-lg bg-amber-400 hover:bg-amber-500 text-slate-950 px-3 py-1 text-[11px] font-bold cursor-pointer"
+                                  >
+                                    Iniciar preparación
+                                  </button>
+                                )}
+                                {o.estado_pedido === 'en_preparacion' && (
+                                  <button
+                                    type="button"
+                                    disabled={isUpdatingOrder === o.id_pedido}
+                                    onClick={() => handleUpdateOrderStatus(o.id_pedido, 'despachado')}
+                                    className="rounded-lg bg-[#0B1528] hover:bg-slate-800 text-white px-3 py-1 text-[11px] font-bold cursor-pointer"
+                                  >
+                                    Poner en tránsito
+                                  </button>
+                                )}
+                                {o.estado_pedido === 'despachado' && (
+                                  <button
+                                    type="button"
+                                    disabled={isUpdatingOrder === o.id_pedido}
+                                    onClick={() => handleUpdateOrderStatus(o.id_pedido, 'entregado')}
+                                    className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 text-[11px] font-bold cursor-pointer"
+                                  >
+                                    Completar y entregar
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
                 )}
               </section>
+
+              {/* Registro de Guías de Remisión Emitidas */}
+              {documents.some((d) => d.tipo === 'GUIA_REMISION') && (
+                <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                  <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-sm font-bold text-slate-900">
+                        Historial de Guías de Remisión Emitidas (GRE Serie T001)
+                      </h2>
+                      <p className="text-xs text-slate-500">
+                        Documentación de traslado emitida conforme a la RS 123-2022/SUNAT
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 text-xs font-mono font-bold">
+                      {documents.filter((d) => d.tipo === 'GUIA_REMISION').length} guías
+                    </span>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                        <tr>
+                          <th className="px-4 py-3">Serie y Número</th>
+                          <th className="px-4 py-3">Destinatario</th>
+                          <th className="px-4 py-3">Modalidad / Traslado</th>
+                          <th className="px-4 py-3">Punto Llegada</th>
+                          <th className="px-4 py-3">Estado</th>
+                          <th className="px-4 py-3 text-right">Descargas Oficiales</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 text-slate-700">
+                        {documents
+                          .filter((d) => d.tipo === 'GUIA_REMISION')
+                          .map((g) => (
+                            <tr key={g.id_documento} className="hover:bg-slate-50/80">
+                              <td className="px-4 py-3 font-mono font-bold text-slate-900">
+                                <div className="flex items-center gap-1.5">
+                                  <Icon name="truck" className="w-4 h-4 text-emerald-600" />
+                                  <span>{g.serie}-{g.numero}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className="font-bold text-slate-900 block">
+                                  {g.datos_receptor?.businessName || 'Destinatario'}
+                                </span>
+                                <span className="font-mono text-[11px] text-slate-500">
+                                  Doc: {g.datos_receptor?.docNumber || 'S/N'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className="inline-flex rounded bg-slate-100 border border-slate-300 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-800">
+                                  {g.metadatos?.modalidadTransporte || 'PRIVADO'}
+                                </span>
+                                <div className="text-[10px] text-slate-500 mt-0.5 font-mono">
+                                  {g.metadatos?.conductor?.placaVehiculo
+                                    ? `Placa: ${g.metadatos.conductor.placaVehiculo}`
+                                    : g.metadatos?.transportista?.ruc
+                                    ? `RUC Transp: ${g.metadatos.transportista.ruc}`
+                                    : 'Vehículo propio'}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-slate-600 max-w-xs truncate" title={g.metadatos?.puntoLlegada || ''}>
+                                {g.metadatos?.puntoLlegada || 'No especificado'}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className="inline-flex rounded-md bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-900">
+                                  {g.estado}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadDocument(g.id_documento, 'a4')}
+                                    className="px-2 py-1 rounded bg-white hover:bg-slate-100 border border-slate-300 text-[11px] font-bold text-slate-700 inline-flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                                  >
+                                    <Icon name="download" className="w-3 h-3 text-slate-500" />
+                                    PDF A4
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadDocument(g.id_documento, '80mm')}
+                                    className="px-2 py-1 rounded bg-white hover:bg-slate-100 border border-slate-300 text-[11px] font-bold text-slate-700 inline-flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                                  >
+                                    <Icon name="receipt" className="w-3 h-3 text-slate-500" />
+                                    80 mm
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDownloadDocument(g.id_documento, 'xml')}
+                                    className="px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 border border-amber-300 text-[11px] font-bold text-amber-900 inline-flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                                  >
+                                    <Icon name="file-text" className="w-3 h-3 text-amber-700" />
+                                    XML
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              )}
 
               {/* Protocolos normativos de despacho */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -2993,7 +3511,7 @@ export function AdminDashboardView({
                     </h3>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Estructura preparada para numeración correlativa serie <code className="font-mono font-semibold text-slate-800">T001</code> con motivo de traslado «01 - Venta» conforme a la Resolución de Superintendencia N° 000123-2022/SUNAT.
+                    Estructura normalizada en serie correlativa <code className="font-mono font-semibold text-slate-800">T001</code> con motivo de traslado «01 - Venta» conforme a la Resolución de Superintendencia N° 000123-2022/SUNAT. Integra validación estricta de conductor y vehículo en transporte privado o RUC de transportista en servicio público.
                   </p>
                 </section>
               </div>
@@ -3090,6 +3608,323 @@ export function AdminDashboardView({
           )}
         </main>
       </div>
+
+      {/* Modal interactivo de Emisión de Guía de Remisión Remitente (GRE Serie T001) */}
+      {isGreModalOpen && selectedOrderForGre && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8">
+            <div className="px-6 py-4 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Icon name="truck" className="w-5 h-5 text-amber-400" />
+                <div>
+                  <h3 className="text-sm font-bold">
+                    Emitir Guía de Remisión Remitente (GRE Serie T001)
+                  </h3>
+                  <p className="text-[11px] text-slate-300">
+                    Pedido #{selectedOrderForGre.numero_pedido} — {selectedOrderForGre.cliente_nombre}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsGreModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                <Icon name="x" className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitGre} className="p-6 space-y-4">
+              {greFormError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-800 flex items-center gap-2">
+                  <Icon name="alert-triangle" className="w-4 h-4 text-red-600 shrink-0" />
+                  <span>{greFormError}</span>
+                </div>
+              )}
+
+              {greFormSuccess && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-center gap-2">
+                  <Icon name="check-circle" className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{greFormSuccess}</span>
+                </div>
+              )}
+
+              {/* Selector de Modalidad */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Modalidad de Transporte SUNAT
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label
+                    className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                      greForm.modalidadTransporte === 'PRIVADO'
+                        ? 'border-slate-900 bg-slate-900 text-white'
+                        : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="modalidadTransporte"
+                      value="PRIVADO"
+                      checked={greForm.modalidadTransporte === 'PRIVADO'}
+                      onChange={() =>
+                        setGreForm((prev) => ({ ...prev, modalidadTransporte: 'PRIVADO' }))
+                      }
+                      className="sr-only"
+                    />
+                    <Icon name="bike" className="w-4 h-4" />
+                    <span>01 - Transporte Privado (Vehículo Propio)</span>
+                  </label>
+
+                  <label
+                    className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                      greForm.modalidadTransporte === 'PUBLICO'
+                        ? 'border-slate-900 bg-slate-900 text-white'
+                        : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="modalidadTransporte"
+                      value="PUBLICO"
+                      checked={greForm.modalidadTransporte === 'PUBLICO'}
+                      onChange={() =>
+                        setGreForm((prev) => ({ ...prev, modalidadTransporte: 'PUBLICO' }))
+                      }
+                      className="sr-only"
+                    />
+                    <Icon name="truck" className="w-4 h-4" />
+                    <span>02 - Transporte Público (Empresa / Courier)</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Puntos de traslado y Peso */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Punto de Partida (Dirección fiscal / Almacén)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={greForm.puntoPartida}
+                    onChange={(e) =>
+                      setGreForm((prev) => ({ ...prev, puntoPartida: e.target.value }))
+                    }
+                    className="w-full text-xs rounded-lg border border-slate-300 px-3 py-2 bg-white text-slate-800 focus:outline-none focus:border-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Punto de Llegada (Destino final del cliente)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={greForm.puntoLlegada}
+                    onChange={(e) =>
+                      setGreForm((prev) => ({ ...prev, puntoLlegada: e.target.value }))
+                    }
+                    className="w-full text-xs rounded-lg border border-slate-300 px-3 py-2 bg-white text-slate-800 focus:outline-none focus:border-slate-900"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Fecha de Inicio del Traslado
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={greForm.fechaInicioTraslado}
+                    onChange={(e) =>
+                      setGreForm((prev) => ({ ...prev, fechaInicioTraslado: e.target.value }))
+                    }
+                    className="w-full text-xs rounded-lg border border-slate-300 px-3 py-2 bg-white text-slate-800 focus:outline-none focus:border-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Peso Bruto Total (Kg)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    required
+                    value={greForm.pesoBrutoTotalKg}
+                    onChange={(e) =>
+                      setGreForm((prev) => ({
+                        ...prev,
+                        pesoBrutoTotalKg: parseFloat(e.target.value) || 0,
+                      }))
+                    }
+                    className="w-full text-xs rounded-lg border border-slate-300 px-3 py-2 bg-white text-slate-800 focus:outline-none focus:border-slate-900 font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Campos condicionales según Modalidad */}
+              {greForm.modalidadTransporte === 'PRIVADO' ? (
+                <div className="rounded-xl bg-slate-50 p-4 border border-slate-200 space-y-3">
+                  <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <Icon name="user" className="w-4 h-4 text-slate-600" />
+                    <span>Datos del Conductor y Vehículo (Transporte Privado)</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                        Nombre del Conductor
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={greForm.conductorNombre}
+                        onChange={(e) =>
+                          setGreForm((prev) => ({ ...prev, conductorNombre: e.target.value }))
+                        }
+                        className="w-full text-xs rounded-md border border-slate-300 px-2.5 py-1.5 bg-white text-slate-800"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                        DNI Conductor (8 dígitos)
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={8}
+                        required
+                        value={greForm.conductorDni}
+                        onChange={(e) =>
+                          setGreForm((prev) => ({ ...prev, conductorDni: e.target.value }))
+                        }
+                        className="w-full text-xs rounded-md border border-slate-300 px-2.5 py-1.5 bg-white text-slate-800 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                        Licencia (Brevete)
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={greForm.conductorLicencia}
+                        onChange={(e) =>
+                          setGreForm((prev) => ({ ...prev, conductorLicencia: e.target.value }))
+                        }
+                        className="w-full text-xs rounded-md border border-slate-300 px-2.5 py-1.5 bg-white text-slate-800 font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                        Placa del Vehículo
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={greForm.conductorPlaca}
+                        onChange={(e) =>
+                          setGreForm((prev) => ({ ...prev, conductorPlaca: e.target.value }))
+                        }
+                        placeholder="Ej. B12-890"
+                        className="w-full text-xs rounded-md border border-slate-300 px-2.5 py-1.5 bg-white text-slate-800 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                        Marca / Modelo del Vehículo
+                      </label>
+                      <input
+                        type="text"
+                        value={greForm.conductorMarca}
+                        onChange={(e) =>
+                          setGreForm((prev) => ({ ...prev, conductorMarca: e.target.value }))
+                        }
+                        className="w-full text-xs rounded-md border border-slate-300 px-2.5 py-1.5 bg-white text-slate-800"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl bg-slate-50 p-4 border border-slate-200 space-y-3">
+                  <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <Icon name="truck" className="w-4 h-4 text-slate-600" />
+                    <span>Datos de la Empresa Transportista (Transporte Público)</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                        Razón Social de la Empresa Transportista
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={greForm.transportistaRazonSocial}
+                        onChange={(e) =>
+                          setGreForm((prev) => ({
+                            ...prev,
+                            transportistaRazonSocial: e.target.value,
+                          }))
+                        }
+                        className="w-full text-xs rounded-md border border-slate-300 px-2.5 py-1.5 bg-white text-slate-800"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 mb-0.5">
+                        RUC Transportista (11 dígitos)
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={11}
+                        required
+                        value={greForm.transportistaRuc}
+                        onChange={(e) =>
+                          setGreForm((prev) => ({ ...prev, transportistaRuc: e.target.value }))
+                        }
+                        className="w-full text-xs rounded-md border border-slate-300 px-2.5 py-1.5 bg-white text-slate-800 font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Botones de acción */}
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setIsGreModalOpen(false)}
+                  disabled={isSubmittingGre}
+                  className="px-4 py-2 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingGre}
+                  className="px-5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold inline-flex items-center gap-2 cursor-pointer transition-colors shadow-sm disabled:opacity-50"
+                >
+                  {isSubmittingGre ? (
+                    <>
+                      <Icon name="clock" className="w-4 h-4 animate-spin" />
+                      <span>Emitiendo GRE...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="check" className="w-4 h-4 text-amber-400" />
+                      <span>Generar y Emitir Guía GRE</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
