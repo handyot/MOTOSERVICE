@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Script from 'next/script';
 import { useRouter } from 'next/navigation';
@@ -9,6 +9,12 @@ import { Icon } from '../../components/ui/Icons';
 import { formatCurrency } from '../../lib/formatters.js';
 import { InvoiceType, DeliveryMethod } from '../../types';
 import { createClient } from '../../lib/supabase/client';
+import {
+  PERU_DEPARTMENTS,
+  getDepartmentNames,
+  getProvincesForDepartment,
+  getDistrictsForProvince,
+} from '../../lib/locations/peru-locations';
 
 interface TestCardOption {
   id: string;
@@ -243,6 +249,52 @@ export default function CheckoutPage() {
   const [docNumber, setDocNumber] = useState('');
   const [docBusinessName, setDocBusinessName] = useState('');
 
+  // Listas geográficas dinámicas de Perú para selección y autocompletado interactivo
+  const departmentNames = useMemo(() => getDepartmentNames(), []);
+  const availableProvinces = useMemo(() => getProvincesForDepartment(department), [department]);
+  const availableDistricts = useMemo(() => getDistrictsForProvince(department, province), [department, province]);
+
+  const handleDepartmentChange = (newDept: string) => {
+    setDepartment(newDept);
+    const provs = getProvincesForDepartment(newDept);
+    if (provs.length === 1) {
+      setProvince(provs[0]);
+      setDistrict('');
+    } else if (province && !provs.includes(province)) {
+      setProvince('');
+      setDistrict('');
+    }
+  };
+
+  const handleProvinceChange = (newProv: string) => {
+    setProvince(newProv);
+    const dists = getDistrictsForProvince(department, newProv);
+    if (district && !dists.includes(district)) {
+      setDistrict('');
+    }
+  };
+
+  const handleDistrictChange = (newDist: string) => {
+    setDistrict(newDist);
+    if (department && !province) {
+      const dept = PERU_DEPARTMENTS.find((d) => d.name.toLowerCase() === department.trim().toLowerCase());
+      if (dept) {
+        const foundProv = dept.provinces.find((p) =>
+          p.districts.some((d) => d.toLowerCase() === newDist.trim().toLowerCase())
+        );
+        if (foundProv) {
+          setProvince(foundProv.name);
+        }
+      }
+    }
+  };
+
+  const handleSelectQuickLocation = (dept: string, prov: string) => {
+    setDepartment(dept);
+    setProvince(prov);
+    setDistrict('');
+  };
+
   // Autocompletar datos del comprador autenticado si existe sesión activa
   useEffect(() => {
     let isMounted = true;
@@ -363,7 +415,7 @@ export default function CheckoutPage() {
   const shippingCost =
     deliveryMethod === 'recojo_tienda'
       ? 0
-      : department.toLowerCase().includes('lima')
+      : department.toLowerCase().includes('lima') || department.toLowerCase().includes('callao')
       ? 15.0
       : 25.0;
 
@@ -410,6 +462,22 @@ export default function CheckoutPage() {
       }
       if (invoiceType === 'factura' && !docBusinessName.trim()) {
         throw new Error('La Razón Social es obligatoria para emitir Factura.');
+      }
+
+      // Validación de modalidad de entrega a domicilio
+      if (deliveryMethod === 'envio_domicilio') {
+        if (!shippingAddress.trim()) {
+          throw new Error('Por favor ingresa la dirección de entrega a domicilio.');
+        }
+        if (!department.trim()) {
+          throw new Error('Por favor selecciona el Departamento de entrega.');
+        }
+        if (!province.trim()) {
+          throw new Error('Por favor selecciona la Provincia de entrega.');
+        }
+        if (!district.trim()) {
+          throw new Error('Por favor selecciona el Distrito de entrega.');
+        }
       }
 
       // Validación de destinatario alternativo (Issue #13)
@@ -875,8 +943,8 @@ export default function CheckoutPage() {
             </div>
 
             {deliveryMethod === 'envio_domicilio' && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-2">
-                <div className="sm:col-span-3">
+              <div className="space-y-3 text-xs pt-2">
+                <div>
                   <label className="text-gray-700 block mb-1 font-semibold">Dirección de entrega *</label>
                   <input
                     type="text"
@@ -884,35 +952,179 @@ export default function CheckoutPage() {
                     value={shippingAddress}
                     onChange={(e) => setShippingAddress(e.target.value)}
                     placeholder="Av. Larco 1234, Dpto 402"
-                    className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600"
+                    className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 shadow-2xs"
                   />
                 </div>
-                <div>
-                  <label className="text-gray-600 block mb-1 font-medium">Departamento</label>
-                  <input
-                    type="text"
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                    className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-xs text-gray-900"
-                  />
+
+                {/* Accesos rápidos frecuentes de entrega */}
+                <div className="bg-gray-50/70 border border-gray-200/80 rounded-lg p-2.5">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[11px] font-semibold text-gray-700 flex items-center gap-1.5">
+                      <Icon name="map-pin" className="w-3.5 h-3.5 text-blue-600" />
+                      Ubicación de entrega (Perú)
+                    </span>
+                    <span className="text-[10px] text-gray-500 hidden sm:inline">
+                      Escribe la primera letra o despliega el menú
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] text-gray-500 font-medium">Accesos rápidos:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectQuickLocation('Lima', 'Lima (Metropolitana)')}
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors border ${
+                        department === 'Lima' && province.includes('Metropolitana')
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-200'
+                      }`}
+                    >
+                      ⚡ Lima Metropolitana
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectQuickLocation('Callao', 'Callao')}
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors border ${
+                        department === 'Callao'
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-200'
+                      }`}
+                    >
+                      Callao
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectQuickLocation('Arequipa', 'Arequipa')}
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors border ${
+                        department === 'Arequipa'
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-200'
+                      }`}
+                    >
+                      Arequipa
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectQuickLocation('La Libertad', 'Trujillo')}
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors border ${
+                        department === 'La Libertad'
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-200'
+                      }`}
+                    >
+                      Trujillo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectQuickLocation('Cusco', 'Cusco')}
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors border ${
+                        department === 'Cusco'
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-200'
+                      }`}
+                    >
+                      Cusco
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-gray-600 block mb-1 font-medium">Provincia</label>
-                  <input
-                    type="text"
-                    value={province}
-                    onChange={(e) => setProvince(e.target.value)}
-                    className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-xs text-gray-900"
-                  />
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-gray-700 block mb-1 font-semibold flex items-center justify-between">
+                      <span>Departamento *</span>
+                      <span className="text-[10px] text-gray-400 font-normal">25 regiones</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        list="list-departamentos"
+                        type="text"
+                        required
+                        value={department}
+                        onChange={(e) => handleDepartmentChange(e.target.value)}
+                        placeholder="Ej: Lima, Arequipa..."
+                        autoComplete="off"
+                        className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 pr-7 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 shadow-2xs"
+                      />
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <datalist id="list-departamentos">
+                      {departmentNames.map((d) => (
+                        <option key={d} value={d} />
+                      ))}
+                    </datalist>
+                  </div>
+
+                  <div>
+                    <label className="text-gray-700 block mb-1 font-semibold flex items-center justify-between">
+                      <span>Provincia *</span>
+                      {availableProvinces.length > 0 && (
+                        <span className="text-[10px] text-gray-400 font-normal">{availableProvinces.length} opciones</span>
+                      )}
+                    </label>
+                    <div className="relative">
+                      <input
+                        list="list-provincias"
+                        type="text"
+                        required
+                        value={province}
+                        onChange={(e) => handleProvinceChange(e.target.value)}
+                        placeholder={department ? 'Selecciona o escribe...' : 'Primero departamento'}
+                        autoComplete="off"
+                        className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 pr-7 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 shadow-2xs"
+                      />
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <datalist id="list-provincias">
+                      {availableProvinces.map((p) => (
+                        <option key={p} value={p} />
+                      ))}
+                    </datalist>
+                  </div>
+
+                  <div>
+                    <label className="text-gray-700 block mb-1 font-semibold flex items-center justify-between">
+                      <span>Distrito *</span>
+                      {availableDistricts.length > 0 && (
+                        <span className="text-[10px] text-gray-400 font-normal">{availableDistricts.length} opciones</span>
+                      )}
+                    </label>
+                    <div className="relative">
+                      <input
+                        list="list-distritos"
+                        type="text"
+                        required
+                        value={district}
+                        onChange={(e) => handleDistrictChange(e.target.value)}
+                        placeholder={province || department ? 'Ej: Miraflores, Surco...' : 'Primero departamento'}
+                        autoComplete="off"
+                        className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 pr-7 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-600 shadow-2xs"
+                      />
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <datalist id="list-distritos">
+                      {availableDistricts.map((d) => (
+                        <option key={d} value={d} />
+                      ))}
+                    </datalist>
+                  </div>
                 </div>
-                <div>
-                  <label className="text-gray-600 block mb-1 font-medium">Distrito</label>
-                  <input
-                    type="text"
-                    value={district}
-                    onChange={(e) => setDistrict(e.target.value)}
-                    className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-xs text-gray-900"
-                  />
+
+                <div className="text-[11px] text-gray-500 flex items-center gap-1.5 pt-0.5">
+                  <span className="text-blue-600 font-bold">💡</span>
+                  <span>
+                    Elige del menú desplegable o teclea la primera letra para autocompletar rápidamente tu distrito.
+                  </span>
                 </div>
               </div>
             )}
