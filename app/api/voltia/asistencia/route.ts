@@ -1,6 +1,54 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createOrderAdminClient } from '@/lib/supabase/server';
 import { getServerAuthUser } from '@/lib/auth/server';
+
+const VALID_REQUEST_TYPES = new Set([
+  'cotizacion_repuesto',
+  'diagnostico_no_concluyente',
+  'riesgo_electrico',
+  'soporte_instalacion',
+  'consulta_tecnica',
+]);
+
+/**
+ * Normaliza el tipo de solicitud para cumplir estrictamente con el CHECK constraint
+ * de la base de datos (chk_asistencia_tipo) en todas las instancias y entornos.
+ */
+function normalizeRequestType(rawType?: string): string {
+  if (!rawType) return 'consulta_tecnica';
+  const clean = String(rawType).trim().toLowerCase();
+
+  if (VALID_REQUEST_TYPES.has(clean)) {
+    return clean;
+  }
+
+  // Mapeos canónicos para solicitudes de taller y diagnósticos
+  if (
+    clean.includes('taller') ||
+    clean.includes('revision') ||
+    clean.includes('instalacion') ||
+    clean.includes('mantenimiento')
+  ) {
+    return 'soporte_instalacion';
+  }
+  if (clean.includes('cotiza') || clean.includes('precio') || clean.includes('repuesto')) {
+    return 'cotizacion_repuesto';
+  }
+  if (
+    clean.includes('peligro') ||
+    clean.includes('riesgo') ||
+    clean.includes('humo') ||
+    clean.includes('fuego') ||
+    clean.includes('chispa')
+  ) {
+    return 'riesgo_electrico';
+  }
+  if (clean.includes('diagnostico') || clean.includes('falla')) {
+    return 'diagnostico_no_concluyente';
+  }
+
+  return 'consulta_tecnica';
+}
 
 export async function POST(request: Request) {
   try {
@@ -30,15 +78,24 @@ export async function POST(request: Request) {
     const { user } = await getServerAuthUser();
     const userId = user ? user.id : null;
 
-    const supabase = await createClient();
+    const normalizedType = normalizeRequestType(requestType);
+    const enrichedTechnicalDetails = {
+      ...(technicalDetails || {}),
+      rawRequestType: requestType || null,
+      submittedAt: new Date().toISOString(),
+    };
+
+    // Utiliza el cliente administrativo de servidor (service_role) para persistir sin ser
+    // bloqueado por RLS anónimo en PostgreSQL, con fallback a cliente estándar.
+    const supabase = createOrderAdminClient() || (await createClient());
     const { error: insertError } = await supabase.from('solicitudes_asistencia').insert({
       user_id: userId,
       nombre_contacto: trimmedName,
       email_contacto: trimmedEmail,
       telefono_contacto: contactPhone ? String(contactPhone).trim() : null,
-      tipo_solicitud: requestType || 'consulta_tecnica',
+      tipo_solicitud: normalizedType,
       descripcion: trimmedDesc,
-      detalles_tecnicos: technicalDetails || {},
+      detalles_tecnicos: enrichedTechnicalDetails,
       estado: 'pendiente',
     });
 

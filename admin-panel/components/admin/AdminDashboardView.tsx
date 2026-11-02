@@ -126,8 +126,16 @@ export interface AdminAssistanceRecord {
   id_solicitud: string;
   nombre_contacto: string;
   email_contacto: string;
+  telefono_contacto?: string | null;
   tipo_solicitud: string;
   descripcion: string;
+  detalles_tecnicos?: {
+    brand?: string;
+    model?: string;
+    symptom?: string;
+    [key: string]: any;
+  } | null;
+  estado?: string;
   created_at?: string;
 }
 
@@ -3909,9 +3917,9 @@ export function AdminDashboardView({
                 ) : (
                   <div className="divide-y divide-slate-200">
                     {filteredAssistance.map((ast) => (
-                      <div key={ast.id_solicitud} className="p-5 hover:bg-slate-50/70 transition-colors space-y-2">
+                      <div key={ast.id_solicitud} className="p-5 hover:bg-slate-50/70 transition-colors space-y-2.5">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                          <div className="flex items-center gap-2.5">
+                          <div className="flex flex-wrap items-center gap-2.5">
                             <span className="font-bold text-sm text-slate-900">
                               {ast.nombre_contacto}
                             </span>
@@ -3921,14 +3929,54 @@ export function AdminDashboardView({
                             >
                               {ast.email_contacto}
                             </a>
+                            {ast.telefono_contacto && (
+                              <a
+                                href={`https://wa.me/51${ast.telefono_contacto.replace(/\D/g, '')}?text=Hola%20${encodeURIComponent(ast.nombre_contacto)},%20te%20escribimos%20de%20NeroElectric%20Motors%20respecto%20a%20tu%20solicitud%20de%20asistencia.`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 font-mono text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded hover:bg-emerald-100 transition-colors"
+                              >
+                                <Icon name="whatsapp" className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>{ast.telefono_contacto}</span>
+                              </a>
+                            )}
                           </div>
-                          <span className="inline-flex self-start sm:self-auto rounded-md bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-bold uppercase text-amber-900">
-                            {ast.tipo_solicitud}
-                          </span>
+                          <div className="flex items-center gap-2 self-start sm:self-auto">
+                            {ast.created_at && (
+                              <span className="text-[11px] text-slate-400 font-mono">
+                                {new Date(ast.created_at).toLocaleDateString('es-PE', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </span>
+                            )}
+                            <span className="inline-flex rounded-md bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-900">
+                              {ast.tipo_solicitud}
+                            </span>
+                            <span className="inline-flex rounded-md bg-blue-50 border border-blue-200 px-2 py-0.5 text-[10px] font-bold uppercase text-blue-900">
+                              {ast.estado || 'pendiente'}
+                            </span>
+                          </div>
                         </div>
-                        <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                        <p className="text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
                           {ast.descripcion}
                         </p>
+                        {ast.detalles_tecnicos && Object.keys(ast.detalles_tecnicos).length > 0 && (
+                          <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+                            {(ast.detalles_tecnicos.brand || ast.detalles_tecnicos.model) && (
+                              <span className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded font-medium text-slate-700">
+                                🛵 {ast.detalles_tecnicos.brand || ''} {ast.detalles_tecnicos.model || ''}
+                              </span>
+                            )}
+                            {ast.detalles_tecnicos.symptom && (
+                              <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-amber-800">
+                                ⚠️ Síntoma: {ast.detalles_tecnicos.symptom}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

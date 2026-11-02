@@ -10,7 +10,6 @@ const ROOT_DIR = path.resolve(__dirname, '..');
 
 test('Perú Locations Dataset: Cobertura de 25 departamentos, provincias y distritos', async () => {
   const {
-    PERU_DEPARTMENTS,
     getDepartmentNames,
     getProvincesForDepartment,
     getDistrictsForProvince,

@@ -9,6 +9,7 @@ import {
   VoltIADiagnosisResult,
 } from '@/types';
 import { executeDiagnosticEvaluation } from '@/lib/voltia/voltia-engine';
+import { createClient } from '@/lib/supabase/client';
 import type {
   VoltIARecommendedProduct,
   VoltIASafetyAlert,
@@ -83,6 +84,31 @@ export function VoltIAWidget() {
   const [humanSubmitted, setHumanSubmitted] = useState(false);
   const [humanError, setHumanError] = useState<string | null>(null);
   const [isSubmittingHuman, setIsSubmittingHuman] = useState(false);
+
+  // Autocompletar datos del usuario si tiene sesión iniciada
+  useEffect(() => {
+    let isMounted = true;
+    async function loadAuthUser() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && isMounted) {
+          const meta = user.user_metadata || {};
+          const metaName = meta.full_name || meta.name || meta.nombre || '';
+          setHumanForm((prev) => ({
+            ...prev,
+            name: prev.name || metaName,
+            email: prev.email || user.email || '',
+            phone: prev.phone || meta.phone || '',
+          }));
+        }
+      } catch {
+        // Ignorar si no está autenticado
+      }
+    }
+    loadAuthUser();
+    return () => { isMounted = false; };
+  }, []);
 
   // Notificación de carrito
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
@@ -226,7 +252,7 @@ export function VoltIAWidget() {
     setTimeout(() => setFeedbackMsg(null), 4000);
   };
 
-  // Envío a asistencia técnica humana
+  // Envío a asistencia técnica humana y taller autorizado
   const handleHumanSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmittingHuman(true);
@@ -240,11 +266,12 @@ export function VoltIAWidget() {
           contactName: humanForm.name,
           contactEmail: humanForm.email,
           contactPhone: humanForm.phone,
-          requestType: 'consulta_conversacional_voltia',
-          description: humanForm.details || 'Consulta derivada desde el chat con VoltIA',
+          requestType: 'soporte_instalacion',
+          description: humanForm.details || 'Solicitud de asistencia técnica y revisión en taller autorizado',
           technicalDetails: {
             brand: vehicleBrand,
             model: vehicleModel,
+            channel: 'formulario_asistencia_taller',
             recentConversation: messages.slice(-4).map((m) => `${m.sender}: ${m.text}`),
           },
         }),
