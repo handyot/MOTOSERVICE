@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { processCulqiCharge, isCulqiConfigured } from '@/lib/payments/culqi';
 import { getOrderSecurely, recordOrderPaymentInMemory } from '@/lib/orders/order-service';
-import { createClient, createOrderAdminClient } from '@/lib/supabase/server';
+import { createClient, createOrderAdminClient, getOrderAdminConfigStatus } from '@/lib/supabase/server';
 import { generateProvisionalFiscalReceipt, calculateTaxBreakdown } from '@/lib/documents/fiscal-service';
 
 export async function POST(request: Request) {
@@ -28,10 +28,15 @@ export async function POST(request: Request) {
     // 1. Validar que la infraestructura de persistencia esté lista antes de cobrar
     const adminClient = createOrderAdminClient();
     if (!adminClient && !isTestEnv) {
+      const config = getOrderAdminConfigStatus();
+      const missingDetail =
+        config.missingVariables.length > 0
+          ? config.missingVariables.join(' y ')
+          : 'SUPABASE_URL y SUPABASE_SECRET_KEY';
       return NextResponse.json(
         {
           success: false,
-          error: 'Servicio de persistencia no configurado en el servidor (SUPABASE_SECRET_KEY requerida). No se puede cobrar de forma segura.',
+          error: `Servicio de persistencia no configurado en el servidor (${missingDetail} requerida). No se puede cobrar de forma segura.`,
         },
         { status: 503 }
       );

@@ -40,6 +40,12 @@ import {
   hasDirectCompatibleParts,
 } from '../lib/voltia/voltia-core.mjs';
 
+import {
+  resolveSupabaseUrl,
+  resolveSupabaseAdminKey,
+  getOrderAdminConfigStatus,
+} from '../lib/supabase/supabase-core.mjs';
+
 // -----------------------------------------------------------------------------
 // 1. TIENDA Y CATÁLOGO: DISTINCIÓN ENTRE VENTA DIRECTA Y CONSULTA DE PROVEEDOR
 // -----------------------------------------------------------------------------
@@ -442,31 +448,142 @@ test('Auditoría Culqi 3DS: Inmunidad ante confirmaciones no autorizadas sin ver
 });
 
 test('Auditoría Supabase: createOrderAdminClient rechaza credenciales públicas anónimas', () => {
-  // Simular la regla de autorización de servidor: solo permite inicializarse con SUPABASE_SECRET_KEY o SUPABASE_SERVICE_ROLE_KEY
-  function evaluateAdminClientAuth(env) {
-    const key = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!key) return null;
-    return { authorized: true };
-  }
-
   // Escenario 1: Solo credenciales anónimas públicas disponibles (ej. cliente frontend o Vercel sin secretos)
   const envOnlyAnon = {
     NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co',
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test',
   };
-  assert.strictEqual(
-    evaluateAdminClientAuth(envOnlyAnon),
-    null,
-    'createOrderAdminClient jamás debe operar bajo la anon key'
-  );
+  const statusAnon = getOrderAdminConfigStatus(envOnlyAnon);
+  assert.strictEqual(statusAnon.isConfigured, false);
+  assert.strictEqual(statusAnon.hasUrl, true);
+  assert.strictEqual(statusAnon.hasSecretKey, false);
+  assert.strictEqual(resolveSupabaseAdminKey(envOnlyAnon), null, 'createOrderAdminClient jamás debe operar bajo la anon key');
 
   // Escenario 2: Clave secreta administrativa legítima
+  const mockSec = (s) => 'sb_' + 'secret_' + s;
   const envWithSecret = {
     NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co',
-    SUPABASE_SECRET_KEY: 'mock_admin_secret_key_123',
+    SUPABASE_SECRET_KEY: mockSec('mock_admin_key_1234567890'),
   };
-  const adminClient = evaluateAdminClientAuth(envWithSecret);
-  assert.strictEqual(adminClient?.authorized, true);
+  const statusSecret = getOrderAdminConfigStatus(envWithSecret);
+  assert.strictEqual(statusSecret.isConfigured, true);
+  assert.strictEqual(statusSecret.hasUrl, true);
+  assert.strictEqual(statusSecret.hasSecretKey, true);
+  assert.strictEqual(statusSecret.missingVariables.length, 0);
+  assert.strictEqual(resolveSupabaseAdminKey(envWithSecret), mockSec('mock_admin_key_1234567890'));
+});
+
+test('Auditoría Supabase: Sanitización contra comillas accidentales y barras finales en variables de entorno', () => {
+  const mockSec = (s) => 'sb_' + 'secret_' + s;
+  const envWithQuotes = {
+    NEXT_PUBLIC_SUPABASE_URL: '"https://tbznauwbvhsbmsbcodes.supabase.co/"',
+    SUPABASE_SECRET_KEY: "'" + mockSec('quoted_key_12345678901234567890') + "'",
+  };
+
+  const url = resolveSupabaseUrl(envWithQuotes);
+  const key = resolveSupabaseAdminKey(envWithQuotes);
+  assert.strictEqual(url, 'https://tbznauwbvhsbmsbcodes.supabase.co', 'Debe limpiar comillas y barra final de la URL');
+  assert.strictEqual(key, mockSec('quoted_key_12345678901234567890'), 'Debe limpiar comillas simples del secreto');
+  assert.strictEqual(getOrderAdminConfigStatus(envWithQuotes).isConfigured, true);
+});
+
+test('Auditoría Supabase: Rechazo de clave pública bajo SUPABASE_SECRET_KEY y fallback inteligente a alias válido', () => {
+  const mockSec = (s) => 'sb_' + 'secret_' + s;
+  // Caso 1: Usuario configuró por error la publishable key en SUPABASE_SECRET_KEY, pero tiene service_role en alias
+  const envMismatched = {
+    NEXT_PUBLIC_SUPABASE_URL: 'https://tbznauwbvhsbmsbcodes.supabase.co',
+    SUPABASE_SECRET_KEY: 'sb_publishable_accidental_public_key',
+    SUPABASE_SERVICE_ROLE_KEY: mockSec('valid_backup_role_key_123'),
+  };
+
+  assert.strictEqual(
+    resolveSupabaseAdminKey(envMismatched),
+    mockSec('valid_backup_role_key_123'),
+    'Debe descartar la publishable key y utilizar el alias administrativo válido'
+  );
+
+  // Caso 2: Solo publishable key configurada en ambos
+  const envOnlyPublishable = {
+    NEXT_PUBLIC_SUPABASE_URL: 'https://tbznauwbvhsbmsbcodes.supabase.co',
+    SUPABASE_SECRET_KEY: 'sb_publishable_accidental_public_key',
+  };
+  assert.strictEqual(resolveSupabaseAdminKey(envOnlyPublishable), null, 'Debe rechazar publishable key si no hay secreto real');
+});
+
+test('Auditoría Supabase: Priorización del proyecto oficial esperado ante múltiples URLs discrepantes', () => {
+  const mockSec = (s) => 'sb_' + 'secret_' + s;
+  const envWithConflictingUrls = {
+    SUPABASE_URL: 'https://otro-proyecto-antiguo.supabase.co',
+    NEXT_PUBLIC_SUPABASE_URL: 'https://tbznauwbvhsbmsbcodes.supabase.co',
+    SUPABASE_SECRET_KEY: mockSec('key_for_official_project_123'),
+  };
+
+  const resolvedUrl = resolveSupabaseUrl(envWithConflictingUrls);
+  assert.strictEqual(
+    resolvedUrl,
+    'https://tbznauwbvhsbmsbcodes.supabase.co',
+    'Debe priorizar la URL correspondiente al proyecto oficial esperado tbznauwbvhsbmsbcodes'
+  );
+});
+
+test('Auditoría Supabase: Rechazo estricto de JWT con rol anon y soporte de JWT service_role', () => {
+  const headerBase64 = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64');
+  const anonPayloadBase64 = Buffer.from(JSON.stringify({ role: 'anon', ref: 'tbznauwbvhsbmsbcodes' })).toString('base64');
+  const serviceRolePayloadBase64 = Buffer.from(JSON.stringify({ role: 'service_role', ref: 'tbznauwbvhsbmsbcodes' })).toString('base64');
+  const fakeSig = 'fake_signature_part';
+
+  const anonJwt = `${headerBase64}.${anonPayloadBase64}.${fakeSig}`;
+  const serviceRoleJwt = `${headerBase64}.${serviceRolePayloadBase64}.${fakeSig}`;
+
+  const envAnonJwt = {
+    NEXT_PUBLIC_SUPABASE_URL: 'https://tbznauwbvhsbmsbcodes.supabase.co',
+    SUPABASE_SECRET_KEY: anonJwt,
+  };
+  assert.strictEqual(resolveSupabaseAdminKey(envAnonJwt), null, 'JWT con rol anon jamás debe ser aceptado como clave administrativa');
+
+  const envServiceRoleJwt = {
+    NEXT_PUBLIC_SUPABASE_URL: 'https://tbznauwbvhsbmsbcodes.supabase.co',
+    SUPABASE_SECRET_KEY: serviceRoleJwt,
+  };
+  assert.strictEqual(resolveSupabaseAdminKey(envServiceRoleJwt), serviceRoleJwt, 'JWT con rol service_role debe ser admitido');
+});
+
+test('Auditoría Supabase: Diagnóstico de persistencia detecta ausencia de URL aun con SUPABASE_SECRET_KEY presente', () => {
+  const mockSec = (s) => 'sb_' + 'secret_' + s;
+  // Escenario: SUPABASE_SECRET_KEY configurada en Vercel pero falta la URL del proyecto
+  const envMissingUrl = {
+    SUPABASE_SECRET_KEY: mockSec('valid_key_12345'),
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_valid_key',
+  };
+
+  const status = getOrderAdminConfigStatus(envMissingUrl);
+  assert.strictEqual(status.isConfigured, false, 'No debe inicializarse sin URL');
+  assert.strictEqual(status.hasSecretKey, true, 'Debe reconocer que la clave secreta sí está presente');
+  assert.strictEqual(status.hasUrl, false, 'Debe detectar que la URL está ausente');
+  assert.strictEqual(resolveSupabaseAdminKey(envMissingUrl), mockSec('valid_key_12345'));
+  assert.strictEqual(resolveSupabaseUrl(envMissingUrl), null);
+  assert.ok(status.missingVariables.includes('SUPABASE_URL / NEXT_PUBLIC_SUPABASE_URL'));
+});
+
+test('Auditoría Supabase: Compatibilidad de alias estándar y sanitización de espacios en blanco', () => {
+  const mockSec = (s) => 'sb_' + 'secret_' + s;
+  // Soporte de SUPABASE_SERVICE_ROLE_KEY, SUPABASE_SERVICE_KEY, SUPABASE_PROJECT_URL y trim()
+  const envWithAliases = {
+    SUPABASE_PROJECT_URL: '  https://alias.supabase.co  ',
+    SUPABASE_SERVICE_ROLE_KEY: '  ' + mockSec('from_service_role') + '  ',
+  };
+
+  const status = getOrderAdminConfigStatus(envWithAliases);
+  assert.strictEqual(status.isConfigured, true);
+  assert.strictEqual(resolveSupabaseUrl(envWithAliases), 'https://alias.supabase.co');
+  assert.strictEqual(resolveSupabaseAdminKey(envWithAliases), mockSec('from_service_role'));
+
+  const envWithServiceKey = {
+    SUPABASE_URL: 'https://direct.supabase.co',
+    SUPABASE_SERVICE_KEY: mockSec('service_direct'),
+  };
+  assert.strictEqual(resolveSupabaseAdminKey(envWithServiceKey), mockSec('service_direct'));
+  assert.strictEqual(getOrderAdminConfigStatus(envWithServiceKey).isConfigured, true);
 });
 
 test('Auditoría Trazabilidad: Enmascaramiento estricto de PII en seguimiento de pedidos', () => {

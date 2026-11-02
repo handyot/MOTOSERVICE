@@ -1,13 +1,24 @@
 import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import {
+  resolveSupabaseUrl,
+  resolveSupabaseAdminKey,
+  getOrderAdminConfigStatus,
+} from "./supabase-core.mjs";
+
+export { getOrderAdminConfigStatus };
 
 export async function createClient() {
   const cookieStore = await cookies();
+  const url = resolveSupabaseUrl() || process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const publishableKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    url,
+    publishableKey,
     {
       cookies: {
         getAll() {
@@ -34,13 +45,24 @@ export async function createClient() {
  * sin ser bloqueado por RLS anónimo. Jamás utiliza credenciales públicas anónimas.
  */
 export function createOrderAdminClient() {
-  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key =
-    process.env.SUPABASE_SECRET_KEY ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const status = getOrderAdminConfigStatus();
 
-  if (!url || !key) {
+  if (!status.isConfigured) {
+    console.error("[MOTOSERVICE Supabase Admin] Configuración incompleta:", {
+      hasUrl: status.hasUrl,
+      hasSecretKey: status.hasSecretKey,
+      missingVariables: status.missingVariables,
+    });
     return null;
+  }
+
+  const url = resolveSupabaseUrl()!;
+  const key = resolveSupabaseAdminKey()!;
+
+  if (status.projectRefMismatch) {
+    console.warn(
+      "[MOTOSERVICE Supabase Admin] Advertencia de proyecto: La clave administrativa JWT y la URL apuntan a proyectos distintos."
+    );
   }
 
   return createSupabaseJsClient(url, key, {

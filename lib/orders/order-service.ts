@@ -12,7 +12,11 @@
  */
 
 import crypto from 'crypto';
-import { createClient, createOrderAdminClient } from '../supabase/server';
+import {
+  createClient,
+  createOrderAdminClient,
+  getOrderAdminConfigStatus,
+} from '../supabase/server';
 import { validateCoupon, recordCouponRedemption } from '../promotions/discount-service';
 import { calculateTaxBreakdown, validateFiscalDocument } from '../documents/fiscal-service';
 import {
@@ -224,8 +228,13 @@ export async function createOrder(
     if (isTestEnv) {
       memoryOrders.set(orderId, orderRecord);
     } else {
+      const config = getOrderAdminConfigStatus();
+      const missingDetail =
+        config.missingVariables.length > 0
+          ? config.missingVariables.join(' y ')
+          : 'SUPABASE_URL y SUPABASE_SECRET_KEY';
       throw new Error(
-        'Servicio de persistencia no configurado en el servidor (SUPABASE_SECRET_KEY requerida). No se pudo crear el pedido.'
+        `Servicio de persistencia no configurado en el servidor (${missingDetail} requerida). No se pudo crear el pedido.`
       );
     }
   } else {
@@ -259,7 +268,15 @@ export async function createOrder(
     });
 
     if (orderError) {
-      console.error('[MOTOSERVICE] Error al persistir pedido en Supabase:', orderError.message);
+      const config = getOrderAdminConfigStatus();
+      console.error('[MOTOSERVICE] Error al persistir pedido en Supabase:', {
+        errorMessage: orderError.message,
+        targetHost: config.urlHost,
+        keyFormat: config.keyFormat,
+        keyLength: config.keyLength,
+        sourceKeyVar: config.sourceKeyVar,
+        sourceUrlVar: config.sourceUrlVar,
+      });
       if (isTestEnv) {
         memoryOrders.set(orderId, orderRecord);
       } else {
