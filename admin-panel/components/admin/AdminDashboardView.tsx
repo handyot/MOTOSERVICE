@@ -1168,6 +1168,14 @@ export function AdminDashboardView({
     [orders]
   );
 
+  const pendingAssistanceCount = useMemo(
+    () =>
+      initialAssistance.filter(
+        (a) => !a.estado || a.estado === 'pendiente' || a.estado === 'en_revision'
+      ).length,
+    [initialAssistance]
+  );
+
   const logisticsOrders = useMemo(
     () =>
       orders.filter(
@@ -1864,27 +1872,29 @@ export function AdminDashboardView({
               1. MÓDULO: RESUMEN OPERATIVO
              ==================================================================== */}
           {activeModule === 'resumen' && (
-            <div className="space-y-6">
-              {/* 1. Título, descripción breve y fecha actual */}
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-5">
+            <div className="space-y-7">
+              {/* ------------------------------------------------------------------
+                  NIVEL 1: ENCABEZADO OPERATIVO
+                 ------------------------------------------------------------------ */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
                 <div>
-                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 capitalize mb-1">
-                    <Icon name="clock" className="w-3.5 h-3.5 text-amber-500" />
+                  <div className="inline-flex items-center gap-2 rounded-lg bg-slate-100 border border-slate-200/60 px-2.5 py-1 text-xs font-semibold text-slate-600 mb-2 capitalize">
+                    <Icon name="clock" className="w-3.5 h-3.5 text-slate-500" />
                     <span>{formattedCurrentDate}</span>
                   </div>
-                  <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                  <h1 className="text-2xl lg:text-3xl font-black tracking-tight text-slate-900">
                     Resumen operativo
                   </h1>
-                  <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                    Estado general del catálogo eléctrico, atención técnica, facturación e integraciones conectadas a Supabase PostgreSQL.
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
+                    Supervisión integral de catálogo, pedidos en curso, solicitudes técnicas de taller y estado de pasarelas conectadas.
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex items-center gap-2.5 self-start lg:self-auto shrink-0">
                   <button
                     type="button"
                     onClick={() => setActiveModule('catalogo_db')}
-                    className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-800 shadow-2xs transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-800 shadow-2xs transition-colors cursor-pointer"
                   >
                     <Icon name="database" className="w-3.5 h-3.5 text-slate-600" />
                     <span>Gestionar catálogo</span>
@@ -1892,7 +1902,7 @@ export function AdminDashboardView({
                   <button
                     type="button"
                     onClick={() => setActiveModule('importador')}
-                    className="inline-flex items-center gap-2 rounded-lg bg-amber-400 hover:bg-amber-500 px-4 py-2 text-xs font-bold text-slate-950 shadow-2xs transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 text-xs font-bold shadow-2xs transition-colors cursor-pointer"
                   >
                     <Icon name="upload" className="w-3.5 h-3.5" />
                     <span>Importar catálogo CSV/JSON</span>
@@ -1900,381 +1910,490 @@ export function AdminDashboardView({
                 </div>
               </div>
 
-              {/* 2. Indicadores principales en cuadrícula responsive */}
+              {/* ------------------------------------------------------------------
+                  NIVEL 2: INDICADORES PRINCIPALES (4 TARJETAS HOMOGÉNEAS)
+                 ------------------------------------------------------------------ */}
               <section aria-label="Indicadores principales">
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                   {/* KPI 1: Marcas y modelos eléctricos */}
-                  <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs flex flex-col justify-between">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">
-                          Marcas y modelos eléctricos
+                  <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-colors">
+                    <div>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                          Marcas y modelos
                         </span>
-                        <div className="mt-2 flex items-baseline gap-2">
-                          <span className="text-3xl font-extrabold text-slate-900 font-mono">
-                            {stats.totalMarcas}
-                          </span>
-                          <span className="text-xs font-medium text-slate-500">marcas</span>
-                          <span className="text-slate-300">/</span>
-                          <span className="text-3xl font-extrabold text-slate-900 font-mono">
-                            {stats.totalModelos}
-                          </span>
-                          <span className="text-xs font-medium text-slate-500">modelos</span>
-                        </div>
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700">
+                          <Icon name="zap" className="w-4 h-4" />
+                        </span>
                       </div>
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-[#0B1528]">
-                        <Icon name="zap" className="w-5 h-5" />
-                      </span>
+                      <div className="mt-3 flex items-baseline gap-2">
+                        <span className="text-3xl font-black text-slate-900 font-mono tracking-tight">
+                          {stats.totalMarcas}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-500">marcas</span>
+                        <span className="text-slate-300 font-light">/</span>
+                        <span className="text-3xl font-black text-slate-900 font-mono tracking-tight">
+                          {stats.totalModelos}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-500">modelos</span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1.5">
+                        Flota registrada en catálogo maestro
+                      </p>
                     </div>
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                      <span className="text-slate-500">Flota registrada en PostgreSQL</span>
+
+                    <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <span className="text-[11px] text-slate-400">PostgreSQL</span>
                       <button
                         type="button"
                         onClick={() => {
                           setCatalogEntityTab('modelos');
                           setActiveModule('catalogo_db');
                         }}
-                        className="font-semibold text-[#0B1528] hover:underline cursor-pointer"
+                        className="font-bold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer inline-flex items-center gap-1"
                       >
-                        Ver modelos →
+                        <span>Ver modelos</span>
+                        <span aria-hidden="true">→</span>
                       </button>
                     </div>
                   </div>
 
                   {/* KPI 2: Repuestos y compatibilidades */}
-                  <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs flex flex-col justify-between">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">
-                          Repuestos y compatibilidades
+                  <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-colors">
+                    <div>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                          Repuestos y compatibilidad
                         </span>
-                        <div className="mt-2 flex items-baseline gap-2">
-                          <span className="text-3xl font-extrabold text-slate-900 font-mono">
-                            {stats.totalRepuestos}
-                          </span>
-                          <span className="text-xs font-medium text-slate-500">piezas</span>
-                          <span className="text-slate-300">/</span>
-                          <span className="text-3xl font-extrabold text-emerald-700 font-mono">
-                            {stats.totalCompatibilidades}
-                          </span>
-                          <span className="text-xs font-medium text-slate-500">vínculos</span>
-                        </div>
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+                          <Icon name="package" className="w-4 h-4" />
+                        </span>
                       </div>
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
-                        <Icon name="package" className="w-5 h-5" />
-                      </span>
+                      <div className="mt-3 flex items-baseline gap-2">
+                        <span className="text-3xl font-black text-slate-900 font-mono tracking-tight">
+                          {stats.totalRepuestos}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-500">piezas</span>
+                        <span className="text-slate-300 font-light">/</span>
+                        <span className="text-3xl font-black text-emerald-700 font-mono tracking-tight">
+                          {stats.totalCompatibilidades}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-500">vínculos</span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1.5">
+                        Matriz sincronizada con tienda pública
+                      </p>
                     </div>
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                      <span className="text-slate-500">Sincronizados con tienda pública</span>
+
+                    <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <span className="text-[11px] text-slate-400">Catálogo Base</span>
                       <button
                         type="button"
                         onClick={() => {
                           setCatalogEntityTab('repuestos');
                           setActiveModule('catalogo_db');
                         }}
-                        className="font-semibold text-emerald-700 hover:underline cursor-pointer"
+                        className="font-bold text-emerald-700 hover:text-emerald-900 transition-colors cursor-pointer inline-flex items-center gap-1"
                       >
-                        Ver matriz →
+                        <span>Ver matriz</span>
+                        <span aria-hidden="true">→</span>
                       </button>
                     </div>
                   </div>
 
                   {/* KPI 3: Solicitudes de asistencia */}
-                  <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs flex flex-col justify-between">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">
+                  <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-colors">
+                    <div>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                           Solicitudes de asistencia
                         </span>
-                        <div className="mt-2 flex items-baseline gap-2">
-                          <span className="text-3xl font-extrabold text-slate-900 font-mono">
-                            {initialAssistance.length}
-                          </span>
-                          <span className="text-xs font-medium text-slate-500">
-                            {initialAssistance.length === 1 ? 'caso registrado' : 'casos registrados'}
-                          </span>
-                        </div>
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+                          <Icon name="headset" className="w-4 h-4" />
+                        </span>
                       </div>
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-700">
-                        <Icon name="headset" className="w-5 h-5" />
-                      </span>
+                      <div className="mt-3 flex items-baseline gap-2">
+                        <span className="text-3xl font-black text-slate-900 font-mono tracking-tight">
+                          {initialAssistance.length}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-500">
+                          {initialAssistance.length === 1 ? 'caso registrado' : 'casos registrados'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1.5">
+                        Consultas técnicas y citas de taller
+                      </p>
                     </div>
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                      <span className="text-slate-500">Escalamientos de VoltIA / Taller</span>
+
+                    <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <span className="text-[11px] text-slate-400">
+                        {pendingAssistanceCount > 0 ? (
+                          <span className="font-semibold text-amber-700">{pendingAssistanceCount} pendientes</span>
+                        ) : (
+                          'Al día'
+                        )}
+                      </span>
                       <button
                         type="button"
                         onClick={() => setActiveModule('voltia')}
-                        className="font-semibold text-amber-800 hover:underline cursor-pointer"
+                        className="font-bold text-amber-800 hover:text-amber-950 transition-colors cursor-pointer inline-flex items-center gap-1"
                       >
-                        Abrir bandeja →
+                        <span>Abrir bandeja</span>
+                        <span aria-hidden="true">→</span>
                       </button>
                     </div>
                   </div>
 
                   {/* KPI 4: Suscripciones comerciales */}
-                  <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs flex flex-col justify-between">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">
+                  <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-colors">
+                    <div>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                           Suscripciones comerciales
                         </span>
-                        <div className="mt-2 flex items-baseline gap-2">
-                          <span className="text-3xl font-extrabold text-slate-900 font-mono">
-                            {initialSubscriptions.length}
-                          </span>
-                          <span className="text-xs font-medium text-slate-500">
-                            consentimientos v1.0
-                          </span>
-                        </div>
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                          <Icon name="tag" className="w-4 h-4" />
+                        </span>
                       </div>
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
-                        <Icon name="tag" className="w-5 h-5" />
-                      </span>
+                      <div className="mt-3 flex items-baseline gap-2">
+                        <span className="text-3xl font-black text-slate-900 font-mono tracking-tight">
+                          {initialSubscriptions.length}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-500">consentimientos</span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1.5">
+                        Campaña cupón BIENVENIDO5 activa
+                      </p>
                     </div>
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                      <span className="text-slate-500">Campaña cupón BIENVENIDO5</span>
+
+                    <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <span className="text-[11px] text-slate-400">Marketing</span>
                       <button
                         type="button"
                         onClick={() => setActiveModule('promociones')}
-                        className="font-semibold text-blue-700 hover:underline cursor-pointer"
+                        className="font-bold text-blue-700 hover:text-blue-900 transition-colors cursor-pointer inline-flex items-center gap-1"
                       >
-                        Ver registros →
+                        <span>Ver registros</span>
+                        <span aria-hidden="true">→</span>
                       </button>
                     </div>
                   </div>
                 </div>
               </section>
 
-              {/* 3. Área de alertas y pendientes operativos + 4. Estado de servicios e integraciones */}
+              {/* ------------------------------------------------------------------
+                  NIVEL 3: ATENCIÓN Y SUPERVISIÓN (ALERTAS + ESTADO DE SERVICIOS)
+                 ------------------------------------------------------------------ */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* 3. Alertas y pendientes operativos (basados exclusivamente en datos reales) */}
-                <section className="lg:col-span-5 rounded-xl border border-slate-200 bg-white shadow-2xs flex flex-col">
-                  <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+                {/* 3A: Alertas y Pendientes Operativos (5 cols en LG) */}
+                <section
+                  aria-labelledby="alertas-pendientes-heading"
+                  className="lg:col-span-5 rounded-2xl border border-slate-200/90 bg-white shadow-xs flex flex-col overflow-hidden"
+                >
+                  <div className="px-5 py-4 border-b border-slate-200/80 flex items-center justify-between bg-slate-50/50">
                     <div>
-                      <h2 className="text-sm font-bold text-slate-900">
+                      <h2 id="alertas-pendientes-heading" className="text-sm font-black text-slate-900">
                         Alertas y pendientes operativos
                       </h2>
-                      <p className="text-xs text-slate-500">
-                        Verificación en tiempo real sobre las tablas operativas
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Prioridades operativas que requieren atención
                       </p>
                     </div>
+                    {pendingOrdersCount + pendingAssistanceCount > 0 ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-bold px-2.5 py-0.5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-600 animate-pulse" />
+                        <span>{pendingOrdersCount + pendingAssistanceCount} pendientes</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-200 text-[11px] font-bold px-2.5 py-0.5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+                        <span>Al día</span>
+                      </span>
+                    )}
                   </div>
 
-                  <div className="p-5 divide-y divide-slate-100 space-y-3.5 text-xs flex-1">
-                    {/* Pendiente 1: Pedidos por atender */}
-                    <div className="pt-3.5 first:pt-0 flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-2.5">
-                        <span
-                          className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
-                            pendingOrdersCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'
-                          }`}
-                        />
-                        <div>
-                          <p className="font-semibold text-slate-900">
-                            {pendingOrdersCount > 0
-                              ? `${pendingOrdersCount} pedido(s) en cola de preparación o despacho`
-                              : 'Sin pedidos pendientes de despacho'}
-                          </p>
-                          <p className="text-slate-500 mt-0.5">
-                            Total de órdenes registradas en <code className="font-mono">public.pedidos</code>: {orders.length}
-                          </p>
+                  <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
+                    <div className="space-y-3">
+                      {/* Estado vacío cuando no hay pendientes de pedidos ni de taller */}
+                      {pendingOrdersCount === 0 && pendingAssistanceCount === 0 && (
+                        <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/60 text-emerald-950 flex items-start gap-3">
+                          <Icon name="check-circle" className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-xs font-bold text-emerald-900">
+                              Flujo operativo al día
+                            </p>
+                            <p className="text-[11px] text-emerald-800/90 mt-0.5 leading-relaxed">
+                              No hay pedidos pendientes de despacho ni solicitudes urgentes de asistencia sin resolver.
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setActiveModule('pedidos')}
-                        className="shrink-0 rounded-md border border-slate-200 bg-slate-50 hover:bg-slate-100 px-2.5 py-1 font-semibold text-slate-700 cursor-pointer"
-                      >
-                        Ir a pedidos
-                      </button>
-                    </div>
+                      )}
 
-                    {/* Pendiente 2: Solicitudes de asistencia VoltIA */}
-                    <div className="pt-3.5 flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-2.5">
-                        <span
-                          className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
-                            initialAssistance.length > 0 ? 'bg-amber-500' : 'bg-emerald-500'
-                          }`}
-                        />
-                        <div>
-                          <p className="font-semibold text-slate-900">
-                            {initialAssistance.length > 0
-                              ? `${initialAssistance.length} solicitud(es) de asistencia técnica registradas`
-                              : 'Sin solicitudes de asistencia técnica pendientes'}
-                          </p>
-                          <p className="text-slate-500 mt-0.5">
-                            Bandeja conectada a <code className="font-mono">public.solicitudes_asistencia</code>
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setActiveModule('voltia')}
-                        className="shrink-0 rounded-md border border-slate-200 bg-slate-50 hover:bg-slate-100 px-2.5 py-1 font-semibold text-slate-700 cursor-pointer"
+                      {/* Pendiente 1: Pedidos por atender */}
+                      <div
+                        className={`p-3.5 rounded-xl border transition-colors flex items-start justify-between gap-3 ${
+                          pendingOrdersCount > 0
+                            ? 'border-amber-200 bg-amber-50/50 text-amber-950'
+                            : 'border-slate-200 bg-white text-slate-800'
+                        }`}
                       >
-                        Revisar
-                      </button>
-                    </div>
+                        <div className="flex items-start gap-3">
+                          <span
+                            className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
+                              pendingOrdersCount > 0
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-slate-100 text-slate-600'
+                            }`}
+                          >
+                            <Icon name="shopping-bag" className="w-4 h-4" />
+                          </span>
+                          <div>
+                            <p className="text-xs font-bold text-slate-900">
+                              {pendingOrdersCount > 0
+                                ? `${pendingOrdersCount} pedido(s) en cola de despacho`
+                                : 'Sin pedidos pendientes de despacho'}
+                            </p>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              {orders.length} órdenes totales registradas en pedidos
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setActiveModule('pedidos')}
+                          className="shrink-0 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-800 transition-colors shadow-2xs cursor-pointer"
+                        >
+                          Ir a pedidos
+                        </button>
+                      </div>
 
-                    {/* Pendiente 3: Auditoría de importaciones CSV/JSON */}
-                    <div className="pt-3.5 flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-2.5">
-                        <span
-                          className={`mt-1 h-2 w-2 rounded-full shrink-0 ${
-                            initialImportHistory.length > 0 ? 'bg-emerald-500' : 'bg-slate-400'
-                          }`}
-                        />
-                        <div>
-                          <p className="font-semibold text-slate-900">
-                            {initialImportHistory.length > 0
-                              ? `${initialImportHistory.length} importación(es) auditadas en historial`
-                              : 'Sin ejecuciones registradas en historial de importación'}
-                          </p>
-                          <p className="text-slate-500 mt-0.5">
-                            Catálogo actual: {stats.totalMarcas} marcas, {stats.totalModelos} modelos y {stats.totalRepuestos} repuestos
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setActiveModule('importador')}
-                        className="shrink-0 rounded-md border border-slate-200 bg-slate-50 hover:bg-slate-100 px-2.5 py-1 font-semibold text-slate-700 cursor-pointer"
+                      {/* Pendiente 2: Solicitudes de asistencia VoltIA / Taller */}
+                      <div
+                        className={`p-3.5 rounded-xl border transition-colors flex items-start justify-between gap-3 ${
+                          pendingAssistanceCount > 0
+                            ? 'border-amber-200 bg-amber-50/50 text-amber-950'
+                            : 'border-slate-200 bg-white text-slate-800'
+                        }`}
                       >
-                        Importador
-                      </button>
+                        <div className="flex items-start gap-3">
+                          <span
+                            className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
+                              pendingAssistanceCount > 0
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-slate-100 text-slate-600'
+                            }`}
+                          >
+                            <Icon name="headset" className="w-4 h-4" />
+                          </span>
+                          <div>
+                            <p className="text-xs font-bold text-slate-900">
+                              {pendingAssistanceCount > 0
+                                ? `${pendingAssistanceCount} caso(s) de asistencia por revisar`
+                                : 'Sin solicitudes de asistencia pendientes'}
+                            </p>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              {initialAssistance.length} consultas en solicitudes_asistencia
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setActiveModule('voltia')}
+                          className="shrink-0 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-800 transition-colors shadow-2xs cursor-pointer"
+                        >
+                          Revisar
+                        </button>
+                      </div>
+
+                      {/* Preventivo / Informativo: Auditoría de importaciones CSV/JSON */}
+                      <div className="p-3.5 rounded-xl border border-slate-200 bg-white text-slate-800 flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                            <Icon name="upload" className="w-4 h-4" />
+                          </span>
+                          <div>
+                            <p className="text-xs font-bold text-slate-900">
+                              {initialImportHistory.length > 0
+                                ? `${initialImportHistory.length} importación(es) auditadas en historial`
+                                : 'Sin ejecuciones registradas en historial'}
+                            </p>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Catálogo actual: {stats.totalMarcas} marcas y {stats.totalRepuestos} repuestos
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setActiveModule('importador')}
+                          className="shrink-0 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-800 transition-colors shadow-2xs cursor-pointer"
+                        >
+                          Importador
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </section>
 
-                {/* 4. Estado de servicios e integraciones (fiel al estado real del sistema) */}
-                <section className="lg:col-span-7 rounded-xl border border-slate-200 bg-white shadow-2xs">
-                  <div className="px-5 py-4 border-b border-slate-200">
-                    <h2 className="text-sm font-bold text-slate-900">
-                      Estado de servicios e integraciones
-                    </h2>
-                    <p className="text-xs text-slate-500">
-                      Estado técnico real de los adaptadores de pago, facturación y base de datos
-                    </p>
+                {/* 3B: Estado de Servicios e Integraciones (7 cols en LG) */}
+                <section
+                  aria-labelledby="servicios-integraciones-heading"
+                  className="lg:col-span-7 rounded-2xl border border-slate-200/90 bg-white shadow-xs flex flex-col overflow-hidden"
+                >
+                  <div className="px-5 py-4 border-b border-slate-200/80 flex items-center justify-between bg-slate-50/50">
+                    <div>
+                      <h2 id="servicios-integraciones-heading" className="text-sm font-black text-slate-900">
+                        Estado de servicios e integraciones
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Monitoreo técnico de pasarelas, comprobantes y base de datos
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="p-5 divide-y divide-slate-200 space-y-4">
+                  <div className="p-5 space-y-3.5 flex-1 flex flex-col justify-between">
                     {/* Culqi 3DS */}
-                    <div className="pt-4 first:pt-0 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                      <div className="space-y-1 max-w-xl">
-                        <div className="flex items-center gap-2">
-                          <Icon name="credit-card" className="w-4 h-4 text-slate-700" />
-                          <h3 className="text-xs font-bold text-slate-900">
-                            Adaptador de Pagos Culqi 3DS
-                          </h3>
+                    <div className="p-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50/50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-700 mt-0.5">
+                          <Icon name="credit-card" className="w-4 h-4" />
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-xs font-bold text-slate-900">
+                              Adaptador de Pagos Culqi 3DS
+                            </h3>
+                          </div>
+                          <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
+                            Cálculo de montos en céntimos (PEN) y webhooks activos. Opera en entorno de pruebas hasta configurar llaves productivas.
+                          </p>
                         </div>
-                        <p className="text-xs text-slate-600 leading-relaxed">
-                          Cálculo de montos en céntimos (PEN) validado en servidor y receptor de webhooks idempotente implementado. Opera con adaptador de simulación 3DS hasta configurar llaves productivas (<code className="font-mono text-[11px]">CULQI_PRIVATE_KEY</code>).
-                        </p>
                       </div>
-                      <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900 shrink-0 self-start">
+                      <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-900 shrink-0 self-start sm:self-auto">
                         <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                        Adaptador 3DS en Modo Pruebas
+                        <span>Modo Pruebas / Sandbox</span>
                       </span>
                     </div>
 
                     {/* SUNAT SEE-OSE */}
-                    <div className="pt-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                      <div className="space-y-1 max-w-xl">
-                        <div className="flex items-center gap-2">
-                          <Icon name="file-text" className="w-4 h-4 text-slate-700" />
-                          <h3 className="text-xs font-bold text-slate-900">
-                            Preparación Fiscal SUNAT (Boletas y Facturas)
-                          </h3>
+                    <div className="p-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50/50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700 mt-0.5">
+                          <Icon name="file-text" className="w-4 h-4" />
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-xs font-bold text-slate-900">
+                              Preparación Fiscal SUNAT (Boletas y Facturas)
+                            </h3>
+                          </div>
+                          <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
+                            Validación de DNI/RUC, IGV (18%) y correlativos B001/F001 listos en BD ({initialDocuments.length} emitidos). Requiere credenciales SEE-OSE para envío oficial.
+                          </p>
                         </div>
-                        <p className="text-xs text-slate-600 leading-relaxed">
-                          Validación tributaria de DNI (8 dígitos), RUC (11 dígitos) y desglose exacto de IGV (18%) en series <code className="font-mono text-[11px]">B001</code> y <code className="font-mono text-[11px]">F001</code>. Estructura de datos lista en <code className="font-mono text-[11px]">public.documentos_fiscales</code> ({initialDocuments.length} emitidos); requiere credenciales de proveedor SEE-OSE para envío tributario oficial.
-                        </p>
                       </div>
-                      <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900 shrink-0 self-start">
-                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                        Estructura Lista · Sin Vínculo OSE
-                      </span>
+                      <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                        <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-800">
+                          <span className="h-1.5 w-1.5 rounded-full bg-slate-500" />
+                          <span>Estructura Lista · Sin Vínculo OSE</span>
+                        </span>
+                      </div>
                     </div>
 
                     {/* Supabase Auth + PostgreSQL RLS */}
-                    <div className="pt-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                      <div className="space-y-1 max-w-xl">
-                        <div className="flex items-center gap-2">
-                          <Icon name="shield" className="w-4 h-4 text-emerald-700" />
-                          <h3 className="text-xs font-bold text-slate-900">
-                            Supabase PostgreSQL & Control de Acceso RBAC
-                          </h3>
+                    <div className="p-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50/50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 mt-0.5">
+                          <Icon name="shield" className="w-4 h-4" />
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-xs font-bold text-slate-900">
+                              Supabase PostgreSQL & Control RBAC
+                            </h3>
+                          </div>
+                          <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
+                            Base de datos relacional compartida con la tienda. Políticas RLS y autenticación administrativa activas.
+                          </p>
                         </div>
-                        <p className="text-xs text-slate-600 leading-relaxed">
-                          Base de datos compartida con la tienda pública. Políticas Row Level Security (RLS) activas y verificación de rol <code className="font-mono text-[11px]">admin</code> en servidor (<code className="font-mono text-[11px]">public.user_roles</code>).
-                        </p>
                       </div>
-                      <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 shrink-0 self-start">
+                      <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-800 shrink-0 self-start sm:self-auto">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        Operativo y Sincronizado
+                        <span>Operativo y Sincronizado</span>
                       </span>
                     </div>
                   </div>
                 </section>
               </div>
 
-              {/* 5. Actividad reciente (únicamente con fuentes de datos reales) */}
+              {/* ------------------------------------------------------------------
+                  NIVEL 4: ACTIVIDAD RECIENTE (PEDIDOS Y ASISTENCIA TÉCNICA)
+                 ------------------------------------------------------------------ */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Pedidos recientes reales */}
-                <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
-                  <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+                {/* 4A: Pedidos recientes */}
+                <section
+                  aria-labelledby="pedidos-recientes-heading"
+                  className="rounded-2xl border border-slate-200/90 bg-white shadow-xs overflow-hidden flex flex-col"
+                >
+                  <div className="px-5 py-4 border-b border-slate-200/80 flex items-center justify-between bg-slate-50/50">
                     <div>
-                      <h2 className="text-sm font-bold text-slate-900">Pedidos recientes</h2>
-                      <p className="text-xs text-slate-500">
-                        Últimas órdenes registradas en <code className="font-mono">public.pedidos</code>
+                      <h2 id="pedidos-recientes-heading" className="text-sm font-black text-slate-900">
+                        Pedidos recientes
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Últimas órdenes en <code className="font-mono text-[11px]">public.pedidos</code>
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => setActiveModule('pedidos')}
-                      className="text-xs font-semibold text-[#0B1528] hover:underline cursor-pointer"
+                      className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer inline-flex items-center gap-1"
                     >
-                      Ver todos ({orders.length})
+                      <span>Ver todos ({orders.length})</span>
+                      <span aria-hidden="true">→</span>
                     </button>
                   </div>
 
                   {orders.length === 0 ? (
-                    <div className="p-8 text-center">
-                      <p className="text-xs font-semibold text-slate-700">
+                    <div className="p-10 text-center flex-1 flex flex-col items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+                        <Icon name="shopping-bag" className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs font-bold text-slate-700">
                         Sin pedidos registrados actualmente
                       </p>
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-xs text-slate-500 mt-1 max-w-xs">
                         Cuando los clientes completen compras en la tienda pública, las órdenes aparecerán aquí automáticamente.
                       </p>
                     </div>
                   ) : (
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto flex-1">
                       <table className="w-full text-left text-xs">
-                        <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                        <thead className="bg-slate-50/70 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                           <tr>
-                            <th className="px-4 py-2.5">Orden</th>
-                            <th className="px-4 py-2.5">Cliente</th>
-                            <th className="px-4 py-2.5 text-right">Total</th>
-                            <th className="px-4 py-2.5">Estado</th>
+                            <th className="py-3 px-4">Orden</th>
+                            <th className="py-3 px-4">Cliente</th>
+                            <th className="py-3 px-4 text-right">Total</th>
+                            <th className="py-3 px-4 text-center">Estado</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-200 text-slate-700">
+                        <tbody className="divide-y divide-slate-100 text-slate-700">
                           {orders.slice(0, 5).map((o) => (
-                            <tr key={o.id_pedido} className="hover:bg-slate-50">
-                              <td className="px-4 py-2.5 font-mono font-bold text-slate-900">
+                            <tr key={o.id_pedido} className="hover:bg-slate-50/70 transition-colors">
+                              <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
                                 {o.numero_pedido}
                               </td>
-                              <td className="px-4 py-2.5">
-                                <span className="font-medium text-slate-900 block">
+                              <td className="py-3.5 px-4">
+                                <span className="font-bold text-slate-900 block">
                                   {o.cliente_nombre}
                                 </span>
-                                <span className="text-[11px] text-slate-500">{o.cliente_email}</span>
+                                <span className="text-[11px] text-slate-500 font-mono block">
+                                  {o.cliente_email}
+                                </span>
                               </td>
-                              <td className="px-4 py-2.5 text-right font-mono font-semibold text-slate-900">
+                              <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900">
                                 {formatCurrency(Number(o.total), o.moneda || 'PEN')}
                               </td>
-                              <td className="px-4 py-2.5">
+                              <td className="py-3.5 px-4 text-center">
                                 {renderOrderStatusBadge(o.estado_pedido)}
                               </td>
                             </tr>
@@ -2285,49 +2404,65 @@ export function AdminDashboardView({
                   )}
                 </section>
 
-                {/* Solicitudes de asistencia recientes reales */}
-                <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
-                  <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+                {/* 4B: Solicitudes de asistencia técnica recientes */}
+                <section
+                  aria-labelledby="solicitudes-recientes-heading"
+                  className="rounded-2xl border border-slate-200/90 bg-white shadow-xs overflow-hidden flex flex-col"
+                >
+                  <div className="px-5 py-4 border-b border-slate-200/80 flex items-center justify-between bg-slate-50/50">
                     <div>
-                      <h2 className="text-sm font-bold text-slate-900">
-                        Solicitudes de asistencia técnica recientes
+                      <h2 id="solicitudes-recientes-heading" className="text-sm font-black text-slate-900">
+                        Solicitudes de asistencia recientes
                       </h2>
-                      <p className="text-xs text-slate-500">
-                        Registros reales en <code className="font-mono">public.solicitudes_asistencia</code>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Casos registrados en <code className="font-mono text-[11px]">public.solicitudes_asistencia</code>
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => setActiveModule('voltia')}
-                      className="text-xs font-semibold text-[#0B1528] hover:underline cursor-pointer"
+                      className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer inline-flex items-center gap-1"
                     >
-                      Ver bandeja ({initialAssistance.length})
+                      <span>Ver bandeja ({initialAssistance.length})</span>
+                      <span aria-hidden="true">→</span>
                     </button>
                   </div>
 
                   {initialAssistance.length === 0 ? (
-                    <div className="p-8 text-center">
-                      <p className="text-xs font-semibold text-slate-700">
+                    <div className="p-10 text-center flex-1 flex flex-col items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+                        <Icon name="headset" className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs font-bold text-slate-700">
                         No hay solicitudes de asistencia registradas
                       </p>
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-xs text-slate-500 mt-1 max-w-xs">
                         Los casos derivados por el asistente VoltIA o el formulario técnico se mostrarán en esta lista.
                       </p>
                     </div>
                   ) : (
-                    <div className="divide-y divide-slate-200">
+                    <div className="divide-y divide-slate-100 flex-1">
                       {initialAssistance.slice(0, 5).map((ast) => (
-                        <div key={ast.id_solicitud} className="px-5 py-3.5 text-xs space-y-1">
-                          <div className="flex items-center justify-between gap-2">
+                        <div key={ast.id_solicitud} className="p-4 text-xs space-y-1.5 hover:bg-slate-50/70 transition-colors">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
                             <span className="font-bold text-slate-900">
                               {ast.nombre_contacto}{' '}
-                              <span className="font-normal text-slate-500">({ast.email_contacto})</span>
+                              <span className="font-mono font-normal text-slate-500 text-[11px]">
+                                ({ast.email_contacto})
+                              </span>
                             </span>
-                            <span className="rounded-md bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-900 uppercase">
+                            <span className="rounded-md bg-amber-50 border border-amber-200/80 px-2 py-0.5 text-[10px] font-bold text-amber-900 uppercase">
                               {ast.tipo_solicitud}
                             </span>
                           </div>
-                          <p className="text-slate-600 line-clamp-2">{ast.descripcion}</p>
+                          <p className="text-slate-600 line-clamp-2 leading-relaxed">
+                            {ast.descripcion}
+                          </p>
+                          {ast.created_at && (
+                            <p className="text-[10px] text-slate-400">
+                              Registrado: {new Date(ast.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          )}
                         </div>
                       ))}
                     </div>
