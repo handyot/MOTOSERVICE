@@ -7,7 +7,6 @@ import { AuthAccount, OrderStatus, AdminUserRecord } from '../../types';
 import { signOutAction } from '../../lib/auth/actions';
 import { Icon } from '../ui/Icons';
 import { formatCurrency } from '../../lib/formatters.js';
-import { FEATURED_PARTS } from '../../lib/constants.js';
 import { CatalogImporterView, ImportHistoryRecord } from './CatalogImporterView';
 import { getProductStatusBadge, PRODUCT_STATUSES } from '../../lib/catalog/product-status-core.mjs';
 import {
@@ -161,6 +160,7 @@ export interface AdminBrandRecord {
   nombre: string;
   pais_origen?: string | null;
   estado: boolean;
+  isFallback?: boolean;
 }
 
 export interface AdminModelRecord {
@@ -171,6 +171,7 @@ export interface AdminModelRecord {
   potencia_motor_w?: number | null;
   imagen_url?: string | null;
   estado: boolean;
+  isFallback?: boolean;
 }
 
 export interface AdminPartRecord {
@@ -184,6 +185,14 @@ export interface AdminPartRecord {
   estado: boolean;
   data_status?: string;
   notas?: string | null;
+  stock_propio_ecomoto?: number | null;
+  stock_proveedor?: string | null;
+  precio_proveedor_pen?: number | null;
+  precio_regular_proveedor_pen?: number | null;
+  precio_min_pen?: number | null;
+  precio_max_pen?: number | null;
+  source_url?: string | null;
+  isFallback?: boolean;
 }
 
 export interface AdminCompatibilityRecord {
@@ -193,6 +202,7 @@ export interface AdminCompatibilityRecord {
   es_compatible: boolean;
   nivel_verificacion: string;
   notas_tecnicas?: string | null;
+  isFallback?: boolean;
 }
 
 type ModuleId =
@@ -234,6 +244,9 @@ interface AdminDashboardViewProps {
   initialParts?: AdminPartRecord[];
   initialCompatibilities?: AdminCompatibilityRecord[];
   initialUsers?: AdminUserRecord[];
+  initialPersistedParts?: AdminPartRecord[];
+  persistedPartsError?: string | null;
+  queryErrors?: Record<string, string>;
 }
 
 export function AdminDashboardView({
@@ -249,6 +262,9 @@ export function AdminDashboardView({
   initialParts = [],
   initialCompatibilities = [],
   initialUsers = [],
+  initialPersistedParts = [],
+  persistedPartsError = null,
+  queryErrors = {},
 }: AdminDashboardViewProps) {
   const [activeModule, setActiveModule] = useState<ModuleId>('resumen');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -425,15 +441,28 @@ export function AdminDashboardView({
 
   const storefrontUrl = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://neroelectricmotors.com';
 
-  const ownProducts = useMemo(
-    () =>
-      FEATURED_PARTS.map((p) => ({
-        ...p,
-        ownStock: 15,
-        isDirectSale: true,
-      })),
-    []
+  const [persistedParts] = useState<AdminPartRecord[]>(
+    initialPersistedParts && initialPersistedParts.length > 0
+      ? initialPersistedParts
+      : initialParts.filter((p) => !p.isFallback)
   );
+  const [inventoryModeFilter, setInventoryModeFilter] = useState<'ALL' | 'DIRECT' | 'PROVIDER'>('ALL');
+
+  const directSaleCount = useMemo(() => {
+    return persistedParts.filter((p) => {
+      const stock = typeof p.stock_propio_ecomoto === 'number' ? p.stock_propio_ecomoto : 0;
+      const isCommerciallyActive = p.estado !== false && (!p.data_status || p.data_status === 'ACTIVO');
+      return stock > 0 && isCommerciallyActive;
+    }).length;
+  }, [persistedParts]);
+
+  const providerPartsCount = useMemo(() => {
+    return persistedParts.filter((p) => {
+      const stock = typeof p.stock_propio_ecomoto === 'number' ? p.stock_propio_ecomoto : 0;
+      const isDirect = stock > 0 && p.estado !== false && (!p.data_status || p.data_status === 'ACTIVO');
+      return !isDirect;
+    }).length;
+  }, [persistedParts]);
 
   // Mapa rápido de ID de marca -> Nombre
   const brandNameById = useMemo(() => {
@@ -491,7 +520,7 @@ export function AdminDashboardView({
             label: 'Inventario propio vs proveedor',
             shortLabel: 'Inventario',
             icon: 'package',
-            count: ownProducts.length > 0 ? ownProducts.length : undefined,
+            count: directSaleCount > 0 ? directSaleCount : 0,
           },
         ],
       },
@@ -578,7 +607,7 @@ export function AdminDashboardView({
     [
       stats.totalModelos,
       stats.totalRepuestos,
-      ownProducts.length,
+      directSaleCount,
       orders.length,
       initialSubscriptions.length,
       initialDocuments.length,
@@ -732,6 +761,17 @@ export function AdminDashboardView({
   const handleCreatePart = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPartSku.trim() || !newPartName.trim()) return;
+    if (!newPartSku.trim() || !newPartName.trim()) {
+      showFeedback('warning', 'SKU y nombre del repuesto son obligatorios.');
+      return;
+    }
+
+    const parsedPrice = Number(newPartPrice);
+    if (!newPartPrice.trim() || isNaN(parsedPrice) || parsedPrice <= 0) {
+      showFeedback('warning', 'El precio del repuesto debe ser un número válido mayor a cero.');
+      return;
+    }
+
     setIsSubmittingCatalog(true);
     try {
       const res = await fetch('/api/admin/catalog/manage', {
@@ -744,7 +784,7 @@ export function AdminDashboardView({
             id_categoria: 1,
             codigo_sku: newPartSku.trim(),
             nombre: newPartName.trim(),
-            precio: Number(newPartPrice) || 0,
+            precio: parsedPrice,
           },
         }),
       });
@@ -1056,23 +1096,33 @@ export function AdminDashboardView({
     );
   }, [brands, catalogSearch]);
 
-  const inventoryCategories = useMemo(
-    () => Array.from(new Set(ownProducts.map((p) => p.categorySlug))),
-    [ownProducts]
-  );
+  const inventoryCategories = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of persistedParts) {
+      if (p.id_categoria) set.add(String(p.id_categoria));
+    }
+    return Array.from(set);
+  }, [persistedParts]);
 
-  const filteredOwnProducts = useMemo(() => {
+  const filteredInventoryParts = useMemo(() => {
     const q = inventorySearch.trim().toLowerCase();
-    return ownProducts.filter((p) => {
-      const matchesCat = inventoryCategoryFilter === 'ALL' || p.categorySlug === inventoryCategoryFilter;
+    return persistedParts.filter((p) => {
+      const stock = typeof p.stock_propio_ecomoto === 'number' ? p.stock_propio_ecomoto : 0;
+      const isDirect = stock > 0 && p.estado !== false && (!p.data_status || p.data_status === 'ACTIVO');
+
+      if (inventoryModeFilter === 'DIRECT' && !isDirect) return false;
+      if (inventoryModeFilter === 'PROVIDER' && isDirect) return false;
+
+      const catStr = String(p.id_categoria || 'General');
+      const matchesCat = inventoryCategoryFilter === 'ALL' || catStr === inventoryCategoryFilter;
       const matchesQ =
         !q ||
-        p.name.toLowerCase().includes(q) ||
-        p.sku.toLowerCase().includes(q) ||
-        p.categorySlug.toLowerCase().includes(q);
+        (p.nombre || '').toLowerCase().includes(q) ||
+        (p.codigo_sku || '').toLowerCase().includes(q) ||
+        catStr.toLowerCase().includes(q);
       return matchesCat && matchesQ;
     });
-  }, [ownProducts, inventorySearch, inventoryCategoryFilter]);
+  }, [persistedParts, inventorySearch, inventoryCategoryFilter, inventoryModeFilter]);
 
   const filteredOrders = useMemo(() => {
     const q = orderSearch.trim().toLowerCase();
@@ -1909,6 +1959,30 @@ export function AdminDashboardView({
                   </button>
                 </div>
               </div>
+
+              {queryErrors && Object.keys(queryErrors).length > 0 && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50/90 p-4 text-xs text-amber-950 shadow-2xs">
+                  <div className="flex items-center gap-2 font-bold text-amber-900">
+                    <Icon name="alert-triangle" className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Aviso operativo: Fallo de lectura en {Object.keys(queryErrors).length} fuentes de Supabase</span>
+                  </div>
+                  <p className="mt-1 text-amber-800">
+                    No se pudieron recuperar datos actualizados de:{' '}
+                    <strong>{Object.keys(queryErrors).join(', ')}</strong>.
+                    Los indicadores correspondientes identifican la fuente afectada y no ocultan el error.
+                  </p>
+                  <div className="mt-2.5 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => window.location.reload()}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-800 hover:bg-amber-900 text-white font-semibold rounded-lg text-[11px] transition-colors"
+                    >
+                      <Icon name="refresh" className="w-3 h-3" />
+                      <span>Reintentar consultas</span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* ------------------------------------------------------------------
                   NIVEL 2: INDICADORES PRINCIPALES (4 TARJETAS HOMOGÉNEAS)
@@ -3597,6 +3671,19 @@ export function AdminDashboardView({
                 </div>
               </div>
 
+              {persistedPartsError && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-900 shadow-2xs">
+                  <div className="flex items-center gap-2 font-bold text-red-800">
+                    <Icon name="alert-triangle" className="w-4 h-4 text-red-600 shrink-0" />
+                    <span>Error al consultar registros de inventario en public.repuestos (Supabase)</span>
+                  </div>
+                  <p className="mt-1 text-red-700">{persistedPartsError}</p>
+                  <p className="mt-1 text-slate-500">
+                    Por integridad comercial, no se sustituyen los registros fallidos con datos simulados o cantidades inventadas.
+                  </p>
+                </div>
+              )}
+
               {/* Resumen comparativo */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
@@ -3604,22 +3691,22 @@ export function AdminDashboardView({
                     Ítems de Venta Directa (Stock Propio)
                   </span>
                   <span className="text-2xl font-extrabold text-slate-900 font-mono mt-1 block">
-                    {ownProducts.length} SKU
+                    {directSaleCount} SKU
                   </span>
                   <span className="text-xs text-emerald-700 font-medium mt-0.5 block">
-                    Habilitados para carrito y cobro Culqi
+                    {directSaleCount > 0 ? 'Habilitados para carrito y cobro Culqi' : 'Sin existencias propias físicas confirmadas'}
                   </span>
                 </div>
 
                 <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
                   <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
-                    Catálogo Relacional PostgreSQL
+                    Catálogo Persistido en Supabase
                   </span>
                   <span className="text-2xl font-extrabold text-slate-900 font-mono mt-1 block">
-                    {stats.totalRepuestos} repuestos
+                    {persistedParts.length} repuestos
                   </span>
                   <span className="text-xs text-slate-500 mt-0.5 block">
-                    TAILG, YADEA, GreenLine y Kayencorp
+                    Registros en base de datos PostgreSQL
                   </span>
                 </div>
 
@@ -3627,45 +3714,85 @@ export function AdminDashboardView({
                   <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block">
                     Política de Despacho
                   </span>
-                  <span className="text-2xl font-extrabold text-slate-900 font-mono mt-1 block">
-                    24h – 48h
+                  <span className="text-base font-bold text-slate-900 mt-1 block leading-snug">
+                    Consultar según destino y disponibilidad
                   </span>
                   <span className="text-xs text-slate-500 mt-0.5 block">
-                    Almacén central Lima Metropolitana
+                    Sujeto a verificación logística en almacén
                   </span>
                 </div>
               </div>
 
-              {/* Tabla de Inventario Propio con búsqueda y filtro */}
+              {/* Filtros de modalidad y búsqueda */}
               <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="relative flex-1 max-w-md">
-                    <Icon
-                      name="search"
-                      className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                    />
-                    <input
-                      type="search"
-                      value={inventorySearch}
-                      onChange={(e) => setInventorySearch(e.target.value)}
-                      placeholder="Buscar por código SKU o nombre de repuesto..."
-                      className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
-                    />
+                <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setInventoryModeFilter('ALL')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        inventoryModeFilter === 'ALL'
+                          ? 'bg-slate-900 text-white'
+                          : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      Todos ({persistedParts.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setInventoryModeFilter('DIRECT')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        inventoryModeFilter === 'DIRECT'
+                          ? 'bg-emerald-700 text-white'
+                          : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      Venta Directa ({directSaleCount})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setInventoryModeFilter('PROVIDER')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        inventoryModeFilter === 'PROVIDER'
+                          ? 'bg-amber-700 text-white'
+                          : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      Catálogo Proveedor ({providerPartsCount})
+                    </button>
                   </div>
 
-                  <select
-                    aria-label="Filtrar por categoría de inventario"
-                    value={inventoryCategoryFilter}
-                    onChange={(e) => setInventoryCategoryFilter(e.target.value)}
-                    className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 focus:border-slate-900 focus:outline-none"
-                  >
-                    <option value="ALL">Todas las categorías</option>
-                    {inventoryCategories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1 max-w-md justify-end">
+                    <div className="relative flex-1">
+                      <Icon
+                        name="search"
+                        className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                      />
+                      <input
+                        type="search"
+                        value={inventorySearch}
+                        onChange={(e) => setInventorySearch(e.target.value)}
+                        placeholder="Buscar por SKU o nombre..."
+                        className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:border-slate-900 focus:outline-none"
+                      />
+                    </div>
+
+                    {inventoryCategories.length > 0 && (
+                      <select
+                        aria-label="Filtrar por categoría de inventario"
+                        value={inventoryCategoryFilter}
+                        onChange={(e) => setInventoryCategoryFilter(e.target.value)}
+                        className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 focus:border-slate-900 focus:outline-none"
+                      >
+                        <option value="ALL">Todas las categorías</option>
+                        {inventoryCategories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            Categoría {cat}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -3675,40 +3802,88 @@ export function AdminDashboardView({
                         <th className="px-4 py-3">SKU</th>
                         <th className="px-4 py-3">Producto</th>
                         <th className="px-4 py-3">Categoría</th>
-                        <th className="px-4 py-3 text-right">Precio Oficial</th>
+                        <th className="px-4 py-3 text-right">Precio Venta Oficial</th>
                         <th className="px-4 py-3">Stock Propio</th>
                         <th className="px-4 py-3">Modalidad Comercial</th>
+                        <th className="px-4 py-3">Disponibilidad Proveedor</th>
+                        <th className="px-4 py-3 text-right">Precio Proveedor</th>
                         <th className="px-4 py-3">Garantía</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 text-slate-700">
-                      {filteredOwnProducts.map((p) => (
-                        <tr key={p.sku} className="hover:bg-slate-50/80">
-                          <td className="px-4 py-3 font-mono font-bold text-slate-900">
-                            {p.sku}
-                          </td>
-                          <td className="px-4 py-3 font-semibold text-slate-900">{p.name}</td>
-                          <td className="px-4 py-3 capitalize text-slate-600">{p.categorySlug}</td>
-                          <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
-                            {formatCurrency(p.price, p.currency)}
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className="inline-flex rounded-md bg-emerald-50 border border-emerald-200 px-2 py-0.5 font-mono text-[11px] font-bold text-emerald-800">
-                              {p.ownStock} unid.
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className="inline-flex rounded-md bg-blue-50 border border-blue-200 px-2 py-0.5 text-[10px] font-bold uppercase text-blue-800">
-                              Venta Directa
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-slate-600">
-                            {p.warrantyMonths} meses
-                          </td>
-                        </tr>
-                      ))}
+                      {filteredInventoryParts.map((p) => {
+                        const stockPropio = typeof p.stock_propio_ecomoto === 'number' ? p.stock_propio_ecomoto : 0;
+                        const isDirect = stockPropio > 0 && p.estado !== false && (!p.data_status || p.data_status === 'ACTIVO');
+                        const providerStockText =
+                          p.stock_proveedor && p.stock_proveedor !== 'CONSULTAR_STOCK'
+                            ? p.stock_proveedor
+                            : 'Consultar stock';
+
+                        return (
+                          <tr key={p.id_repuesto || p.codigo_sku} className="hover:bg-slate-50/80">
+                            <td className="px-4 py-3 font-mono font-bold text-slate-900">
+                              {p.codigo_sku}
+                            </td>
+                            <td className="px-4 py-3 font-semibold text-slate-900">{p.nombre}</td>
+                            <td className="px-4 py-3 text-slate-600">Cat. {p.id_categoria || '—'}</td>
+                            <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
+                              {formatCurrency(Number(p.precio) || 0, p.moneda || 'PEN')}
+                            </td>
+                            <td className="px-4 py-3">
+                              {stockPropio > 0 ? (
+                                <span className="inline-flex rounded-md bg-emerald-50 border border-emerald-200 px-2 py-0.5 font-mono text-[11px] font-bold text-emerald-800">
+                                  {stockPropio} unid.
+                                </span>
+                              ) : (
+                                <span className="inline-flex rounded-md bg-slate-100 border border-slate-200 px-2 py-0.5 font-mono text-[11px] font-medium text-slate-500">
+                                  0 unid.
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              {isDirect ? (
+                                <span className="inline-flex rounded-md bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-800">
+                                  Venta Directa
+                                </span>
+                              ) : (
+                                <span className="inline-flex rounded-md bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-800">
+                                  Catálogo Proveedor
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="text-slate-600 font-medium">
+                                {providerStockText}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-right font-mono text-slate-600">
+                              {typeof p.precio_proveedor_pen === 'number' && p.precio_proveedor_pen > 0
+                                ? formatCurrency(p.precio_proveedor_pen, 'PEN')
+                                : '—'}
+                            </td>
+                            <td className="px-4 py-3 text-slate-400 italic">
+                              No registrada
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
+
+                  {filteredInventoryParts.length === 0 && (
+                    <div className="p-8 text-center text-xs text-slate-500">
+                      {inventoryModeFilter === 'DIRECT' ? (
+                        <div>
+                          <p className="font-semibold text-slate-800 text-sm">0 SKU de venta directa confirmados</p>
+                          <p className="mt-1 max-w-md mx-auto text-slate-500">
+                            No se registran existencias físicas propias mayores a cero en public.repuestos. Todos los repuestos disponibles operan actualmente mediante catálogo de proveedor.
+                          </p>
+                        </div>
+                      ) : (
+                        <p>No se encontraron repuestos en el inventario con los criterios de búsqueda.</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </section>
             </div>
@@ -3740,6 +3915,16 @@ export function AdminDashboardView({
                   </button>
                 </div>
               </div>
+
+              {queryErrors?.pedidos && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-900 shadow-2xs">
+                  <div className="flex items-center gap-2 font-bold text-red-800">
+                    <Icon name="alert-triangle" className="w-4 h-4 text-red-600 shrink-0" />
+                    <span>Error al consultar pedidos en Supabase</span>
+                  </div>
+                  <p className="mt-1 text-red-700">{queryErrors.pedidos}</p>
+                </div>
+              )}
 
               <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -4103,6 +4288,16 @@ export function AdminDashboardView({
                   </p>
                 </div>
               </div>
+
+              {queryErrors?.documentos && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-900 shadow-2xs">
+                  <div className="flex items-center gap-2 font-bold text-red-800">
+                    <Icon name="alert-triangle" className="w-4 h-4 text-red-600 shrink-0" />
+                    <span>Error al consultar comprobantes fiscales en Supabase</span>
+                  </div>
+                  <p className="mt-1 text-red-700">{queryErrors.documentos}</p>
+                </div>
+              )}
 
               {/* Aviso transparente sobre el estado de la integración SEE-OSE */}
               <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-950">
@@ -4644,6 +4839,16 @@ export function AdminDashboardView({
                   </p>
                 </div>
               </div>
+
+              {queryErrors?.asistencia && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-900 shadow-2xs">
+                  <div className="flex items-center gap-2 font-bold text-red-800">
+                    <Icon name="alert-triangle" className="w-4 h-4 text-red-600 shrink-0" />
+                    <span>Error al consultar solicitudes de asistencia en Supabase</span>
+                  </div>
+                  <p className="mt-1 text-red-700">{queryErrors.asistencia}</p>
+                </div>
+              )}
 
               <section className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">

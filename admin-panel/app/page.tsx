@@ -17,15 +17,15 @@ export default async function AdminHomePage() {
   const supabase = (await createCatalogWriteClient()) || (await createClient());
 
   const [
-    { count: countMarcas, data: brandsData },
-    { count: countModelos, data: modelsData },
-    { count: countRepuestos, data: partsData },
-    { count: countCompat, data: compatData },
-    { data: ordersData },
-    { data: assistanceData },
-    { data: documentsData },
-    { data: subscriptionsData },
-    { data: importHistoryData },
+    resMarcas,
+    resModelos,
+    resRepuestos,
+    resCompat,
+    resOrders,
+    resAssistance,
+    resDocs,
+    resSubs,
+    resImports,
     usersResult,
   ] = await Promise.all([
     supabase
@@ -39,9 +39,8 @@ export default async function AdminHomePage() {
       .limit(100),
     supabase
       .from('repuestos')
-      .select('id_repuesto, id_categoria, codigo_sku, nombre, precio, moneda, imagen_url, estado', { count: 'exact' })
-      .order('id_repuesto', { ascending: false })
-      .limit(100),
+      .select('id_repuesto, id_categoria, codigo_sku, nombre, precio, moneda, imagen_url, estado, data_status, stock_propio_ecomoto, stock_proveedor, precio_proveedor_pen, precio_regular_proveedor_pen, precio_min_pen, precio_max_pen, source_url, notas', { count: 'exact' })
+      .order('id_repuesto', { ascending: false }),
     supabase
       .from('compatibilidades')
       .select('id_compatibilidad, id_repuesto, id_modelo, nivel_verificacion, observaciones, status, evidence_note', { count: 'exact' })
@@ -55,9 +54,27 @@ export default async function AdminHomePage() {
     listAdminUsers(supabase),
   ]);
 
+  const queryErrors: Record<string, string> = {};
+  if (resMarcas.error) queryErrors.marcas = resMarcas.error.message;
+  if (resModelos.error) queryErrors.modelos = resModelos.error.message;
+  if (resRepuestos.error) queryErrors.repuestos = resRepuestos.error.message;
+  if (resCompat.error) queryErrors.compat = resCompat.error.message;
+  if (resOrders.error) queryErrors.pedidos = resOrders.error.message;
+  if (resAssistance.error) queryErrors.asistencia = resAssistance.error.message;
+  if (resDocs.error) queryErrors.documentos = resDocs.error.message;
+  if (resSubs.error) queryErrors.suscripciones = resSubs.error.message;
+  if (resImports.error) queryErrors.importaciones = resImports.error.message;
+  if (usersResult && !usersResult.success && usersResult.error) {
+    queryErrors.usuarios = usersResult.error;
+  }
+
+  if (Object.keys(queryErrors).length > 0) {
+    console.warn('[ADMIN DASHBOARD] Advertencia: errores al consultar fuentes de Supabase:', Object.keys(queryErrors));
+  }
+
   const initialUsers = usersResult?.success && Array.isArray(usersResult.users) ? usersResult.users : [];
 
-  const normalizedCompatibilities = (compatData || []).map((c) => ({
+  const normalizedCompatibilities = (resCompat.data || []).map((c) => ({
     id_compatibilidad: c.id_compatibilidad,
     id_repuesto: c.id_repuesto,
     id_modelo: c.id_modelo,
@@ -67,15 +84,15 @@ export default async function AdminHomePage() {
   }));
 
   const merged = mergeCatalogWithMaster(
-    brandsData,
-    modelsData,
-    partsData,
+    resMarcas.data,
+    resModelos.data,
+    resRepuestos.data,
     normalizedCompatibilities,
     {
-      marcas: countMarcas,
-      modelos: countModelos,
-      repuestos: countRepuestos,
-      compat: countCompat,
+      marcas: resMarcas.count,
+      modelos: resModelos.count,
+      repuestos: resRepuestos.count,
+      compat: resCompat.count,
     }
   );
 
@@ -84,16 +101,19 @@ export default async function AdminHomePage() {
       key={`${merged.brands.length}-${merged.models.length}-${merged.parts.length}`}
       account={account}
       stats={merged.stats}
-      initialOrders={ordersData || []}
-      initialAssistance={assistanceData || []}
-      initialDocuments={documentsData || []}
-      initialSubscriptions={subscriptionsData || []}
-      initialImportHistory={importHistoryData || []}
+      initialOrders={resOrders.data || []}
+      initialAssistance={resAssistance.data || []}
+      initialDocuments={resDocs.data || []}
+      initialSubscriptions={resSubs.data || []}
+      initialImportHistory={resImports.data || []}
       initialBrands={merged.brands}
       initialModels={merged.models}
       initialParts={merged.parts}
       initialCompatibilities={merged.compatibilities}
       initialUsers={initialUsers}
+      initialPersistedParts={resRepuestos.data || []}
+      persistedPartsError={resRepuestos.error ? resRepuestos.error.message : null}
+      queryErrors={queryErrors}
     />
   );
 }

@@ -91,19 +91,51 @@ export async function POST(request: Request) {
 
       // Si se solicitó syncDatabase (persistir también de inmediato en PostgreSQL/Supabase)
       let dbExecution = null;
+      let dbExecutionError: string | null = null;
       if (body.syncDatabase) {
         try {
           dbExecution = await executeCatalogImport(preview, {
             dryRun: false,
             adminEmail: auth.account.email,
           });
-        } catch (dbErr) {
+          if (!dbExecution.success) {
+            dbExecutionError = dbExecution.errors?.[0] || 'Error al persistir productos en la base de datos.';
+          }
+        } catch (dbErr: unknown) {
+          const msg = dbErr instanceof Error ? dbErr.message : 'Error inesperado de base de datos';
           console.warn('[ADMIN SCRAPE] Advertencia en persistencia DB:', dbErr);
+          dbExecutionError = msg;
+          dbExecution = {
+            success: false,
+            dryRun: false,
+            timestamp: new Date().toISOString(),
+            preview,
+            insertedCount: 0,
+            updatedCount: 0,
+            skippedCount: 0,
+            errorCount: 1,
+            errors: [msg],
+          };
         }
+      }
+
+      if (body.syncDatabase && dbExecutionError) {
+        return NextResponse.json(
+          {
+            success: false,
+            phase: 'database_sync_failed',
+            error: `Extracción completada, pero falló la sincronización con la base de datos: ${dbExecutionError}. La vista previa está lista para reintentar la persistencia sin volver a extraer.`,
+            scrape: scrapeResult,
+            preview,
+            dbExecution,
+          },
+          { status: 422 }
+        );
       }
 
       return NextResponse.json({
         success: true,
+        phase: 'complete',
         scrape: scrapeResult,
         preview,
         dbExecution,
@@ -150,19 +182,51 @@ export async function POST(request: Request) {
       ]);
 
       let dbExecution = null;
+      let dbExecutionError: string | null = null;
       if (syncDatabase) {
         try {
           dbExecution = await executeCatalogImport(preview, {
             dryRun: false,
             adminEmail: auth.account.email,
           });
-        } catch (dbErr) {
+          if (!dbExecution.success) {
+            dbExecutionError = dbExecution.errors?.[0] || 'Error al persistir productos en la base de datos.';
+          }
+        } catch (dbErr: unknown) {
+          const msg = dbErr instanceof Error ? dbErr.message : 'Error al persistir en base de datos';
           console.warn('[ADMIN SCRAPE CUSTOM URL] Error al persistir en base de datos:', dbErr);
+          dbExecutionError = msg;
+          dbExecution = {
+            success: false,
+            dryRun: false,
+            timestamp: new Date().toISOString(),
+            preview,
+            insertedCount: 0,
+            updatedCount: 0,
+            skippedCount: 0,
+            errorCount: 1,
+            errors: [msg],
+          };
         }
+      }
+
+      if (syncDatabase && dbExecutionError) {
+        return NextResponse.json(
+          {
+            success: false,
+            phase: 'database_sync_failed',
+            error: `Extracción completada, pero falló la sincronización con la base de datos: ${dbExecutionError}. La vista previa está lista para reintentar la persistencia sin volver a extraer.`,
+            scrape: scrapeResult,
+            preview,
+            dbExecution,
+          },
+          { status: 422 }
+        );
       }
 
       return NextResponse.json({
         success: true,
+        phase: 'complete',
         scrape: scrapeResult,
         preview,
         dbExecution,

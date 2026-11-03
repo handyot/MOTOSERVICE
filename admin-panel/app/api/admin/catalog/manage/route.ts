@@ -11,6 +11,44 @@ import { mergeCatalogWithMaster } from '@/lib/catalog/catalog-fallback';
 import { validateProductAction } from '@/lib/catalog/product-status-core.mjs';
 import { executeReclassify } from '@/lib/catalog/reclassify-service';
 
+export function validatePriceInput(
+  rawPrice: unknown,
+  options: { allowZero?: boolean; fieldName?: string } = {}
+): { valid: boolean; price?: number; error?: string } {
+  const fieldName = options.fieldName || 'precio';
+
+  if (rawPrice === undefined || rawPrice === null) {
+    return { valid: false, error: `El campo ${fieldName} es obligatorio.` };
+  }
+
+  if (typeof rawPrice === 'string' && rawPrice.trim() === '') {
+    return { valid: false, error: `El campo ${fieldName} no puede estar vacío.` };
+  }
+
+  if (typeof rawPrice === 'boolean') {
+    return { valid: false, error: `El valor de ${fieldName} no es un número válido.` };
+  }
+
+  const num = Number(rawPrice);
+
+  if (isNaN(num) || !Number.isFinite(num)) {
+    return { valid: false, error: `El valor de ${fieldName} debe ser un número finito válido.` };
+  }
+
+  if (num < 0) {
+    return { valid: false, error: `El ${fieldName} no puede ser un valor negativo.` };
+  }
+
+  if (num === 0 && !options.allowZero) {
+    return {
+      valid: false,
+      error: `El ${fieldName} debe ser mayor a cero según la política comercial. Para registrar precio cero se requiere autorización comercial explícita.`,
+    };
+  }
+
+  return { valid: true, price: Math.round(num * 100) / 100 };
+}
+
 export async function GET() {
   const auth = await requireAdminApi();
   if (!auth.authorized) {
@@ -191,12 +229,22 @@ export async function POST(request: Request) {
       const idCategoria = Number(payload?.id_categoria || 1);
       const codigoSku = String(payload?.codigo_sku || '').trim();
       const nombre = String(payload?.nombre || '').trim();
-      const precio = Number(payload?.precio || 0);
       const imagenUrl = payload?.imagen_url ? String(payload.imagen_url).trim() : null;
 
       if (!codigoSku || !nombre) {
         return NextResponse.json(
           { success: false, error: 'SKU y nombre del repuesto son obligatorios.' },
+          { status: 400 }
+        );
+      }
+
+      const priceValidation = validatePriceInput(payload?.precio, {
+        allowZero: payload?.allow_zero_price === true || payload?.permite_precio_cero === true,
+      });
+
+      if (!priceValidation.valid) {
+        return NextResponse.json(
+          { success: false, error: priceValidation.error },
           { status: 400 }
         );
       }
@@ -207,7 +255,7 @@ export async function POST(request: Request) {
           id_categoria: idCategoria,
           codigo_sku: codigoSku,
           nombre,
-          precio: precio >= 0 ? precio : 0,
+          precio: priceValidation.price!,
           moneda: 'PEN',
           imagen_url: imagenUrl,
           estado: true,
@@ -220,6 +268,41 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
       return NextResponse.json({ success: true, record: data });
+    }
+
+    if (entity === 'repuestos' && (operation === 'update_price' || operation === 'update')) {
+      const idRepuesto = Number(payload?.id_repuesto);
+      if (!idRepuesto) {
+        return NextResponse.json(
+          { success: false, error: 'ID de repuesto no especificado.' },
+          { status: 400 }
+        );
+      }
+
+      if (payload?.precio !== undefined) {
+        const priceValidation = validatePriceInput(payload.precio, {
+          allowZero: payload?.allow_zero_price === true || payload?.permite_precio_cero === true,
+        });
+
+        if (!priceValidation.valid) {
+          return NextResponse.json(
+            { success: false, error: priceValidation.error },
+            { status: 400 }
+          );
+        }
+
+        const { data, error } = await supabase
+          .from('repuestos')
+          .update({ precio: priceValidation.price })
+          .eq('id_repuesto', idRepuesto)
+          .select('*')
+          .single();
+
+        if (error) {
+          return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+        }
+        return NextResponse.json({ success: true, record: data });
+      }
     }
 
     if (entity === 'repuestos' && operation === 'update_status') {

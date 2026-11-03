@@ -168,8 +168,20 @@ export function CatalogImporterView({
           type: 'error',
           message: errReason,
         });
-        if (data.scrape?.rubroValidation) {
+        if (data.scrape) {
           setUrlScanResult(data.scrape);
+          if (data.preview && data.scrape.filename) {
+            setPreview(data.preview);
+            setSelectedFiles([
+              {
+                filename: data.scrape.filename,
+                sizeBytes: data.scrape.content ? data.scrape.content.length : 1024,
+                format: 'json',
+                content: data.scrape.content,
+                filepath: data.scrape.filepath,
+              },
+            ]);
+          }
         }
       }
     } catch {
@@ -225,6 +237,21 @@ export function CatalogImporterView({
         onCatalogUpdated?.();
         router.refresh();
       } else {
+        if (data.scrape) {
+          setScrapeSummary(data.scrape);
+          if (data.preview && data.scrape.filename) {
+            setPreview(data.preview);
+            setSelectedFiles([
+              {
+                filename: data.scrape.filename,
+                sizeBytes: data.scrape.content ? data.scrape.content.length : 1024,
+                format: 'json',
+                content: data.scrape.content,
+                filepath: data.scrape.filepath,
+              },
+            ]);
+          }
+        }
         setFeedback({
           type: 'error',
           message: data.error || 'Error al ejecutar scraping en vivo de proveedores.',
