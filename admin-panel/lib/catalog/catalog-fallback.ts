@@ -152,6 +152,7 @@ export interface MergedCatalogResult {
     totalModelos: number;
     totalRepuestos: number;
     totalCompatibilidades: number;
+    repuestosPersistidos?: number;
   };
 }
 
@@ -170,7 +171,7 @@ export function mergeCatalogWithMaster(
   const masterData = getCatalogMasterData();
 
   // 1. Marcas
-  const mergedBrands: AdminBrandRecord[] = [...(dbBrands || [])];
+  const mergedBrands: AdminBrandRecord[] = (dbBrands || []).map((b) => ({ ...b, isFallback: false }));
   const brandNameSet = new Set(mergedBrands.map((b) => b.nombre.trim().toUpperCase()));
   const brandIdMap = new Map<string, number>();
   let nextBrandId = mergedBrands.reduce((max, b) => Math.max(max, b.id_marca), 0) + 1;
@@ -183,6 +184,7 @@ export function mergeCatalogWithMaster(
         const newRecord: AdminBrandRecord = {
           ...mb,
           id_marca: nextBrandId++,
+          isFallback: true,
         };
         mergedBrands.push(newRecord);
         brandNameSet.add(upper);
@@ -192,7 +194,7 @@ export function mergeCatalogWithMaster(
   }
 
   // 2. Modelos
-  const mergedModels: AdminModelRecord[] = [...(dbModels || [])];
+  const mergedModels: AdminModelRecord[] = (dbModels || []).map((m) => ({ ...m, isFallback: false }));
   const modelKeySet = new Set(
     mergedModels.map((m) => `${m.id_marca}:::${m.nombre.trim().toLowerCase()}`)
   );
@@ -211,6 +213,7 @@ export function mergeCatalogWithMaster(
           ...mm,
           id_modelo: nextModelId++,
           id_marca: targetBrandId,
+          isFallback: true,
         });
         modelKeySet.add(key);
       }
@@ -218,7 +221,7 @@ export function mergeCatalogWithMaster(
   }
 
   // 3. Repuestos
-  const mergedParts: AdminPartRecord[] = [...(dbParts || [])];
+  const mergedParts: AdminPartRecord[] = (dbParts || []).map((p) => ({ ...p, isFallback: false }));
   const skuSet = new Set(mergedParts.map((p) => p.codigo_sku.trim().toUpperCase()));
   let nextPartId = mergedParts.reduce((max, p) => Math.max(max, p.id_repuesto), 0) + 1;
 
@@ -229,6 +232,7 @@ export function mergeCatalogWithMaster(
         mergedParts.push({
           ...mp,
           id_repuesto: nextPartId++,
+          isFallback: true,
         });
         skuSet.add(skuUpper);
       }
@@ -236,7 +240,7 @@ export function mergeCatalogWithMaster(
   }
 
   // 4. Compatibilidades
-  const mergedCompatibilities: AdminCompatibilityRecord[] = [...(dbCompatibilities || [])];
+  const mergedCompatibilities: AdminCompatibilityRecord[] = (dbCompatibilities || []).map((c) => ({ ...c, isFallback: false }));
   if (masterData && (dbCompatibilities?.length || 0) < masterData.compatibilities.length) {
     const compKeySet = new Set(
       mergedCompatibilities.map((c) => `${c.id_repuesto}:::${c.id_modelo}`)
@@ -250,6 +254,7 @@ export function mergeCatalogWithMaster(
         mergedCompatibilities.push({
           ...mc,
           id_compatibilidad: nextCompId++,
+          isFallback: true,
         });
         compKeySet.add(key);
       }
@@ -266,6 +271,7 @@ export function mergeCatalogWithMaster(
       totalModelos: Math.max(rawCounts?.modelos ?? 0, mergedModels.length),
       totalRepuestos: Math.max(rawCounts?.repuestos ?? 0, mergedParts.length),
       totalCompatibilidades: Math.max(rawCounts?.compat ?? 0, mergedCompatibilities.length),
+      repuestosPersistidos: dbParts?.length ?? 0,
     },
   };
 }
