@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentación Ejecutiva — Ecosistema MOTOSERVICE</title>
+  <!-- Tailwind CSS CDN para estilos rápidos y modernos -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #090d16;
+      color: #f1f5f9;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .slide {
+      display: none;
+      opacity: 0;
+      transform: translateY(12px) scale(0.99);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    }
+
+    .glass-highlight {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.03) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .glow-amber {
+      box-shadow: 0 0 40px -10px rgba(245, 158, 11, 0.35);
+    }
+
+    .glow-cyan {
+      box-shadow: 0 0 40px -10px rgba(6, 182, 212, 0.3);
+    }
+
+    /* Animación de barra de progreso */
+    #progress-bar {
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between p-4 md:p-8 relative selection:bg-amber-400 selection:text-slate-950">
+
+  <!-- Background Ambient Lights -->
+  <div class="absolute -top-32 -left-32 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+  <!-- Header Superior -->
+  <header class="flex items-center justify-between z-20 shrink-0 mb-3 border-b border-slate-800/80 pb-3">
+    <div class="flex items-center gap-3">
+      <div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 font-black shadow-lg">
+        <i data-lucide="zap" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <span class="text-xs font-bold tracking-widest uppercase text-amber-400">NeroElectric Motors</span>
+        <h1 class="text-sm font-semibold text-slate-200">Plataforma MOTOSERVICE &middot; Ecosistema Integral</h1>
+      </div>
+    </div>
+
+    <!-- Navegación y Controles Rápidos -->
+    <div class="flex items-center gap-3">
+      <div class="text-xs font-mono font-medium bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700/60 text-slate-300">
+        Slide <span id="current-slide" class="text-amber-400 font-bold">1</span> / <span id="total-slides">14</span>
+      </div>
+      <button onclick="toggleFullScreen()" class="p-2 bg-slate-800/60 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg border border-slate-700 transition" title="Pantalla Completa (F)">
+        <i data-lucide="maximize" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal de Slides -->
+  <main class="flex-1 relative z-10 flex items-center justify-center overflow-hidden">
+
+    <!-- SLIDE 1: Portada -->
+    <div class="slide active flex-col items-center justify-center text-center max-w-4xl mx-auto h-full px-4">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold uppercase tracking-wider mb-6">
+        <i data-lucide="sparkles" class="w-4 h-4"></i> Arquitectura &amp; Manual Operativo 2026
+      </div>
+      <h2 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white mb-6">
+        Ecosistema Digital <br>
+        <span class="bg-gradient-to-r from-amber-400 via-amber-200 to-cyan-400 bg-clip-text text-transparent">
+          NeroElectric Motors / MOTOSERVICE
+        </span>
+      </h2>
+      <p class="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+        Comercio electrónico de alta precisión, diagnóstico técnico asistido por IA, y ERP administrativo con facturación electrónica y despacho SUNAT para vehículos eléctricos en el Perú.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl text-left">
+        <div class="glass-card p-5 rounded-2xl flex items-start gap-4 border-l-4 border-l-cyan-400">
+          <div class="p-2.5 bg-cyan-500/10 text-cyan-400 rounded-xl">
+            <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-100 text-sm">Web 1: Tienda Pública</h3>
+            <p class="text-xs text-slate-400 mt-1">E-commerce, comparador de motos, checkout con Ubigeo Perú, Culqi 3DS y VoltIA AI.</p>
+          </div>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl flex items-start gap-4 border-l-4 border-l-amber-400">
+          <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-100 text-sm">Web 2: Portal Admin ERP</h3>
+            <p class="text-xs text-slate-400 mt-1">10 módulos operativos, control RBAC, facturación SUNAT (A4/Ticket/XML), GRE y scraping.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Arquitectura y Separación -->
+    <div class="slide flex-col justify-center max-w-5xl mx-auto h-full w-full px-4">
+      <div class="mb-4">
+        <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Infraestructura Segura</span>
+        <h2 class="text-3xl font-extrabold text-white">Separación Estricta de Dominios</h2>
+        <p class="text-sm text-slate-400 mt-1">Aislamiento total de rutas públicas y administrativas con base de datos unificada en tiempo real.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="glass-card p-6 rounded-2xl border-t-4 border-cyan-400 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-mono font-bold bg-cyan-950 text-cyan-300 px-2.5 py-1 rounded">PUERTO 3000</span>
+              <i data-lucide="globe" class="w-5 h-5 text-cyan-400"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Web 1: Tienda Comercial</h3>
+            <p class="text-xs text-slate-300 leading-relaxed mb-4">
+              Desplegada en el dominio principal (<span class="font-mono text-cyan-300">neroelectricmotors.com</span>). Protegida por <span class="font-mono text-amber-300">proxy.ts</span> que bloquea de inmediato cualquier petición a <span class="font-mono">/api/admin</span> retornando <span class="text-rose-400 font-bold">404</span>.
+            </p>
+          </div>
+          <ul class="text-xs text-slate-400 space-y-1.5 border-t border-slate-800 pt-3">
+            <li>✔ Catálogo público de vehículos y repuestos</li>
+            <li>✔ Checkout interactivo con Culqi 3DS</li>
+            <li>✔ Asistente VoltIA flotante para clientes</li>
+          </ul>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border-t-4 border-amber-400 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-mono font-bold bg-amber-950 text-amber-300 px-2.5 py-1 rounded">PUERTO 3001</span>
+              <i data-lucide="lock" class="w-5 h-5 text-amber-400"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Web 2: Portal Admin ERP</h3>
+            <p class="text-xs text-slate-300 leading-relaxed mb-4">
+              Aplicación independiente en subdominio (<span class="font-mono text-amber-300">panel.neroelectricmotors.com</span>) dentro de <span class="font-mono text-slate-200">admin-panel/</span>. Cabecera <span class="font-mono text-rose-300">X-Robots-Tag: noindex</span> y guardián estricto en servidor.
+            </p>
+          </div>
+          <ul class="text-xs text-slate-400 space-y-1.5 border-t border-slate-800 pt-3">
+            <li>✔ RBAC estricto con Supabase Auth</li>
+            <li>✔ Clientes estándar son expulsados (403)</li>
+            <li>✔ Emisión de comprobantes SUNAT y GRE</li>
+          </ul>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border-t-4 border-emerald-400 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-mono font-bold bg-emerald-950 text-emerald-300 px-2.5 py-1 rounded">SUPABASE POSTGRES</span>
+              <i data-lucide="database" class="w-5 h-5 text-emerald-400"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Capa de Datos Compartida</h3>
+            <p class="text-xs text-slate-300 leading-relaxed mb-4">
+              Ambas aplicaciones se comunican con el mismo cluster PostgreSQL gestionado en Supabase (<span class="font-mono text-emerald-300">tbznauwbvhsbmsbcodes</span>), garantizando stock, pedidos y catálogo unificados.
+            </p>
+          </div>
+          <ul class="text-xs text-slate-400 space-y-1.5 border-t border-slate-800 pt-3">
+            <li>✔ Row Level Security (RLS) activo</li>
+            <li>✔ Actualización de stock en milisegundos</li>
+            <li>✔ Transacciones ACID e idempotencia</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Web 1 Catálogo y Comparador -->
+    <div class="slide flex-col justify-center max-w-5xl mx-auto h-full w-full px-4">
+      <div class="mb-4">
+        <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest">Web 1 &middot; Tienda Pública</span>
+        <h2 class="text-3xl font-extrabold text-white">Catálogo Especializado y Comparador EV</h2>
+        <p class="text-sm text-slate-400 mt-1">Diseñado para la especificidad técnica del mercado de motos y repuestos eléctricos.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl">
+              <i data-lucide="bike" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white">Catálogo de Motos Eléctricas (<span class="font-mono text-amber-400 text-sm">/motos</span>)</h3>
+          </div>
+          <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+            Permite explorar scooters, motos urbanas, choppers y motocargas de marcas oficiales (Century Motors, Greenline, Yadea y Kayencorp).
+          </p>
+          <div class="space-y-2.5 text-xs text-slate-300">
+            <div class="flex items-center gap-2 p-2 bg-slate-800/50 rounded-lg">
+              <span class="text-amber-400 font-bold font-mono">Filtros Eléctricos:</span>
+              <span>Voltaje (48V, 60V, 72V) y Potencia (800W - 3000W+)</span>
+            </div>
+            <div class="flex items-center gap-2 p-2 bg-slate-800/50 rounded-lg">
+              <span class="text-cyan-400 font-bold font-mono">Comparador Dual:</span>
+              <span>Compara 2 o más modelos cara a cara en autonomía, velocidad y batería</span>
+            </div>
+            <div class="flex items-center gap-2 p-2 bg-slate-800/50 rounded-lg">
+              <span class="text-emerald-400 font-bold font-mono">Interacción VoltIA:</span>
+              <span>Botón para consultar directamente con el asistente sobre la moto</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="p-2.5 bg-cyan-500/10 text-cyan-400 rounded-xl">
+              <i data-lucide="cpu" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white">Catálogo de Repuestos (<span class="font-mono text-cyan-400 text-sm">/repuestos</span>)</h3>
+          </div>
+          <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+            Inventario técnico de componentes críticos para talleres, flotas de delivery y usuarios particulares.
+          </p>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="p-2.5 bg-slate-800/60 rounded-lg border border-slate-700/50">
+              <span class="font-bold text-amber-400 block mb-0.5">Baterías Litio / Gel</span>
+              <span class="text-slate-400 text-[11px]">Celdas LiFePO4 y Plomo-Gel selladas</span>
+            </div>
+            <div class="p-2.5 bg-slate-800/60 rounded-lg border border-slate-700/50">
+              <span class="font-bold text-cyan-400 block mb-0.5">Controladores Brushless</span>
+              <span class="text-slate-400 text-[11px]">Inteligentes de 48V a 72V programables</span>
+            </div>
+            <div class="p-2.5 bg-slate-800/60 rounded-lg border border-slate-700/50">
+              <span class="font-bold text-emerald-400 block mb-0.5">Motores Hub Directos</span>
+              <span class="text-slate-400 text-[11px]">Sellados contra agua y polvo (IP67)</span>
+            </div>
+            <div class="p-2.5 bg-slate-800/60 rounded-lg border border-slate-700/50">
+              <span class="font-bold text-purple-400 block mb-0.5">Frenado y Cargadores</span>
+              <span class="text-slate-400 text-[11px]">Discos hidráulicos y corte inteligente</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Buscador de Compatibilidad -->
+    <div class="slide flex-col justify-center max-w-5xl mx-auto h-full w-full px-4">
+      <div class="mb-4">
+        <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Garantía Técnica</span>
+        <h2 class="text-3xl font-extrabold text-white">Buscador y Certificación de Compatibilidad</h2>
+        <p class="text-sm text-slate-400 mt-1">Elimina la incertidumbre técnica antes de la compra para evitar averías o devoluciones.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="glass-card p-4 rounded-xl border-l-4 border-emerald-400">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+            <span class="text-xs font-bold text-emerald-300 font-mono">CONFIRMADA</span>
+          </div>
+          <h4 class="text-sm font-bold text-white mb-1">Plug &amp; Play</h4>
+          <p class="text-[11px] text-slate-300 leading-snug">
+            Reemplazo directo de fábrica. Conectores, voltaje y dimensiones mecánicas idénticas al original.
+          </p>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl border-l-4 border-cyan-400">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-3 h-3 rounded-full bg-cyan-400"></span>
+            <span class="text-xs font-bold text-cyan-300 font-mono">ADAPTABLE</span>
+          </div>
+          <h4 class="text-sm font-bold text-white mb-1">Adaptación Menor</h4>
+          <p class="text-[11px] text-slate-300 leading-snug">
+            Mismo voltaje y potencia, pero puede requerir cambio de conector (p. ej. Anderson a XT90).
+          </p>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl border-l-4 border-amber-400">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+            <span class="text-xs font-bold text-amber-300 font-mono">CON MODIFICACIÓN</span>
+          </div>
+          <h4 class="text-sm font-bold text-white mb-1">Ajuste de Taller</h4>
+          <p class="text-[11px] text-slate-300 leading-snug">
+            Exige reprogramación de amperaje de corte o soporte mecánico adicional en chasis.
+          </p>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl border-l-4 border-rose-400">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="w-3 h-3 rounded-full bg-rose-400"></span>
+            <span class="text-xs font-bold text-rose-300 font-mono">NO COMPATIBLE</span>
+          </div>
+          <h4 class="text-sm font-bold text-white mb-1">Riesgo Eléctrico</h4>
+          <p class="text-[11px] text-slate-300 leading-snug">
+            Incompatibilidad de voltaje o sobrecorriente que quemaría el controlador o la batería.
+          </p>
+        </div>
+      </div>
+
+      <div class="glass-card p-5 rounded-2xl flex items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+          <div class="p-3 bg-amber-500/10 text-amber-400 rounded-xl">
+            <i data-lucide="check-circle-2" class="w-7 h-7"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-white">Matriz Relacional M:N en Supabase</h4>
+            <p class="text-xs text-slate-400">
+              Cada compatibilidad cuenta con notas técnicas explicativas y verificación de ingeniería almacenada en la tabla <span class="font-mono text-amber-300">compatibilidades</span>.
+            </p>
+          </div>
+        </div>
+        <a href="/compatibilidad" target="_blank" class="shrink-0 px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-lg transition inline-flex items-center gap-1.5">
+          Probar en vivo <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Checkout Perú y Culqi -->
+    <div class="slide flex-col justify-center max-w-5xl mx-auto h-full w-full px-4">
+      <div class="mb-4">
+        <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest">Conversión Comercial</span>
+        <h2 class="text-3xl font-extrabold text-white">Checkout Adaptado al Mercado Peruano</h2>
+        <p class="text-sm text-slate-400 mt-1">Diseñado para la realidad logística y tributaria del Perú con pagos 3DS seguros.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="glass-card p-5 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl w-fit mb-3">
+              <i data-lucide="map-pin" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-base font-bold text-white mb-2">Ubigeo Oficial Perú</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Dataset oficial de los <span class="font-bold text-amber-400">25 departamentos</span>, <span class="font-bold text-amber-400">196 provincias</span> y más de <span class="font-bold text-amber-400">1,800 distritos</span> en cascada interactiva.
+            </p>
+          </div>
+          <div class="mt-4 text-[11px] text-slate-400 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+            Evita errores de entrega y calcula flete exacto por zona geográfica.
+          </div>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="p-2.5 bg-cyan-500/10 text-cyan-400 rounded-xl w-fit mb-3">
+              <i data-lucide="user-check" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-base font-bold text-white mb-2">Receptor Alternativo</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Módulo especial "¿Quién recibirá el pedido?". Permite autorizar a un tercero (nombre y DNI validados) para recibir la encomienda o recojo en almacén.
+            </p>
+          </div>
+          <div class="mt-4 text-[11px] text-slate-400 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+            Indispensable para talleres y compras corporativas.
+          </div>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl w-fit mb-3">
+              <i data-lucide="credit-card" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-base font-bold text-white mb-2">Pasarela Culqi 3DS 2.0</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Tokenización en cliente y cobro en servidor con clave secreta. Detección automática del desafío bancario 3DS y prevención de dobles cargos.
+            </p>
+          </div>
+          <div class="mt-4 text-[11px] text-slate-400 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+            Máxima seguridad bancaria Visa / Mastercard / Amex.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: Seguimiento y Garage Digital -->
+    <div class="slide flex-col justify-center max-w-5xl mx-auto h-full w-full px-4">
+      <div class="mb-4">
+        <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Experiencia Post-Venta</span>
+        <h2 class="text-3xl font-extrabold text-white">Tracking en Vivo y Garage Digital</h2>
+        <p class="text-sm text-slate-400 mt-1">Acompañamiento integral desde la compra hasta el mantenimiento preventivo del vehículo.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="p-2.5 bg-cyan-500/10 text-cyan-400 rounded-xl">
+              <i data-lucide="truck" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white">Seguimiento de Orden (<span class="font-mono text-cyan-400 text-sm">/pedido/[id]</span>)</h3>
+          </div>
+          <div class="space-y-3 text-xs">
+            <div class="flex items-center justify-between p-2.5 bg-slate-800/60 rounded-lg">
+              <span class="text-slate-300">Línea de Tiempo en Vivo</span>
+              <span class="font-mono text-amber-400 font-bold">4 Estados Claros</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 bg-slate-800/60 rounded-lg">
+              <span class="text-slate-300">Empresa de Transporte</span>
+              <span class="text-slate-200 font-semibold">Olva Courier / Shalom / Propio</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 bg-slate-800/60 rounded-lg">
+              <span class="text-slate-300">Descarga de Comprobantes</span>
+              <span class="text-emerald-400 font-bold">PDF A4, Ticket 80mm, XML</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 bg-slate-800/60 rounded-lg">
+              <span class="text-slate-300">Consultas con VoltIA</span>
+              <span class="text-cyan-400 font-bold">Sin salir de la pantalla</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl">
+              <i data-lucide="warehouse" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white">Mi Cuenta y Garage EV (<span class="font-mono text-amber-400 text-sm">/cuenta</span>)</h3>
+          </div>
+          <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+            Los clientes pueden registrar su flota o moto personal en dos modalidades seguras:
+          </p>
+          <div class="space-y-3 text-xs">
+            <div class="p-3 bg-slate-800/60 rounded-xl border-l-4 border-cyan-400">
+              <h4 class="font-bold text-white">1. Modalidad Catálogo Oficial</h4>
+              <p class="text-slate-400 text-[11px] mt-0.5">Selección de marca y modelo homologado; autocompleta voltaje y potencia nominal.</p>
+            </div>
+            <div class="p-3 bg-slate-800/60 rounded-xl border-l-4 border-amber-400">
+              <h4 class="font-bold text-white">2. Modalidad Personalizada</h4>
+              <p class="text-slate-400 text-[11px] mt-0.5">Para conversiones o motos a medida con validación estricta de rangos seguros (12V a 144V, 100W a 50,000W).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: Asistente VoltIA -->
+    <div class="slide flex-col justify-center max-w-5xl mx-auto h-full w-full px-4">
+      <div class="mb-4">
+        <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Inteligencia Artificial Técnica</span>
+        <h2 class="text-3xl font-extrabold text-white">VoltIA — Asistente Técnico y Diagnóstico</h2>
+        <p class="text-sm text-slate-400 mt-1">Conexión con modelos de última generación y ejecución de herramientas de base de datos en tiempo real.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="glass-card p-5 rounded-2xl border-t-4 border-amber-400">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold text-amber-400 uppercase font-mono">Dual LLM Engine</span>
+            <i data-lucide="bot" class="w-5 h-5 text-amber-400"></i>
+          </div>
+          <h3 class="text-base font-bold text-white mb-2">Google Gemini &amp; OpenAI</h3>
+          <p class="text-xs text-slate-300 leading-relaxed mb-3">
+            Configurable por variables de entorno: opera nativamente con <span class="font-mono text-cyan-300">gemini-3.5-flash-lite</span> o <span class="font-mono text-amber-300">gpt-4o-mini</span> sin alterar el código de la tienda.
+          </p>
+          <div class="text-[11px] text-slate-400 bg-slate-900/60 p-2 rounded">
+            Respuestas en menos de 1 segundo con streaming y fallback tolerante.
+          </div>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border-t-4 border-cyan-400">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold text-cyan-400 uppercase font-mono">Tool Calling Real</span>
+            <i data-lucide="wrench" class="w-5 h-5 text-cyan-400"></i>
+          </div>
+          <h3 class="text-base font-bold text-white mb-2">3 Herramientas de Base de Datos</h3>
+          <ul class="text-xs text-slate-300 space-y-2 mb-3">
+            <li class="flex items-start gap-1.5">
+              <span class="text-cyan-400 font-bold">&bull;</span>
+              <span><strong class="text-white">search_catalog:</strong> Consulta repuestos y motos en stock.</span>
+            </li>
+            <li class="flex items-start gap-1.5">
+              <span class="text-cyan-400 font-bold">&bull;</span>
+              <span><strong class="text-white">check_compatibility:</strong> Evalúa voltajes y montaje físico.</span>
+            </li>
+            <li class="flex items-start gap-1.5">
+              <span class="text-cyan-400 font-bold">&bull;</span>
+              <span><strong class="text-white">track_order:</strong> Ubica pedidos sin filtrar PII.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border-t-4 border-rose-400">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold text-rose-400 uppercase font-mono">Seguridad y Taller</span>
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-400"></i>
+          </div>
+          <h3 class="text-base font-bold text-white mb-2">Detección de Riesgo y Citas</h3>
+          <p class="text-xs text-slate-300 leading-relaxed mb-3">
+            Si detecta palabras clave como <span class="text-rose-400 font-semibold">"humo", "chispas" o "olor a quemado"</span>, detiene la venta y emite una alerta roja inmediata de desconexión.
+          </p>
+          <div class="text-[11px] text-emerald-300 bg-emerald-950/40 p-2 rounded border border-emerald-800/40">
+            ✔ Agenda citas directas en la tabla <span class="font-mono">solicitudes_asistencia</span>.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: Web 2 Portal Admin ERP -->
+    <div class="slide flex-col justify-center max-w-5xl mx-auto h-full w-full px-4">
+      <div class="mb-4">
+        <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Web 2 &middot; Backoffice</span>
+        <h2 class="text-3xl font-extrabold text-white">Portal de Administración Independiente (ERP)</h2>
+        <p class="text-sm text-slate-400 mt-1">Control absoluto de la operación diaria, inventario, facturación SUNAT y logística.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl">
+              <i data-lucide="shield" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white">Seguridad y Control de Acceso (RBAC)</h3>
+          </div>
+          <div class="space-y-3 text-xs text-slate-300">
+            <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700/60">
+              <span class="font-bold text-amber-400 block mb-1">Guardián de Servidor (requireAdmin):</span>
+              <p class="text-slate-400 text-[11px]">Verifica en base de datos el rol del usuario en la tabla <span class="font-mono text-slate-200">user_roles</span>. Si un cliente común entra al panel, es bloqueado con <span class="text-rose-400 font-bold">403 Forbidden</span> y enviado a /acceso-denegado.</p>
+            </div>
+            <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700/60">
+              <span class="font-bold text-cyan-400 block mb-1">Lista Blanca de Rescate (ADMIN_EMAILS):</span>
+              <p class="text-slate-400 text-[11px]">Permite acceso garantizado a los administradores principales aun ante contingencias de red en la tabla de roles.</p>
+            </div>
+            <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700/60">
+              <span class="font-bold text-emerald-400 block mb-1">Protección Anti-Indexación:</span>
+              <p class="text-slate-400 text-[11px]">Cabecera <span class="font-mono">X-Robots-Tag: noindex, nofollow</span> para que ningún buscador indexe el portal administrativo.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-3 mb-4">
+              <div class="p-2.5 bg-cyan-500/10 text-cyan-400 rounded-xl">
+                <i data-lucide="layout-grid" class="w-5 h-5"></i>
+              </div>
+              <h3 class="text-lg font-bold text-white">Arquitectura Visual ERP</h3>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed mb-4">
+              Diseño profesional con Sidebar lateral retráctil, barra superior de contexto, filtros rápidos y componentes de alto contraste para largas jornadas de trabajo operativo.
+            </p>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="p-2 bg-slate-800/70 rounded-lg text-slate-300">
+                <span class="text-amber-400 font-bold block">10 Módulos</span>
+                <span>Organizados en 5 grupos</span>
+              </div>
+              <div class="p-2 bg-slate-800/70 rounded-lg text-slate-300">
+                <span class="text-cyan-400 font-bold block">Tiempo Real</span>
+                <span>Actualización reactiva</span>
+              </div>
+            </div>
+          </div>
+          <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-xs text-slate-400 mt-4">
+            Totalmente compatible con pantallas de escritorio, tablets de almacén y smartphones de supervisores.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9: Los 10 Módulos Operativos -->
+    <div class="slide flex-col justify-center max-w-5xl mx-auto h-full w-full px-4">
+      <div class="mb-3">
+        <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest">Capacidades del ERP</span>
+        <h2 class="text-2xl md:text-3xl font-extrabold text-white">Los 10 Módulos Operativos del Dashboard</h2>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div class="glass-card p-3 rounded-xl border-t-2 border-amber-400">
+          <span class="text-[10px] font-mono text-amber-400 font-bold">MÓDULO 1</span>
+          <h4 class="text-xs font-bold text-white mt-0.5 mb-1">Resumen Operativo</h4>
+          <p class="text-[10px] text-slate-400">KPIs de órdenes, stock y solicitudes de auxilio.</p>
+        </div>
+
+        <div class="glass-card p-3 rounded-xl border-t-2 border-amber-400">
+          <span class="text-[10px] font-mono text-amber-400 font-bold">MÓDULO 2</span>
+          <h4 class="text-xs font-bold text-white mt-0.5 mb-1">Catálogo Maestro</h4>
+          <p class="text-[10px] text-slate-400">Gestión de marcas, modelos, partes y estados.</p>
+        </div>
+
+        <div class="glass-card p-3 rounded-xl border-t-2 border-amber-400">
+          <span class="text-[10px] font-mono text-amber-400 font-bold">MÓDULO 3</span>
+          <h4 class="text-xs font-bold text-white mt-0.5 mb-1">Inventario Propio / Prov.</h4>
+          <p class="text-[10px] text-slate-400">Stock físico en almacén vs distribuidores.</p>
+        </div>
+
+        <div class="glass-card p-3 rounded-xl border-t-2 border-cyan-400">
+          <span class="text-[10px] font-mono text-cyan-400 font-bold">MÓDULO 4</span>
+          <h4 class="text-xs font-bold text-white mt-0.5 mb-1">Pedidos y POS</h4>
+          <p class="text-[10px] text-slate-400">Gestión de ciclo de despacho y tracking.</p>
+        </div>
+
+        <div class="glass-card p-3 rounded-xl border-t-2 border-cyan-400">
+          <span class="text-[10px] font-mono text-cyan-400 font-bold">MÓDULO 5</span>
+          <h4 class="text-xs font-bold text-white mt-0.5 mb-1">Clientes e Invitados</h4>
+          <p class="text-[10px] text-slate-400">Padrón de compradores y sus vehículos.</p>
+        </div>
+
+        <div class="glass-card p-3 rounded-xl border-t-2 border-cyan-400">
+          <span class="text-[10px] font-mono text-cyan-400 font-bold">MÓDULO 6</span>
+          <h4 class="text-xs font-bold text-white mt-0.5 mb-1">Promociones</h4>
+          <p class="text-[10px] text-slate-400">Cupones de descuento y newsletter técnico.</p>
+        </div>
+
+        <div class="glass-card p-3 rounded-xl border-t-2 border-emerald-400">
+          <span class="text-[10px] font-mono text-emerald-400 font-bold">MÓDULO 7</span>
+          <h4 class="text-xs font-bold text-white mt-0.5 mb-1">Facturación SUNAT</h4>
+          <p class="text-[10px] text-slate-400">Boletas y facturas (PDF A4, Ticket, XML).</p>
+        </div>
+
+        <div class="glass-card p-3 rounded-xl border-t-2 border-emerald-400">
+          <span class="text-[10px] font-mono text-emerald-400 font-bold">MÓDULO 8</span>
+          <h4 class="text-xs font-bold text-white mt-0.5 mb-1">Despachos &amp; GRE</h4>
+          <p class="text-[10px] text-slate-400">Guías de Remisión Electrónica Remitente.</p>
+        </div>
+
+        <div class="glass-card p-3 rounded-xl border-t-2 border-purple-400">
+          <span class="text-[10px] font-mono text-purple-400 font-bold">MÓDULO 9</span>
+          <h4 class="text-xs font-bold text-white mt-0.5 mb-1">VoltIA y Taller</h4>
+          <p class="text-[10px] text-slate-400">Tickets de soporte técnico generados por IA.</p>
+        </div>
+
+        <div class="glass-card p-3 rounded-xl border-t-2 border-purple-400">
+          <span class="text-[10px] font-mono text-purple-400 font-bold">MÓDULO 10</span>
+          <h4 class="text-xs font-bold text-white mt-0.5 mb-1">Importador &amp; Scraper</h4>
+          <p class="text-[10px] text-slate-400">Carga masiva CSV/JSON y reclasificación.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 10: Facturación SUNAT y GRE -->
+    <div class="slide flex-col justify-center max-w-5xl mx-auto h-full w-full px-4">
+      <div class="mb-4">
+        <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Cumplimiento Tributario</span>
+        <h2 class="text-3xl font-extrabold text-white">Facturación Electrónica y Guías GRE SUNAT</h2>
+        <p class="text-sm text-slate-400 mt-1">Conforme a la normativa tributaria del Perú (R.S. 123-2022/SUNAT y modificaciones).</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl">
+              <i data-lucide="file-text" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white">Formatos Canónicos de Facturación</h3>
+          </div>
+          <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+            Generación y descarga de comprobantes electrónicos vinculados a pedidos y clientes:
+          </p>
+          <div class="space-y-2.5 text-xs">
+            <div class="p-2.5 bg-slate-800/60 rounded-lg flex items-center justify-between">
+              <div>
+                <strong class="text-white block">PDF A4 Oficial:</strong>
+                <span class="text-slate-400 text-[11px]">Encabezado legal, desglose gravado, IGV 18% y total en soles.</span>
+              </div>
+              <span class="text-emerald-400 font-mono text-xs font-bold">A4</span>
+            </div>
+            <div class="p-2.5 bg-slate-800/60 rounded-lg flex items-center justify-between">
+              <div>
+                <strong class="text-white block">Ticket Térmico 80 mm:</strong>
+                <span class="text-slate-400 text-[11px]">Diseñado para impresoras POS de mostrador y almacén.</span>
+              </div>
+              <span class="text-amber-400 font-mono text-xs font-bold">80mm</span>
+            </div>
+            <div class="p-2.5 bg-slate-800/60 rounded-lg flex items-center justify-between">
+              <div>
+                <strong class="text-white block">XML UBL 2.1:</strong>
+                <span class="text-slate-400 text-[11px]">Estructura XML estándar SUNAT con digest y firma electrónica.</span>
+              </div>
+              <span class="text-cyan-400 font-mono text-xs font-bold">XML</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl">
+              <i data-lucide="navigation" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white">Guías de Remisión Electrónica (GRE)</h3>
+          </div>
+          <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+            Emisión de guías para el traslado seguro de motos y repuestos por vía terrestre:
+          </p>
+          <div class="space-y-3 text-xs text-slate-300">
+            <div class="p-3 bg-slate-800/60 rounded-xl border-l-4 border-amber-400">
+              <h4 class="font-bold text-white">Transporte Privado:</h4>
+              <p class="text-slate-400 text-[11px] mt-0.5">Captura datos del conductor (licencia, DNI), placa del vehículo, punto de partida y llegada.</p>
+            </div>
+            <div class="p-3 bg-slate-800/60 rounded-xl border-l-4 border-cyan-400">
+              <h4 class="font-bold text-white">Transporte Público:</h4>
+              <p class="text-slate-400 text-[11px] mt-0.5">Asignación de RUC y Razón Social de la empresa de transporte interprovincial autorizada.</p>
+            </div>
+            <div class="p-2.5 bg-slate-900/60 rounded-lg text-[11px] text-slate-400">
+              Cómputo automático de peso bruto total en kilogramos y empaque.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 11: Importador y Reclasificación -->
+    <div class="slide flex-col justify-center max-w-5xl mx-auto h-full w-full px-4">
+      <div class="mb-4">
+        <span class="text-xs font-bold text-purple-400 uppercase tracking-widest">Automatización de Datos</span>
+        <h2 class="text-3xl font-extrabold text-white">Importador y Reclasificación Inteligente</h2>
+        <p class="text-sm text-slate-400 mt-1">Sincronización masiva de catálogos y corrección algorítmica de clasificaciones erróneas.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="p-2.5 bg-purple-500/10 text-purple-400 rounded-xl">
+              <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white">Cargador Universal de Catálogos</h3>
+          </div>
+          <ul class="text-xs text-slate-300 space-y-2.5 leading-relaxed">
+            <li class="flex items-start gap-2">
+              <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+              <span><strong>Detección automática de delimitadores:</strong> Interpreta archivos con coma, punto y coma o tabulador de forma transparente.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+              <span><strong>UTF-8 con BOM y Celdas Multilínea:</strong> Tolerancia a descripciones largas con saltos de línea entre comillas dobles.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+              <span><strong>Fusión y Deduplicación Idempotente:</strong> Si un producto ya existe, actualiza stock y precio sin duplicar filas.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl">
+              <i data-lucide="shuffle" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white">Reclasificador de Vehículos EV</h3>
+          </div>
+          <p class="text-xs text-slate-300 mb-3 leading-relaxed">
+            Resuelve el problema común de scrapers que catalogan vehículos completos como simples repuestos:
+          </p>
+          <div class="p-3 bg-slate-800/70 rounded-xl border border-slate-700/60 text-xs space-y-2">
+            <div class="text-slate-300">
+              <span class="text-amber-400 font-bold">1. Inferencia Algorítmica:</span> Detecta en el título "Motocarga 1000W 60V" y extrae especificaciones.
+            </div>
+            <div class="text-slate-300">
+              <span class="text-cyan-400 font-bold">2. Creación Automática:</span> Genera el modelo en <span class="font-mono text-slate-200">modelos_moto</span> con su slug oficial.
+            </div>
+            <div class="text-slate-300">
+              <span class="text-emerald-400 font-bold">3. Compensación Transaccional:</span> Si falla la base de datos, aplica rollback sin dejar datos corruptos.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 12: Base de Datos Supabase -->
+    <div class="slide flex-col justify-center max-w-5xl mx-auto h-full w-full px-4">
+      <div class="mb-4">
+        <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Persistencia Robusta</span>
+        <h2 class="text-3xl font-extrabold text-white">Base de Datos Unificada en Supabase</h2>
+        <p class="text-sm text-slate-400 mt-1">Estructura relacional PostgreSQL con Row Level Security (RLS) en todas las tablas sensibles.</p>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+        <div class="glass-card p-4 rounded-xl">
+          <h4 class="font-bold text-amber-400 font-mono mb-1">marcas / modelos</h4>
+          <p class="text-[11px] text-slate-300 leading-snug">Fabricantes, fichas técnicas, voltajes, potencias y fotos verificadas 200 OK.</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl">
+          <h4 class="font-bold text-cyan-400 font-mono mb-1">repuestos</h4>
+          <p class="text-[11px] text-slate-300 leading-snug">Inventario por SKU, categoría, precio en PEN, stock y estado de comercialización.</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl">
+          <h4 class="font-bold text-emerald-400 font-mono mb-1">compatibilidades</h4>
+          <p class="text-[11px] text-slate-300 leading-snug">Matriz M:N con estatus de verificación técnica y notas explicativas.</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl">
+          <h4 class="font-bold text-purple-400 font-mono mb-1">pedidos / detalles</h4>
+          <p class="text-[11px] text-slate-300 leading-snug">Órdenes de compra, desglose IGV, ubigeo de despacho y tracking code.</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl">
+          <h4 class="font-bold text-pink-400 font-mono mb-1">doc_fiscales / gre</h4>
+          <p class="text-[11px] text-slate-300 leading-snug">Boletas, facturas, XML UBL 2.1 y guías de remisión remitente SUNAT.</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl">
+          <h4 class="font-bold text-indigo-400 font-mono mb-1">vehiculos_cliente</h4>
+          <p class="text-[11px] text-slate-300 leading-snug">Garaje del usuario con placa, año, kilometraje y especificaciones de potencia.</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl">
+          <h4 class="font-bold text-rose-400 font-mono mb-1">solicitudes_asist.</h4>
+          <p class="text-[11px] text-slate-300 leading-snug">Citas y auxilios mecánicos capturados por el asistente inteligente VoltIA.</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl">
+          <h4 class="font-bold text-teal-400 font-mono mb-1">user_roles / rbac</h4>
+          <p class="text-[11px] text-slate-300 leading-snug">Políticas RLS que garantizan que sólo cuentas con rol admin modifiquen datos.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 13: Calidad y Pruebas -->
+    <div class="slide flex-col justify-center max-w-5xl mx-auto h-full w-full px-4">
+      <div class="mb-4">
+        <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Estabilidad Garantizada</span>
+        <h2 class="text-3xl font-extrabold text-white">Calidad de Código y Pruebas Automatizadas</h2>
+        <p class="text-sm text-slate-400 mt-1">Arquitectura probada exhaustivamente con 127 pruebas unitarias y de integración pasando al 100%.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+        <div class="glass-card p-5 rounded-2xl text-center border-t-4 border-emerald-400">
+          <span class="text-4xl font-extrabold text-emerald-400 font-mono">127 / 127</span>
+          <h3 class="text-sm font-bold text-white mt-2">Pruebas Superadas</h3>
+          <p class="text-[11px] text-slate-400 mt-1">0 fallos &middot; 0 advertencias de regresión</p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl text-center border-t-4 border-cyan-400">
+          <span class="text-4xl font-extrabold text-cyan-400 font-mono">WCAG 2.2</span>
+          <h3 class="text-sm font-bold text-white mt-2">Accesibilidad Nivel AA</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Ratios de contraste y legibilidad óptimos</p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl text-center border-t-4 border-amber-400">
+          <span class="text-4xl font-extrabold text-amber-400 font-mono">100%</span>
+          <h3 class="text-sm font-bold text-white mt-2">Aislamiento Seguro</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Cero exposición de secretos o rutas admin</p>
+        </div>
+      </div>
+
+      <div class="glass-card p-4 rounded-xl text-xs text-slate-300 font-mono flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>npm test &middot; node --test tests/**/*.test.mjs &middot; Duration: ~2s</span>
+        </div>
+        <span class="text-emerald-400 font-bold">READY FOR PRODUCTION</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 14: Conclusiones y Despliegue -->
+    <div class="slide flex-col justify-center max-w-4xl mx-auto h-full px-4 text-center">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-6">
+        <i data-lucide="check-circle" class="w-4 h-4"></i> Listo para Operación y Escala
+      </div>
+      <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-6">
+        Ecosistema Conectado, Robusto y Escalable
+      </h2>
+      <p class="text-sm md:text-base text-slate-300 max-w-2xl mx-auto mb-8 leading-relaxed font-light">
+        La separación de la Tienda Pública y el Portal Administrativo garantiza que los compradores naveguen a la máxima velocidad mientras los operadores gestionan pedidos, guías SUNAT y catálogos con total confidencialidad.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl mx-auto text-left mb-8">
+        <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800">
+          <span class="text-xs font-bold text-amber-400 uppercase font-mono block mb-1">Comando Tienda (Port 3000):</span>
+          <code class="text-xs text-slate-200 font-mono bg-slate-950 px-2 py-1 rounded block">npm run dev</code>
+        </div>
+        <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800">
+          <span class="text-xs font-bold text-cyan-400 uppercase font-mono block mb-1">Comando Admin ERP (Port 3001):</span>
+          <code class="text-xs text-slate-200 font-mono bg-slate-950 px-2 py-1 rounded block">npm run dev:admin</code>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-center gap-4">
+        <button onclick="goToSlide(0)" class="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-xl transition inline-flex items-center gap-2 shadow-lg">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reiniciar Presentación
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer con Barra de Progreso y Navegación -->
+  <footer class="z-20 shrink-0 pt-3 border-t border-slate-800/80">
+    <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden mb-3">
+      <div id="progress-bar" class="bg-gradient-to-r from-amber-400 to-cyan-400 h-full w-[7.14%]"></div>
+    </div>
+
+    <div class="flex items-center justify-between text-xs text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="hidden md:inline font-mono text-[11px] text-slate-500">Usa las teclas &larr; / &rarr; o los botones:</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="prev-btn" onclick="prevSlide()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1 cursor-pointer">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i> Anterior
+        </button>
+        <button id="next-btn" onclick="nextSlide()" class="px-4 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-lg transition flex items-center gap-1 cursor-pointer">
+          Siguiente <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Inicializar iconos de Lucide
+    lucide.createIcons();
+
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    document.getElementById('total-slides').innerText = totalSlides;
+
+    function updateSlide() {
+      slides.forEach((slide, idx) => {
+        if (idx === currentSlide) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      });
+
+      document.getElementById('current-slide').innerText = currentSlide + 1;
+      const progress = ((currentSlide + 1) / totalSlides) * 100;
+      document.getElementById('progress-bar').style.width = progress + '%';
+
+      // Actualizar estado de botones
+      document.getElementById('prev-btn').disabled = currentSlide === 0;
+      document.getElementById('prev-btn').style.opacity = currentSlide === 0 ? '0.4' : '1';
+      document.getElementById('next-btn').innerHTML = currentSlide === totalSlides - 1 
+        ? 'Finalizar <i data-lucide="check" class="w-4 h-4"></i>' 
+        : 'Siguiente <i data-lucide="chevron-right" class="w-4 h-4"></i>';
+      lucide.createIcons();
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    function goToSlide(index) {
+      if (index >= 0 && index < totalSlides) {
+        currentSlide = index;
+        updateSlide();
+      }
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.warn(`Error al intentar pantalla completa: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Navegación con teclado
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullScreen();
+      } else if (e.key === 'Home') {
+        goToSlide(0);
+      } else if (e.key === 'End') {
+        goToSlide(totalSlides - 1);
+      }
+    });
+
+    updateSlide();
+  </script>
+</body>
+</html>

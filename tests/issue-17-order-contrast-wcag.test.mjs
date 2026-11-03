@@ -89,10 +89,22 @@ test('Issue #17: Inspección de estructura visual y componentes en app/pedido/[i
   assert.ok(pageFile.includes('Total Pagado (Inc. IGV)'), 'Debe mostrarse el total pagado con distinción tipográfica');
   assert.ok(pageFile.includes('text-cyan-300'), 'El total pagado debe resaltarse con cyan-300 de alto contraste');
 
-  // 4. Integración con OrderVoltIAButton
+  // 4. Integración con OrderVoltIAButton y soporte técnico
+  assert.ok(
+    pageFile.includes('¿Dudas con la instalación o compatibilidad?'),
+    'La tarjeta de soporte debe incluir el título explícito sobre dudas e instalación'
+  );
   assert.ok(
     pageFile.includes('<OrderVoltIAButton'),
     'La sección de dudas y soporte debe renderizar el componente interactivo OrderVoltIAButton'
+  );
+  assert.ok(
+    pageFile.includes('customerEmail') && pageFile.includes('customerName'),
+    'Los datos del destinatario deben renderizarse con jerarquía'
+  );
+  assert.ok(
+    pageFile.includes('docNumber'),
+    'El número de documento SUNAT debe presentarse claramente'
   );
 });
 

@@ -333,6 +333,18 @@ export interface AuthAccount {
   createdAt: string;
 }
 
+export interface AdminUserRecord {
+  id: string;
+  email: string;
+  fullName: string;
+  phone?: string | null;
+  role: 'admin' | 'customer';
+  isBanned: boolean;
+  bannedUntil?: string | null;
+  createdAt: string;
+  lastSignInAt?: string | null;
+}
+
 // ===================================================
 // Tipos del Sistema Ecommerce, Carrito y Pedidos
 // ===================================================

@@ -3,13 +3,23 @@
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { AuthAccount, OrderStatus } from '../../types';
+import { AuthAccount, OrderStatus, AdminUserRecord } from '../../types';
 import { signOutAction } from '../../lib/auth/actions';
 import { Icon } from '../ui/Icons';
 import { formatCurrency } from '../../lib/formatters.js';
 import { FEATURED_PARTS } from '../../lib/constants.js';
 import { CatalogImporterView, ImportHistoryRecord } from './CatalogImporterView';
 import { getProductStatusBadge, PRODUCT_STATUSES } from '../../lib/catalog/product-status-core.mjs';
+import {
+  inferVehicleDataFromPart,
+  VEHICLE_TYPE_LABELS,
+  CATALOG_DESTINATIONS,
+} from '../../lib/catalog/reclassify-core.mjs';
+import {
+  filterUsers,
+  formatUserStatus,
+  ALLOWED_USER_ROLES,
+} from '../../lib/users/user-core.mjs';
 
 export interface AdminStats {
   totalMarcas: number;
@@ -195,7 +205,8 @@ type ModuleId =
   | 'facturacion'
   | 'despacho'
   | 'voltia'
-  | 'importador';
+  | 'importador'
+  | 'usuarios';
 
 interface NavItem {
   id: ModuleId;
@@ -222,6 +233,7 @@ interface AdminDashboardViewProps {
   initialModels?: AdminModelRecord[];
   initialParts?: AdminPartRecord[];
   initialCompatibilities?: AdminCompatibilityRecord[];
+  initialUsers?: AdminUserRecord[];
 }
 
 export function AdminDashboardView({
@@ -236,6 +248,7 @@ export function AdminDashboardView({
   initialModels = [],
   initialParts = [],
   initialCompatibilities = [],
+  initialUsers = [],
 }: AdminDashboardViewProps) {
   const [activeModule, setActiveModule] = useState<ModuleId>('resumen');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -341,6 +354,22 @@ export function AdminDashboardView({
   const [deleteModalPart, setDeleteModalPart] = useState<AdminPartRecord | null>(null);
   const [isProcessingPartAction, setIsProcessingPartAction] = useState(false);
 
+  // Estados para acción Reclasificar / Mover a catálogo
+  const [reclassifyModalItem, setReclassifyModalItem] = useState<{
+    item: AdminPartRecord | AdminModelRecord;
+    sourceEntity: 'repuestos' | 'modelos_moto';
+  } | null>(null);
+  const [reclassifyTargetList, setReclassifyTargetList] = useState<'modelos_ev' | 'repuestos' | 'fuera_catalogo'>('modelos_ev');
+  const [reclassifyBrandId, setReclassifyBrandId] = useState<string>('');
+  const [reclassifyModelName, setReclassifyModelName] = useState<string>('');
+  const [reclassifyVehicleType, setReclassifyVehicleType] = useState<string>('MOTOCARGA_ELECTRICA');
+  const [reclassifyVoltage, setReclassifyVoltage] = useState<string>('');
+  const [reclassifyPowerW, setReclassifyPowerW] = useState<string>('');
+  const [reclassifyPrice, setReclassifyPrice] = useState<string>('');
+  const [reclassifyReason, setReclassifyReason] = useState<string>('');
+  const [isProcessingReclassify, setIsProcessingReclassify] = useState(false);
+  const [activeModelMenuId, setActiveModelMenuId] = useState<number | null>(null);
+
   const [newCompatPartId, setNewCompatPartId] = useState(
     initialParts[0]?.id_repuesto ? String(initialParts[0].id_repuesto) : ''
   );
@@ -365,6 +394,34 @@ export function AdminDashboardView({
 
   const [assistanceSearch, setAssistanceSearch] = useState('');
   const [subscriptionSearch, setSubscriptionSearch] = useState('');
+
+  // Estados para el Módulo de Gestión de Usuarios y Accesos
+  const [users, setUsers] = useState<AdminUserRecord[]>(initialUsers);
+  const [userSearch, setUserSearch] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState<'ALL' | 'admin' | 'customer'>('ALL');
+  const [userStatusFilter, setUserStatusFilter] = useState<'ALL' | 'active' | 'banned'>('ALL');
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [isProcessingUserAction, setIsProcessingUserAction] = useState(false);
+  const [activeUserMenuId, setActiveUserMenuId] = useState<string | null>(null);
+
+  // Modales interactivos de Usuarios
+  const [roleModalUser, setRoleModalUser] = useState<AdminUserRecord | null>(null);
+  const [targetUserRole, setTargetUserRole] = useState<'admin' | 'customer'>('admin');
+
+  const [banModalUser, setBanModalUser] = useState<AdminUserRecord | null>(null);
+
+  const [passwordModalUser, setPasswordModalUser] = useState<AdminUserRecord | null>(null);
+  const [passwordResetMode, setPasswordResetMode] = useState<'link' | 'direct'>('link');
+  const [directNewPassword, setDirectNewPassword] = useState('');
+  const [generatedRecoveryLink, setGeneratedRecoveryLink] = useState<string | null>(null);
+
+  const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [newUserFullName, setNewUserFullName] = useState('');
+  const [newUserPhone, setNewUserPhone] = useState('');
+  const [newUserRole, setNewUserRole] = useState<'admin' | 'customer'>('customer');
+  const [createUserError, setCreateUserError] = useState<string | null>(null);
 
   const storefrontUrl = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://neroelectricmotors.com';
 
@@ -505,6 +562,18 @@ export function AdminDashboardView({
           },
         ],
       },
+      {
+        groupTitle: 'Seguridad y accesos',
+        items: [
+          {
+            id: 'usuarios',
+            label: 'Gestión de usuarios, roles y accesos',
+            shortLabel: 'Usuarios y Roles',
+            icon: 'shield',
+            count: users.length > 0 ? users.length : undefined,
+          },
+        ],
+      },
     ],
     [
       stats.totalModelos,
@@ -514,6 +583,7 @@ export function AdminDashboardView({
       initialSubscriptions.length,
       initialDocuments.length,
       initialAssistance.length,
+      users.length,
     ]
   );
 
@@ -850,6 +920,92 @@ export function AdminDashboardView({
     }
   };
 
+  // Reclasificación y movimiento entre listas del catálogo
+  const handleOpenReclassifyModal = (
+    item: AdminPartRecord | AdminModelRecord,
+    sourceEntity: 'repuestos' | 'modelos_moto'
+  ) => {
+    setActivePartMenuId(null);
+    setActiveModelMenuId(null);
+
+    if (sourceEntity === 'repuestos') {
+      const part = item as AdminPartRecord;
+      const inferred = inferVehicleDataFromPart(part, brands);
+      setReclassifyModalItem({ item, sourceEntity });
+      setReclassifyTargetList('modelos_ev');
+      setReclassifyBrandId(String(inferred?.brandId || (brands[0]?.id_marca ?? 1)));
+      setReclassifyModelName(inferred?.modelName || part.nombre);
+      setReclassifyVehicleType(inferred?.vehicleType || 'MOTOCARGA_ELECTRICA');
+      setReclassifyVoltage(inferred?.voltage ? String(inferred.voltage) : '');
+      setReclassifyPowerW(inferred?.powerW ? String(inferred.powerW) : '');
+      setReclassifyPrice(String(part.precio || ''));
+      setReclassifyReason('Reclasificación de catálogo comercial');
+    } else {
+      const model = item as AdminModelRecord;
+      setReclassifyModalItem({ item, sourceEntity });
+      setReclassifyTargetList('repuestos');
+      setReclassifyBrandId(String(model.id_marca));
+      setReclassifyModelName(model.nombre);
+      setReclassifyPrice('0');
+      setReclassifyReason('Traslado a lista de repuestos');
+    }
+  };
+
+  const handleConfirmReclassify = async () => {
+    if (!reclassifyModalItem) return;
+    setIsProcessingReclassify(true);
+    try {
+      const { item, sourceEntity } = reclassifyModalItem;
+      const selectedBrand = brands.find((b) => String(b.id_marca) === String(reclassifyBrandId));
+
+      const res = await fetch('/api/admin/catalog/manage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entity: 'catalog',
+          operation: 'reclassify',
+          payload: {
+            sourceEntity,
+            sourceId:
+              sourceEntity === 'repuestos'
+                ? (item as AdminPartRecord).id_repuesto
+                : (item as AdminModelRecord).id_modelo,
+            targetList: reclassifyTargetList,
+            modelData: {
+              id_marca: Number(reclassifyBrandId) || undefined,
+              brandName: selectedBrand?.nombre,
+              nombre: reclassifyModelName.trim(),
+              vehicleType: reclassifyVehicleType,
+              voltaje_nominal_v: reclassifyVoltage ? Number(reclassifyVoltage) : null,
+              potencia_motor_w: reclassifyPowerW ? Number(reclassifyPowerW) : null,
+              precio: reclassifyPrice ? Number(reclassifyPrice) : 0,
+              imagen_url: item.imagen_url || null,
+            },
+            partData: {
+              nombre: reclassifyModelName.trim(),
+              precio: reclassifyPrice ? Number(reclassifyPrice) : 0,
+              imagen_url: item.imagen_url || null,
+            },
+            reason: reclassifyReason.trim(),
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showFeedback('success', data.message || 'Registro reclasificado exitosamente.');
+        setReclassifyModalItem(null);
+        await refreshCatalogData();
+      } else {
+        showFeedback('error', data.error || 'No se pudo reclasificar el registro.');
+      }
+    } catch {
+      showFeedback('error', 'Error al conectar con el servidor administrativo.');
+    } finally {
+      setIsProcessingReclassify(false);
+    }
+  };
+
   // Colecciones filtradas para búsqueda rápida en tablas
   const filteredModels = useMemo(() => {
     const q = catalogSearch.trim().toLowerCase();
@@ -1157,6 +1313,171 @@ export function AdminDashboardView({
       setGreFormError(msg);
     } finally {
       setIsSubmittingGre(false);
+    }
+  };
+
+  // Filtrado reactivo de usuarios
+  const filteredUsers = useMemo(() => {
+    return filterUsers(users, {
+      search: userSearch,
+      role: userRoleFilter,
+      status: userStatusFilter,
+    });
+  }, [users, userSearch, userRoleFilter, userStatusFilter]);
+
+  const handleRefreshUsers = async () => {
+    setIsLoadingUsers(true);
+    try {
+      const res = await fetch('/api/admin/users');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.users)) {
+        setUsers(data.users);
+        setStatusFeedback({ type: 'success', text: `Lista de usuarios actualizada (${data.users.length} cuentas registradas).` });
+      } else {
+        setStatusFeedback({ type: 'error', text: data.error || 'Error al obtener usuarios' });
+      }
+    } catch {
+      setStatusFeedback({ type: 'error', text: 'Error de conexión al cargar usuarios' });
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+
+  const handleConfirmRoleChange = async () => {
+    if (!roleModalUser) return;
+    setIsProcessingUserAction(true);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'set_role',
+          userId: roleModalUser.id,
+          role: targetUserRole,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUsers((prev) =>
+          prev.map((u) => (u.id === roleModalUser.id ? { ...u, role: targetUserRole } : u))
+        );
+        setStatusFeedback({ type: 'success', text: data.message || 'Rol actualizado correctamente' });
+        setRoleModalUser(null);
+      } else {
+        setStatusFeedback({ type: 'error', text: data.error || 'Error al cambiar rol' });
+      }
+    } catch {
+      setStatusFeedback({ type: 'error', text: 'Error al cambiar rol del usuario' });
+    } finally {
+      setIsProcessingUserAction(false);
+    }
+  };
+
+  const handleConfirmToggleBan = async () => {
+    if (!banModalUser) return;
+    setIsProcessingUserAction(true);
+    const newIsBanned = !banModalUser.isBanned;
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'toggle_ban',
+          userId: banModalUser.id,
+          isBanned: newIsBanned,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === banModalUser.id
+              ? { ...u, isBanned: newIsBanned, bannedUntil: data.bannedUntil }
+              : u
+          )
+        );
+        setStatusFeedback({ type: 'success', text: data.message || 'Estado de acceso modificado' });
+        setBanModalUser(null);
+      } else {
+        setStatusFeedback({ type: 'error', text: data.error || 'Error al modificar estado de acceso' });
+      }
+    } catch {
+      setStatusFeedback({ type: 'error', text: 'Error de conexión al modificar acceso' });
+    } finally {
+      setIsProcessingUserAction(false);
+    }
+  };
+
+  const handleConfirmResetPassword = async () => {
+    if (!passwordModalUser) return;
+    setIsProcessingUserAction(true);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reset_password',
+          userId: passwordModalUser.id,
+          email: passwordModalUser.email,
+          mode: passwordResetMode,
+          password: directNewPassword,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (passwordResetMode === 'link' && data.recoveryLink) {
+          setGeneratedRecoveryLink(data.recoveryLink);
+          setStatusFeedback({ type: 'success', text: 'Enlace generado. Cópialo para compartirlo con el usuario.' });
+        } else {
+          setStatusFeedback({ type: 'success', text: data.message || 'Contraseña actualizada correctamente' });
+          setPasswordModalUser(null);
+          setDirectNewPassword('');
+          setGeneratedRecoveryLink(null);
+        }
+      } else {
+        setStatusFeedback({ type: 'error', text: data.error || 'Error al restablecer contraseña' });
+      }
+    } catch {
+      setStatusFeedback({ type: 'error', text: 'Error al procesar contraseña' });
+    } finally {
+      setIsProcessingUserAction(false);
+    }
+  };
+
+  const handleCreateUserSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreateUserError(null);
+    setIsProcessingUserAction(true);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create_user',
+          email: newUserEmail,
+          password: newUserPassword,
+          fullName: newUserFullName,
+          phone: newUserPhone || undefined,
+          role: newUserRole,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.user) {
+        setUsers((prev) => [data.user, ...prev]);
+        setStatusFeedback({ type: 'success', text: data.message || 'Usuario creado exitosamente' });
+        setIsCreateUserModalOpen(false);
+        setNewUserEmail('');
+        setNewUserPassword('');
+        setNewUserFullName('');
+        setNewUserPhone('');
+        setNewUserRole('customer');
+      } else {
+        setCreateUserError(data.error || 'Error al crear usuario');
+      }
+    } catch {
+      setCreateUserError('Error de red al crear el usuario');
+    } finally {
+      setIsProcessingUserAction(false);
     }
   };
 
@@ -2421,46 +2742,75 @@ export function AdminDashboardView({
                             <th className="px-4 py-3">Voltaje Nominal</th>
                             <th className="px-4 py-3">Potencia Motor</th>
                             <th className="px-4 py-3">Estado</th>
+                            <th className="px-4 py-3 text-right">Acciones</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200 text-slate-700">
-                          {filteredModels.map((m) => (
-                            <tr key={m.id_modelo} className="hover:bg-slate-50/80">
-                              <td className="px-4 py-3 font-mono text-slate-500">#{m.id_modelo}</td>
-                              <td className="px-4 py-2.5">
-                                <div className="h-10 w-14 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center p-0.5">
-                                  <SafeCatalogImage src={m.imagen_url} alt={m.nombre} />
-                                </div>
-                              </td>
-                              <td className="px-4 py-3 font-bold text-slate-900">
-                                {brandNameById.get(m.id_marca) || `Marca #${m.id_marca}`}
-                              </td>
-                              <td className="px-4 py-3 font-semibold text-slate-900">{m.nombre}</td>
-                              <td className="px-4 py-3 font-mono">
-                                {m.voltaje_nominal_v ? (
-                                  <span className="rounded bg-blue-50 border border-blue-200 px-2 py-0.5 text-blue-800 font-semibold">
-                                    {m.voltaje_nominal_v}V
+                          {filteredModels.map((m) => {
+                            const isMenuOpen = activeModelMenuId === m.id_modelo;
+                            return (
+                              <tr key={m.id_modelo} className="hover:bg-slate-50/80">
+                                <td className="px-4 py-3 font-mono text-slate-500">#{m.id_modelo}</td>
+                                <td className="px-4 py-2.5">
+                                  <div className="h-10 w-14 rounded-lg border border-slate-200 bg-white overflow-hidden flex items-center justify-center p-0.5">
+                                    <SafeCatalogImage src={m.imagen_url} alt={m.nombre} />
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3 font-bold text-slate-900">
+                                  {brandNameById.get(m.id_marca) || `Marca #${m.id_marca}`}
+                                </td>
+                                <td className="px-4 py-3 font-semibold text-slate-900">{m.nombre}</td>
+                                <td className="px-4 py-3 font-mono">
+                                  {m.voltaje_nominal_v ? (
+                                    <span className="rounded bg-blue-50 border border-blue-200 px-2 py-0.5 text-blue-800 font-semibold">
+                                      {m.voltaje_nominal_v}V
+                                    </span>
+                                  ) : (
+                                    <span className="text-slate-400">No especificado</span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 font-mono">
+                                  {m.potencia_motor_w ? `${m.potencia_motor_w} W` : 'No especificado'}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span
+                                    className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase border ${
+                                      m.estado
+                                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                        : 'bg-slate-100 text-slate-600 border-slate-200'
+                                    }`}
+                                  >
+                                    {m.estado ? 'Activo' : 'Inactivo'}
                                   </span>
-                                ) : (
-                                  <span className="text-slate-400">No especificado</span>
-                                )}
-                              </td>
-                              <td className="px-4 py-3 font-mono">
-                                {m.potencia_motor_w ? `${m.potencia_motor_w} W` : 'No especificado'}
-                              </td>
-                              <td className="px-4 py-3">
-                                <span
-                                  className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase border ${
-                                    m.estado
-                                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                      : 'bg-slate-100 text-slate-600 border-slate-200'
-                                  }`}
-                                >
-                                  {m.estado ? 'Activo' : 'Inactivo'}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
+                                </td>
+                                <td className="px-4 py-3 text-right relative">
+                                  <div className="inline-block text-left">
+                                    <button
+                                      type="button"
+                                      aria-label={`Acciones para modelo ${m.nombre}`}
+                                      onClick={() => setActiveModelMenuId(isMenuOpen ? null : m.id_modelo)}
+                                      className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shadow-2xs transition-colors cursor-pointer"
+                                    >
+                                      <Icon name="more-vertical" className="w-4 h-4" />
+                                    </button>
+
+                                    {isMenuOpen && (
+                                      <div className="absolute right-0 mt-1 w-52 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl z-30 text-left text-xs space-y-0.5">
+                                        <button
+                                          type="button"
+                                          onClick={() => handleOpenReclassifyModal(m, 'modelos_moto')}
+                                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-indigo-700 hover:bg-indigo-50 font-medium transition-colors cursor-pointer"
+                                        >
+                                          <Icon name="arrow-right" className="w-3.5 h-3.5" />
+                                          <span>Mover a catálogo...</span>
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -2601,8 +2951,17 @@ export function AdminDashboardView({
 
                                         <button
                                           type="button"
+                                          onClick={() => handleOpenReclassifyModal(p, 'repuestos')}
+                                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-indigo-700 hover:bg-indigo-50 font-medium transition-colors cursor-pointer"
+                                        >
+                                          <Icon name="arrow-right" className="w-3.5 h-3.5" />
+                                          <span>Mover a catálogo...</span>
+                                        </button>
+
+                                        <button
+                                          type="button"
                                           onClick={() => handleProductAction(p, 'ELIMINAR')}
-                                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-rose-700 hover:bg-rose-50 font-medium transition-colors"
+                                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-rose-700 hover:bg-rose-50 font-medium transition-colors cursor-pointer"
                                         >
                                           <Icon name="trash" className="w-3.5 h-3.5" />
                                           <span>Eliminar / Archivar...</span>
@@ -2716,6 +3075,275 @@ export function AdminDashboardView({
                             className="rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-bold px-4 py-2 text-xs shadow-2xs transition-colors"
                           >
                             {isProcessingPartAction ? 'Procesando...' : 'Confirmar Eliminación'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Modal Reclasificar / Mover a Catálogo */}
+                  {reclassifyModalItem && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
+                      <div className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl space-y-5 my-8">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200">
+                            <Icon name="layers" className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h3 className="text-base font-bold text-slate-900">Mover a catálogo / Reclasificar</h3>
+                            <p className="text-xs text-slate-500">
+                              {reclassifyModalItem.sourceEntity === 'repuestos'
+                                ? `SKU: ${(reclassifyModalItem.item as AdminPartRecord).codigo_sku}`
+                                : `Modelo #${(reclassifyModalItem.item as AdminModelRecord).id_modelo}`}
+                              {' — '}
+                              <strong className="text-slate-800">{reclassifyModalItem.item.nombre}</strong>
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Clasificación actual */}
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 flex items-center justify-between text-xs">
+                          <div>
+                            <span className="text-slate-500 font-medium">Ubicación y clasificación actual:</span>
+                            <div className="font-bold text-slate-900 mt-0.5">
+                              {reclassifyModalItem.sourceEntity === 'repuestos'
+                                ? 'Lista de Repuestos y Componentes'
+                                : 'Lista de Modelos de Vehículos EV'}
+                            </div>
+                          </div>
+                          <span className="rounded-lg bg-white border border-slate-300 px-2.5 py-1 font-mono text-[11px] font-bold text-slate-700">
+                            {reclassifyModalItem.sourceEntity === 'repuestos'
+                              ? (reclassifyModalItem.item as AdminPartRecord).codigo_sku
+                              : `ID #${(reclassifyModalItem.item as AdminModelRecord).id_modelo}`}
+                          </span>
+                        </div>
+
+                        {/* Selector de Lista de Destino */}
+                        <div className="space-y-2">
+                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                            Seleccionar Lista de Destino:
+                          </label>
+
+                          <div className="grid grid-cols-1 gap-2.5">
+                            {/* Opción 1: Modelos EV */}
+                            <label
+                              className={`flex items-start gap-3 p-3 rounded-xl border text-xs cursor-pointer transition-colors ${
+                                reclassifyTargetList === 'modelos_ev'
+                                  ? 'border-indigo-600 bg-indigo-50/50 text-indigo-950 font-medium'
+                                  : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="targetList"
+                                value="modelos_ev"
+                                checked={reclassifyTargetList === 'modelos_ev'}
+                                onChange={() => setReclassifyTargetList('modelos_ev')}
+                                className="mt-0.5 text-indigo-600 focus:ring-indigo-500"
+                              />
+                              <div>
+                                <span className="font-bold block">Modelos EV (Vehículos Eléctricos Completos)</span>
+                                <span className="text-[11px] text-slate-600 block mt-0.5">
+                                  Para motocargas, motocicletas, trimotos, bicimotos y scooters eléctricos.
+                                </span>
+                              </div>
+                            </label>
+
+                            {/* Opción 2: Repuestos */}
+                            <label
+                              className={`flex items-start gap-3 p-3 rounded-xl border text-xs cursor-pointer transition-colors ${
+                                reclassifyTargetList === 'repuestos'
+                                  ? 'border-indigo-600 bg-indigo-50/50 text-indigo-950 font-medium'
+                                  : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="targetList"
+                                value="repuestos"
+                                checked={reclassifyTargetList === 'repuestos'}
+                                onChange={() => setReclassifyTargetList('repuestos')}
+                                className="mt-0.5 text-indigo-600 focus:ring-indigo-500"
+                              />
+                              <div>
+                                <span className="font-bold block">Repuestos y Componentes</span>
+                                <span className="text-[11px] text-slate-600 block mt-0.5">
+                                  Para baterías, BMS, controladores, motores, cargadores, frenos, llantas y accesorios.
+                                </span>
+                              </div>
+                            </label>
+
+                            {/* Opción 3: Fuera de Catálogo Comercial */}
+                            <label
+                              className={`flex items-start gap-3 p-3 rounded-xl border text-xs cursor-pointer transition-colors ${
+                                reclassifyTargetList === 'fuera_catalogo'
+                                  ? 'border-indigo-600 bg-indigo-50/50 text-indigo-950 font-medium'
+                                  : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="targetList"
+                                value="fuera_catalogo"
+                                checked={reclassifyTargetList === 'fuera_catalogo'}
+                                onChange={() => setReclassifyTargetList('fuera_catalogo')}
+                                className="mt-0.5 text-indigo-600 focus:ring-indigo-500"
+                              />
+                              <div>
+                                <span className="font-bold block">Otros productos / Fuera del catálogo comercial</span>
+                                <span className="text-[11px] text-slate-600 block mt-0.5">
+                                  Para juguetes eléctricos o artículos que no corresponden a la oferta comercial de NERO. Se excluyen de la tienda pública sin borrar su información.
+                                </span>
+                              </div>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Campos de configuración si el destino es Modelos EV */}
+                        {reclassifyTargetList === 'modelos_ev' && (
+                          <div className="rounded-xl border border-indigo-100 bg-indigo-50/30 p-4 space-y-3 text-xs">
+                            <h4 className="font-bold text-indigo-950 text-xs">Datos Técnicos para el Modelo EV</h4>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                  Marca Fabricante *
+                                </label>
+                                <select
+                                  value={reclassifyBrandId}
+                                  onChange={(e) => setReclassifyBrandId(e.target.value)}
+                                  className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-indigo-600 focus:outline-none"
+                                >
+                                  {brands.map((b) => (
+                                    <option key={b.id_marca} value={String(b.id_marca)}>
+                                      {b.nombre}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                  Tipo de Vehículo *
+                                </label>
+                                <select
+                                  value={reclassifyVehicleType}
+                                  onChange={(e) => setReclassifyVehicleType(e.target.value)}
+                                  className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-indigo-600 focus:outline-none"
+                                >
+                                  <option value="MOTOCARGA_ELECTRICA">Motocarga Eléctrica</option>
+                                  <option value="MOTO_ELECTRICA">Moto Eléctrica</option>
+                                  <option value="TRIMOTO_ELECTRICA">Trimoto Eléctrica</option>
+                                  <option value="BICIMOTO_ELECTRICA">Bicimoto Eléctrica</option>
+                                  <option value="SCOOTER_ELECTRICO">Scooter / Patinete Eléctrico</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                Nombre del Modelo de Vehículo *
+                              </label>
+                              <input
+                                type="text"
+                                value={reclassifyModelName}
+                                onChange={(e) => setReclassifyModelName(e.target.value)}
+                                placeholder="Ej. Motocarga Eléctrica 1000w"
+                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-indigo-600 focus:outline-none"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                  Voltaje Nominal (V)
+                                </label>
+                                <input
+                                  type="number"
+                                  value={reclassifyVoltage}
+                                  onChange={(e) => setReclassifyVoltage(e.target.value)}
+                                  placeholder="Ej. 60 o 72"
+                                  className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-indigo-600 focus:outline-none"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                  Potencia Motor (W)
+                                </label>
+                                <input
+                                  type="number"
+                                  value={reclassifyPowerW}
+                                  onChange={(e) => setReclassifyPowerW(e.target.value)}
+                                  placeholder="Ej. 1000"
+                                  className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-indigo-600 focus:outline-none"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                  Precio Referencial (PEN)
+                                </label>
+                                <input
+                                  type="number"
+                                  value={reclassifyPrice}
+                                  onChange={(e) => setReclassifyPrice(e.target.value)}
+                                  placeholder="Ej. 7700"
+                                  className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-indigo-600 focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Campos de configuración si el destino es Fuera de Catálogo */}
+                        {reclassifyTargetList === 'fuera_catalogo' && (
+                          <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 space-y-2.5 text-xs text-amber-900">
+                            <p className="font-bold">Aviso de exclusión comercial:</p>
+                            <p className="text-[11px] leading-relaxed">
+                              Este producto se archivará y dejará de aparecer en la tienda pública, catálogo y sugerencias de VoltIA. Se conservarán íntegramente sus identificadores (SKU, imágenes, precios y pedidos previos) para no romper la trazabilidad histórica.
+                            </p>
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                Motivo de exclusión
+                              </label>
+                              <input
+                                type="text"
+                                value={reclassifyReason}
+                                onChange={(e) => setReclassifyReason(e.target.value)}
+                                placeholder="Ej. Juguete eléctrico no comercializado por NERO / Producto fuera de rubro"
+                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-indigo-600 focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Datos preservados y garantía transaccional */}
+                        <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-[11px] text-slate-600 space-y-1">
+                          <p className="font-semibold text-slate-800">Garantías de integridad comercial:</p>
+                          <p>✓ Se conserva el SKU original y los identificadores de trazabilidad.</p>
+                          <p>✓ No se alteran pedidos históricos, comprobantes SUNAT ni registros contables.</p>
+                          <p>✓ Operación transaccional: en caso de error, el registro original permanece intacto.</p>
+                        </div>
+
+                        {/* Botones de acción */}
+                        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200">
+                          <button
+                            type="button"
+                            onClick={() => setReclassifyModalItem(null)}
+                            disabled={isProcessingReclassify}
+                            className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleConfirmReclassify}
+                            disabled={isProcessingReclassify}
+                            className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold px-4 py-2 text-xs shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
+                          >
+                            <Icon name="arrow-right" className="w-3.5 h-3.5" />
+                            <span>{isProcessingReclassify ? 'Reclasificando...' : 'Confirmar Reclasificación'}</span>
                           </button>
                         </div>
                       </div>
@@ -3994,6 +4622,279 @@ export function AdminDashboardView({
               onCatalogUpdated={refreshCatalogData}
             />
           )}
+
+          {/* ====================================================================
+              11. MÓDULO: GESTIÓN DE USUARIOS Y ACCESOS (usuarios)
+             ==================================================================== */}
+          {activeModule === 'usuarios' && (
+            <div className="space-y-6">
+              {/* Tarjetas de Métricas de Usuarios */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Total Usuarios</span>
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                      <Icon name="users" className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-black text-slate-900 mt-2">{users.length}</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Cuentas registradas en Auth</p>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Administradores</span>
+                    <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                      <Icon name="shield" className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-black text-indigo-600 mt-2">
+                    {users.filter((u) => u.role === 'admin').length}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Operadores con acceso total</p>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Clientes</span>
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                      <Icon name="user" className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-black text-emerald-600 mt-2">
+                    {users.filter((u) => u.role === 'customer').length}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Usuarios finales de la tienda</p>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Bloqueados</span>
+                    <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+                      <Icon name="lock" className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-black text-rose-600 mt-2">
+                    {users.filter((u) => u.isBanned).length}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Acceso revocado preventivo</p>
+                </div>
+              </div>
+
+              {/* Panel Principal */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                <div className="p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-base font-black text-slate-900">Gestión de Usuarios, Roles y Accesos</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Control granular de privilegios administrativos, estado de bloqueo y contraseñas.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={handleRefreshUsers}
+                      disabled={isLoadingUsers}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
+                    >
+                      <Icon name="clock" className={`w-3.5 h-3.5 ${isLoadingUsers ? 'animate-spin' : ''}`} />
+                      <span>{isLoadingUsers ? 'Cargando...' : 'Actualizar'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCreateUserError(null);
+                        setIsCreateUserModalOpen(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors shadow-sm cursor-pointer"
+                    >
+                      <Icon name="plus" className="w-3.5 h-3.5" />
+                      <span>Nuevo Usuario / Operador</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filtros de Búsqueda */}
+                <div className="p-4 bg-slate-50/70 border-b border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="relative">
+                    <Icon name="search" className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="Buscar por nombre, correo o ID..."
+                      value={userSearch}
+                      onChange={(e) => setUserSearch(e.target.value)}
+                      className="w-full text-xs rounded-xl border border-slate-300 bg-white pl-9 pr-3 py-2 text-slate-800 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                    />
+                  </div>
+
+                  <div>
+                    <select
+                      value={userRoleFilter}
+                      onChange={(e) => setUserRoleFilter(e.target.value as 'ALL' | 'admin' | 'customer')}
+                      className="w-full text-xs rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-800 focus:outline-none focus:border-indigo-600"
+                    >
+                      <option value="ALL">Todos los roles</option>
+                      <option value="admin">Solo Administradores</option>
+                      <option value="customer">Solo Clientes</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <select
+                      value={userStatusFilter}
+                      onChange={(e) => setUserStatusFilter(e.target.value as 'ALL' | 'active' | 'banned')}
+                      className="w-full text-xs rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-800 focus:outline-none focus:border-indigo-600"
+                    >
+                      <option value="ALL">Todos los estados</option>
+                      <option value="active">Solo Cuentas Activas</option>
+                      <option value="banned">Solo Cuentas Bloqueadas</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Tabla de Usuarios */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-100/70 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                        <th className="py-3 px-4">Usuario</th>
+                        <th className="py-3 px-4">Contacto</th>
+                        <th className="py-3 px-4">Rol Asignado</th>
+                        <th className="py-3 px-4">Estado de Acceso</th>
+                        <th className="py-3 px-4">Registro / Conexión</th>
+                        <th className="py-3 px-4 text-right">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {filteredUsers.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="py-12 text-center text-slate-400">
+                            No se encontraron usuarios coincidentes con los filtros aplicados.
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredUsers.map((u) => {
+                          const statusInfo = formatUserStatus(u);
+                          const isSelf = u.id === account.id;
+
+                          return (
+                            <tr key={u.id} className="hover:bg-slate-50/70 transition-colors">
+                              <td className="py-3.5 px-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-xs shrink-0">
+                                    {(u.fullName || u.email || 'U').charAt(0).toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-bold text-slate-900">{u.fullName}</span>
+                                      {isSelf && (
+                                        <span className="bg-cyan-100 text-cyan-800 text-[10px] font-bold px-1.5 py-0.2 rounded">
+                                          Tú
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span className="text-[11px] text-slate-500 font-mono block">
+                                      {u.email}
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+
+                              <td className="py-3.5 px-4 text-slate-600">
+                                {u.phone ? (
+                                  <span className="font-mono text-slate-700">{u.phone}</span>
+                                ) : (
+                                  <span className="text-slate-400 italic">Sin teléfono</span>
+                                )}
+                              </td>
+
+                              <td className="py-3.5 px-4">
+                                {u.role === 'admin' ? (
+                                  <span className="inline-flex items-center gap-1 bg-indigo-100 border border-indigo-200 text-indigo-800 text-[11px] font-bold px-2 py-0.5 rounded-md">
+                                    <Icon name="shield" className="w-3 h-3 text-indigo-600" />
+                                    <span>Administrador</span>
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-medium px-2 py-0.5 rounded-md">
+                                    <Icon name="user" className="w-3 h-3 text-slate-500" />
+                                    <span>Cliente</span>
+                                  </span>
+                                )}
+                              </td>
+
+                              <td className="py-3.5 px-4">
+                                <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${statusInfo.badgeClass}`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${statusInfo.dotClass}`} />
+                                  <span>{statusInfo.label}</span>
+                                </span>
+                              </td>
+
+                              <td className="py-3.5 px-4 text-[11px] text-slate-500">
+                                <div>Alta: {new Date(u.createdAt).toLocaleDateString('es-PE')}</div>
+                                {u.lastSignInAt ? (
+                                  <div className="text-[10px] text-slate-400">
+                                    Login: {new Date(u.lastSignInAt).toLocaleDateString('es-PE')}
+                                  </div>
+                                ) : (
+                                  <div className="text-[10px] text-slate-400 italic">Sin ingresos registrados</div>
+                                )}
+                              </td>
+
+                              <td className="py-3.5 px-4 text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  {/* Botón Cambiar Rol */}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setRoleModalUser(u);
+                                      setTargetUserRole(u.role === 'admin' ? 'customer' : 'admin');
+                                    }}
+                                    className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                                    title={u.role === 'admin' ? 'Cambiar a Cliente' : 'Promover a Administrador'}
+                                  >
+                                    <Icon name="shield" className="w-4 h-4" />
+                                  </button>
+
+                                  {/* Botón Bloquear / Desbloquear */}
+                                  <button
+                                    type="button"
+                                    onClick={() => setBanModalUser(u)}
+                                    className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                                      u.isBanned
+                                        ? 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+                                        : 'border-rose-200 text-rose-700 hover:bg-rose-50'
+                                    }`}
+                                    title={u.isBanned ? 'Desbloquear acceso' : 'Bloquear acceso'}
+                                  >
+                                    <Icon name={u.isBanned ? 'unlock' : 'lock'} className="w-4 h-4" />
+                                  </button>
+
+                                  {/* Botón Restablecer Contraseña */}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setPasswordModalUser(u);
+                                      setPasswordResetMode('link');
+                                      setDirectNewPassword('');
+                                      setGeneratedRecoveryLink(null);
+                                    }}
+                                    className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                                    title="Restablecer Contraseña"
+                                  >
+                                    <Icon name="key" className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
 
@@ -4307,6 +5208,450 @@ export function AdminDashboardView({
                       <span>Generar y Emitir Guía GRE</span>
                     </>
                   )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ====================================================================
+          MODALES DE GESTIÓN DE USUARIOS
+         ==================================================================== */}
+
+      {/* 1. Modal Cambiar Rol RBAC */}
+      {roleModalUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="px-6 py-4 bg-gradient-to-r from-slate-900 to-indigo-950 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Icon name="shield" className="w-5 h-5 text-indigo-400" />
+                <h3 className="text-sm font-bold">Modificar Rol de Usuario</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRoleModalUser(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                <Icon name="x" className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-200">
+                <p className="text-xs text-slate-500 font-medium">Usuario seleccionado:</p>
+                <p className="text-sm font-bold text-slate-900">{roleModalUser.fullName}</p>
+                <p className="text-xs text-slate-600 font-mono">{roleModalUser.email}</p>
+              </div>
+
+              {roleModalUser.id === account.id && targetUserRole !== 'admin' && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs space-y-1">
+                  <p className="font-bold flex items-center gap-1.5">
+                    <Icon name="alert-triangle" className="w-4 h-4 text-amber-600" />
+                    <span>Atención: Es tu propia cuenta</span>
+                  </p>
+                  <p className="text-[11px]">
+                    No puedes revocar tu propio rol de administrador mientras estás en sesión.
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-700">Seleccionar nuevo rol:</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setTargetUserRole('customer')}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      targetUserRole === 'customer'
+                        ? 'border-indigo-600 bg-indigo-50/50 text-indigo-950 ring-2 ring-indigo-600'
+                        : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Icon name="user" className="w-4 h-4 text-slate-500" />
+                      <span className="font-bold text-xs">Cliente</span>
+                    </div>
+                    <p className="text-[10px] text-slate-500">Acceso estándar a tienda y pedidos</p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTargetUserRole('admin')}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      targetUserRole === 'admin'
+                        ? 'border-indigo-600 bg-indigo-50/50 text-indigo-950 ring-2 ring-indigo-600'
+                        : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Icon name="shield" className="w-4 h-4 text-indigo-600" />
+                      <span className="font-bold text-xs">Administrador</span>
+                    </div>
+                    <p className="text-[10px] text-slate-500">Acceso total al ERP administrativo</p>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setRoleModalUser(null)}
+                  disabled={isProcessingUserAction}
+                  className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmRoleChange}
+                  disabled={isProcessingUserAction || (roleModalUser.id === account.id && targetUserRole !== 'admin')}
+                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer transition-colors disabled:opacity-50 shadow-sm"
+                >
+                  {isProcessingUserAction ? 'Actualizando...' : 'Guardar Nuevo Rol'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Modal Bloquear / Desbloquear Acceso */}
+      {banModalUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div
+              className={`px-6 py-4 text-white flex items-center justify-between ${
+                banModalUser.isBanned
+                  ? 'bg-gradient-to-r from-emerald-900 to-slate-900'
+                  : 'bg-gradient-to-r from-rose-950 to-slate-900'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Icon name={banModalUser.isBanned ? 'unlock' : 'lock'} className="w-5 h-5 text-amber-400" />
+                <h3 className="text-sm font-bold">
+                  {banModalUser.isBanned ? 'Desbloquear Acceso a Usuario' : 'Bloquear Acceso a Usuario'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBanModalUser(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                <Icon name="x" className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-200">
+                <p className="text-xs text-slate-500 font-medium">Usuario:</p>
+                <p className="text-sm font-bold text-slate-900">{banModalUser.fullName}</p>
+                <p className="text-xs text-slate-600 font-mono">{banModalUser.email}</p>
+              </div>
+
+              {banModalUser.id === account.id && !banModalUser.isBanned ? (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-900 text-xs">
+                  <p className="font-bold">Acción Denegada</p>
+                  <p className="text-[11px] mt-0.5">
+                    No puedes bloquear tu propia cuenta de administrador en sesión activa.
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  {banModalUser.isBanned
+                    ? 'Al desbloquear a este usuario, podrá volver a autenticarse y operar con normalidad en la plataforma.'
+                    : 'Al bloquear a este usuario, su sesión será invalidada y se le denegará el acceso inmediato a la tienda y al panel ERP.'}
+                </p>
+              )}
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setBanModalUser(null)}
+                  disabled={isProcessingUserAction}
+                  className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmToggleBan}
+                  disabled={isProcessingUserAction || (banModalUser.id === account.id && !banModalUser.isBanned)}
+                  className={`px-5 py-2 rounded-xl text-white text-xs font-bold cursor-pointer transition-colors disabled:opacity-50 shadow-sm ${
+                    banModalUser.isBanned
+                      ? 'bg-emerald-600 hover:bg-emerald-700'
+                      : 'bg-rose-600 hover:bg-rose-700'
+                  }`}
+                >
+                  {isProcessingUserAction
+                    ? 'Procesando...'
+                    : banModalUser.isBanned
+                    ? 'Confirmar Desbloqueo'
+                    : 'Confirmar Bloqueo'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Modal Restablecer Contraseña */}
+      {passwordModalUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="px-6 py-4 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Icon name="key" className="w-5 h-5 text-amber-400" />
+                <div>
+                  <h3 className="text-sm font-bold">Restablecer Contraseña</h3>
+                  <p className="text-[11px] text-slate-300">{passwordModalUser.email}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setPasswordModalUser(null);
+                  setGeneratedRecoveryLink(null);
+                }}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                <Icon name="x" className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Selector de Modalidad */}
+              <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPasswordResetMode('link');
+                    setGeneratedRecoveryLink(null);
+                  }}
+                  className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    passwordResetMode === 'link'
+                      ? 'bg-white text-slate-900 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Enlace Seguro
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPasswordResetMode('direct');
+                    setGeneratedRecoveryLink(null);
+                  }}
+                  className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    passwordResetMode === 'direct'
+                      ? 'bg-white text-slate-900 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Asignar Manual
+                </button>
+              </div>
+
+              {passwordResetMode === 'link' ? (
+                <div className="space-y-3">
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Genera un enlace de un solo uso criptográficamente seguro para que el usuario restablezca su clave.
+                  </p>
+                  {generatedRecoveryLink ? (
+                    <div className="space-y-2">
+                      <label className="block text-[11px] font-bold text-emerald-800">
+                        ✓ Enlace generado con éxito:
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          readOnly
+                          value={generatedRecoveryLink}
+                          className="w-full text-[11px] rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-emerald-900 font-mono"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(generatedRecoveryLink);
+                            setStatusFeedback({ type: 'success', text: 'Enlace copiado al portapapeles' });
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold cursor-pointer shrink-0"
+                        >
+                          Copiar
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-slate-500">
+                        Copia y comparte este enlace con el usuario a través de un canal seguro.
+                      </p>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleConfirmResetPassword}
+                      disabled={isProcessingUserAction}
+                      className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer transition-colors shadow-sm disabled:opacity-50"
+                    >
+                      {isProcessingUserAction ? 'Generando...' : 'Generar Enlace de Recuperación'}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Nueva Contraseña (mínimo 8 caracteres):
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={directNewPassword}
+                      onChange={(e) => setDirectNewPassword(e.target.value)}
+                      className="w-full text-xs rounded-xl border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:border-indigo-600"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    La clave se actualizará de forma inmediata en Supabase Auth.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleConfirmResetPassword}
+                    disabled={isProcessingUserAction || directNewPassword.trim().length < 8}
+                    className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer transition-colors shadow-sm disabled:opacity-50"
+                  >
+                    {isProcessingUserAction ? 'Actualizando...' : 'Actualizar Contraseña'}
+                  </button>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end pt-3 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPasswordModalUser(null);
+                    setGeneratedRecoveryLink(null);
+                  }}
+                  className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Modal Crear Nuevo Usuario / Operador */}
+      {isCreateUserModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto">
+          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8">
+            <div className="px-6 py-4 bg-gradient-to-r from-slate-900 to-indigo-950 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Icon name="plus" className="w-5 h-5 text-indigo-400" />
+                <h3 className="text-sm font-bold">Crear Nuevo Usuario / Operador</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCreateUserModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                <Icon name="x" className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateUserSubmit} className="p-6 space-y-4">
+              {createUserError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs">
+                  {createUserError}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Nombre Completo *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej. Juan Pérez"
+                    value={newUserFullName}
+                    onChange={(e) => setNewUserFullName(e.target.value)}
+                    className="w-full text-xs rounded-xl border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:border-indigo-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Teléfono (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="999888777"
+                    value={newUserPhone}
+                    onChange={(e) => setNewUserPhone(e.target.value)}
+                    className="w-full text-xs rounded-xl border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:border-indigo-600 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Correo Electrónico *
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="operador@neroelectricmotors.com"
+                  value={newUserEmail}
+                  onChange={(e) => setNewUserEmail(e.target.value)}
+                  className="w-full text-xs rounded-xl border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:border-indigo-600 font-mono"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Contraseña Inicial (mín. 8 car.) *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    minLength={8}
+                    placeholder="••••••••"
+                    value={newUserPassword}
+                    onChange={(e) => setNewUserPassword(e.target.value)}
+                    className="w-full text-xs rounded-xl border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:border-indigo-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Rol Inicial *
+                  </label>
+                  <select
+                    value={newUserRole}
+                    onChange={(e) => setNewUserRole(e.target.value as 'admin' | 'customer')}
+                    className="w-full text-xs rounded-xl border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:border-indigo-600 bg-white"
+                  >
+                    <option value="customer">Cliente Estándar (customer)</option>
+                    <option value="admin">Administrador (admin)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateUserModalOpen(false)}
+                  disabled={isProcessingUserAction}
+                  className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isProcessingUserAction}
+                  className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer transition-colors disabled:opacity-50 shadow-sm"
+                >
+                  {isProcessingUserAction ? 'Creando...' : 'Crear Usuario'}
                 </button>
               </div>
             </form>

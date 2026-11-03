@@ -9,6 +9,7 @@ import { requireAdminApi } from '@/lib/auth/server';
 import { createCatalogWriteClient } from '@/lib/supabase/server';
 import { mergeCatalogWithMaster } from '@/lib/catalog/catalog-fallback';
 import { validateProductAction } from '@/lib/catalog/product-status-core.mjs';
+import { executeReclassify } from '@/lib/catalog/reclassify-service';
 
 export async function GET() {
   const auth = await requireAdminApi();
@@ -149,6 +150,41 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
       return NextResponse.json({ success: true, record: data });
+    }
+
+    // Reclasificación y movimiento entre listas (Modelos EV, Repuestos, Fuera de Catálogo)
+    if (
+      (entity === 'catalog' || entity === 'repuestos' || entity === 'modelos_moto') &&
+      operation === 'reclassify'
+    ) {
+      const { sourceEntity, sourceId, targetList, modelData, partData, reason } = payload || {};
+      const result = await executeReclassify({
+        supabase,
+        sourceEntity: sourceEntity || (entity === 'catalog' ? 'repuestos' : entity),
+        sourceId: sourceId || payload?.id_repuesto || payload?.id_modelo,
+        targetList,
+        payload: {
+          ...payload,
+          ...(modelData || {}),
+          ...(partData || {}),
+          reason,
+        },
+        adminUser: auth.account?.email || 'Operador Administrador',
+      });
+
+      if (!result.success) {
+        return NextResponse.json(
+          { success: false, error: result.error || result.message },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: result.message,
+        targetModel: result.targetModel,
+        targetPart: result.targetPart,
+      });
     }
 
     if (entity === 'repuestos' && operation === 'create') {

@@ -3,6 +3,7 @@ import { requireAdmin } from '../lib/auth/server';
 import { createClient, createCatalogWriteClient } from '../lib/supabase/server';
 import { AdminDashboardView } from '../components/admin/AdminDashboardView';
 import { mergeCatalogWithMaster } from '../lib/catalog/catalog-fallback';
+import { listAdminUsers } from '../lib/users/user-service';
 
 export const metadata: Metadata = {
   title: 'Resumen Operativo | ERP NeroElectric Motors',
@@ -25,6 +26,7 @@ export default async function AdminHomePage() {
     { data: documentsData },
     { data: subscriptionsData },
     { data: importHistoryData },
+    usersResult,
   ] = await Promise.all([
     supabase
       .from('marcas')
@@ -50,7 +52,10 @@ export default async function AdminHomePage() {
     supabase.from('documentos_fiscales').select('*').order('created_at', { ascending: false }).limit(20),
     supabase.from('suscripciones_newsletter').select('*').order('created_at', { ascending: false }).limit(20),
     supabase.from('catalogo_importaciones').select('*').order('created_at', { ascending: false }).limit(15),
+    listAdminUsers(supabase),
   ]);
+
+  const initialUsers = usersResult?.success && Array.isArray(usersResult.users) ? usersResult.users : [];
 
   const normalizedCompatibilities = (compatData || []).map((c) => ({
     id_compatibilidad: c.id_compatibilidad,
@@ -88,6 +93,7 @@ export default async function AdminHomePage() {
       initialModels={merged.models}
       initialParts={merged.parts}
       initialCompatibilities={merged.compatibilities}
+      initialUsers={initialUsers}
     />
   );
 }
