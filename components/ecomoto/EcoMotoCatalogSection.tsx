@@ -238,15 +238,16 @@ export function EcoMotoCatalogSection({
     });
   }, [selectedBrand, selectedPartCategory, selectedVoltage, searchFilter]);
 
-  // Si la búsqueda por URL coincide solo con la otra pestaña, cambiar automáticamente
+  // Si la búsqueda coincide solo con la otra pestaña, cambiar automáticamente
   useEffect(() => {
-    if (!initialQuery.trim()) return;
-    if (initialTab === 'repuestos' && filteredParts.length === 0 && filteredMotos.length > 0) {
+    const q = (searchFilter || initialQuery || '').trim();
+    if (!q) return;
+    if (activeTab === 'repuestos' && filteredParts.length === 0 && filteredMotos.length > 0) {
       setActiveTab('motos');
-    } else if (initialTab === 'motos' && filteredMotos.length === 0 && filteredParts.length > 0) {
+    } else if (activeTab === 'motos' && filteredMotos.length === 0 && filteredParts.length > 0) {
       setActiveTab('repuestos');
     }
-  }, [initialQuery, initialTab, filteredParts.length, filteredMotos.length]);
+  }, [searchFilter, initialQuery, activeTab, filteredParts.length, filteredMotos.length]);
 
   return (
     <div className="flex flex-col">

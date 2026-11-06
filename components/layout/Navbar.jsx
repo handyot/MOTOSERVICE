@@ -85,6 +85,7 @@ export function Navbar() {
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
     setIsDropdownOpen(false);
+    setMobileMenuOpen(false);
     if (
       searchResults &&
       searchResults.query?.toLowerCase() === trimmed.toLowerCase() &&
@@ -383,12 +384,7 @@ export function Navbar() {
         <div className="lg:hidden border-b border-gray-200 bg-white px-4 pt-3 pb-6 space-y-3">
           {/* Buscador móvil con redirección */}
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!searchQuery.trim()) return;
-              setMobileMenuOpen(false);
-              router.push(`/repuestos?q=${encodeURIComponent(searchQuery.trim())}`);
-            }}
+            onSubmit={handleSearchSubmit}
             className="mb-2"
           >
             <div className="relative w-full">
