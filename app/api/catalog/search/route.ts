@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
-import { OFFICIAL_PARTS, getPublicCatalogMotos } from '@/data/ecomoto-data';
-import { FEATURED_PARTS } from '@/lib/constants.js';
+import {
+  OFFICIAL_PARTS,
+  getPublicCatalogMotos,
+  getMotoWithCompatibleParts,
+} from '@/data/ecomoto-data';
 import { searchCatalogItems } from '@/lib/catalog/search-core.mjs';
 
 interface PartItem {
@@ -28,23 +31,17 @@ export async function GET(request: Request) {
       });
     }
 
-    // Unificar fuentes de repuestos
-    const combinedParts: PartItem[] = [
-      ...FEATURED_PARTS.map((p) => ({
-        ...p,
-        partKey: p.sku,
-        category: p.categorySlug,
-        brand: 'NERO Electric',
-        pricePen: p.price,
-        dataStatus: 'ACTIVO',
-      })),
-      ...OFFICIAL_PARTS.map((p) => ({
-        ...p,
-        dataStatus: (p as unknown as { dataStatus?: string }).dataStatus || 'ACTIVO',
-      })),
-    ];
+    // Repuestos reales del catálogo oficial (mismos que renderiza /repuestos)
+    const combinedParts: PartItem[] = OFFICIAL_PARTS.map((p) => ({
+      ...p,
+      dataStatus: (p as unknown as { dataStatus?: string }).dataStatus || 'ACTIVO',
+    }));
 
-    const motos = getPublicCatalogMotos();
+    // Motos públicas que cuentan con repuestos compatibles verificados (mismo filtro que /motos)
+    const motos = getPublicCatalogMotos().filter((m) => {
+      const detail = getMotoWithCompatibleParts(m.slug);
+      return Boolean(detail && detail.compatibleParts && detail.compatibleParts.length > 0);
+    });
 
     type SearchCoreFn = (opts: {
       query: string;

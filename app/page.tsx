@@ -10,8 +10,8 @@ export default function Home() {
     <div className="flex flex-col">
       <Hero />
 
-      {/* Catálogo oficial: motos, repuestos compatibles, buscador y comparador */}
-      <EcoMotoCatalogSection />
+      {/* Catálogo oficial: motos y repuestos compatibles */}
+      <EcoMotoCatalogSection showComparatorTab={false} />
 
       {/* Asistencia técnica directa y soporte */}
       <AssistanceCTA />

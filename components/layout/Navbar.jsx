@@ -72,11 +72,32 @@ export function Navbar() {
     };
   }, []);
 
+  const dispatchCatalogSearch = (query, tab) => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("catalog-search", { detail: { query, tab } })
+      );
+    }
+  };
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if (!searchQuery.trim()) return;
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
     setIsDropdownOpen(false);
-    router.push(`/repuestos?q=${encodeURIComponent(searchQuery.trim())}`);
+    if (
+      searchResults &&
+      searchResults.query?.toLowerCase() === trimmed.toLowerCase() &&
+      (!searchResults.parts || searchResults.parts.length === 0) &&
+      searchResults.motos &&
+      searchResults.motos.length > 0
+    ) {
+      dispatchCatalogSearch(trimmed, "motos");
+      router.push(`/motos?modelo=${encodeURIComponent(trimmed)}`);
+      return;
+    }
+    dispatchCatalogSearch(trimmed, "repuestos");
+    router.push(`/repuestos?q=${encodeURIComponent(trimmed)}`);
   };
 
   const isRepuestosActive = pathname?.startsWith("/repuestos");
@@ -154,7 +175,10 @@ export function Navbar() {
                       <Link
                         key={part.id || part.sku}
                         href={part.url || `/repuestos?q=${encodeURIComponent(part.sku || part.name)}`}
-                        onClick={() => setIsDropdownOpen(false)}
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                          dispatchCatalogSearch(part.sku || part.name, "repuestos");
+                        }}
                         className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors group"
                       >
                         <div className="flex items-center gap-2.5 min-w-0 pr-2">
@@ -204,7 +228,10 @@ export function Navbar() {
                       <Link
                         key={moto.id || moto.slug}
                         href={moto.url || `/motos?modelo=${encodeURIComponent(moto.slug)}`}
-                        onClick={() => setIsDropdownOpen(false)}
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                          dispatchCatalogSearch(moto.slug, "motos");
+                        }}
                         className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors group"
                       >
                         <div className="flex items-center gap-2.5 min-w-0 pr-2">
@@ -239,7 +266,10 @@ export function Navbar() {
                 <div className="p-2 bg-gray-50/70 text-center">
                   <Link
                     href={`/repuestos?q=${encodeURIComponent(searchResults.query)}`}
-                    onClick={() => setIsDropdownOpen(false)}
+                    onClick={() => {
+                      setIsDropdownOpen(false);
+                      dispatchCatalogSearch(searchResults.query, "repuestos");
+                    }}
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 py-1"
                   >
                     Ver todos los resultados ({searchResults.totalMatches}) en Repuestos
