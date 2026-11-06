@@ -24,6 +24,8 @@ import {
   verifyGuestToken,
   getVerifiedCatalogPart,
   validateOrderStatusTransition,
+  validateItemStock,
+  calculateDeductedStock,
   maskEmail,
   maskName,
   maskAddress,
@@ -42,10 +44,126 @@ export {
   verifyGuestToken,
   getVerifiedCatalogPart,
   validateOrderStatusTransition,
+  validateItemStock,
+  calculateDeductedStock,
 };
 
 const memoryOrders = new Map<string, OrderRecord>();
 const memoryTokens = new Map<string, string>();
+const memoryStockOverrides = new Map<string, number>();
+
+export function setMemoryStockOverride(sku: string, stock: number) {
+  memoryStockOverrides.set(sku.trim().toUpperCase(), stock);
+}
+
+export function clearMemoryStockOverrides() {
+  memoryStockOverrides.clear();
+}
+
+/**
+ * Consulta existencias físicas reales de repuestos en Supabase (public.repuestos.stock_propio_ecomoto).
+ */
+export async function getRealPartStockFromSupabase(
+  skus: string[]
+): Promise<Map<string, { stock: number; price?: number; dataStatus?: string; estado?: boolean }>> {
+  const result = new Map<string, { stock: number; price?: number; dataStatus?: string; estado?: boolean }>();
+  if (!skus || skus.length === 0) return result;
+
+  try {
+    const supabase = createOrderAdminClient();
+    if (!supabase) return result;
+
+    const normalized = skus.map((s) => s.trim().toUpperCase()).filter(Boolean);
+    if (normalized.length === 0) return result;
+
+    const filterConditions = normalized.map((s) => `codigo_sku.eq.${s},part_key.eq.${s}`).join(',');
+    const { data, error } = await supabase
+      .from('repuestos')
+      .select('id_repuesto, codigo_sku, part_key, stock_propio_ecomoto, precio, data_status, estado')
+      .or(filterConditions);
+
+    if (error) {
+      console.warn('[MOTOSERVICE OrderService] Error al consultar stock_propio_ecomoto en Supabase:', error.message);
+      return result;
+    }
+
+    if (data && Array.isArray(data)) {
+      for (const row of data) {
+        const stock = typeof row.stock_propio_ecomoto === 'number' ? row.stock_propio_ecomoto : 0;
+        const entry = {
+          stock,
+          price: typeof row.precio === 'number' ? row.precio : undefined,
+          dataStatus: row.data_status || 'ACTIVO',
+          estado: row.estado !== undefined ? row.estado : true,
+        };
+        if (row.codigo_sku) result.set(row.codigo_sku.toUpperCase(), entry);
+        if (row.part_key) result.set(row.part_key.toUpperCase(), entry);
+      }
+    }
+  } catch (err) {
+    console.warn('[MOTOSERVICE OrderService] Excepción al consultar stock en Supabase:', err);
+  }
+
+  return result;
+}
+
+/**
+ * Descuenta las existencias físicas (stock_propio_ecomoto) en Supabase tras la confirmación de un pedido o pago.
+ */
+export async function deductStockForOrder(orderId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const order = await getOrderSecurely({ orderId, isAdmin: true });
+    if (!order || !order.items || order.items.length === 0) {
+      return { success: false, error: 'Pedido sin items o no encontrado.' };
+    }
+
+    if (order.stockDeducted) {
+      return { success: true };
+    }
+
+    const supabase = createOrderAdminClient();
+    if (!supabase) {
+      for (const item of order.items) {
+        const skuKey = item.sku.trim().toUpperCase();
+        if (memoryStockOverrides.has(skuKey)) {
+          const current = memoryStockOverrides.get(skuKey)!;
+          memoryStockOverrides.set(skuKey, Math.max(0, current - item.quantity));
+        }
+      }
+      order.stockDeducted = true;
+      memoryOrders.set(orderId, order);
+      return { success: true };
+    }
+
+    for (const item of order.items) {
+      const skuKey = item.sku.trim().toUpperCase();
+      const { data: part, error: fetchErr } = await supabase
+        .from('repuestos')
+        .select('id_repuesto, codigo_sku, part_key, stock_propio_ecomoto')
+        .or(`codigo_sku.eq.${skuKey},part_key.eq.${skuKey}`)
+        .maybeSingle();
+
+      if (!fetchErr && part) {
+        const currentStock = typeof part.stock_propio_ecomoto === 'number' ? part.stock_propio_ecomoto : 0;
+        const newStock = Math.max(0, currentStock - item.quantity);
+
+        await supabase
+          .from('repuestos')
+          .update({ stock_propio_ecomoto: newStock })
+          .eq('id_repuesto', part.id_repuesto);
+      }
+    }
+
+    order.stockDeducted = true;
+    memoryOrders.set(orderId, order);
+
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Error al descontar stock';
+    console.error(`[MOTOSERVICE] Error al descontar existencias para pedido ${orderId}:`, msg);
+    return { success: false, error: msg };
+  }
+}
 
 /**
  * Crea un pedido en el servidor recalculando precios y verificando stock.
@@ -98,7 +216,9 @@ export async function createOrder(
     throw new Error(taxCheck.error || 'Documento tributario inválido.');
   }
 
-  // 2. Recalcular items estrictamente en el servidor
+  // 2. Recalcular items y consultar existencias reales en Supabase
+  const requestedSkus = items.map((i) => i.sku.trim());
+  const dbStockMap = await getRealPartStockFromSupabase(requestedSkus);
   let subtotal = 0;
   const verifiedItems: OrderItemRecord[] = [];
 
@@ -120,7 +240,12 @@ export async function createOrder(
           currency: 'PEN',
           category: official.category,
           isDirectSale: true,
-          stockAvailable: official.stockStatus === 'AGOTADO_EN_PAGINA' ? 0 : 15,
+          stockAvailable:
+            official.stockStatus === 'AGOTADO_EN_PAGINA'
+              ? 0
+              : typeof official.ownStock === 'number'
+              ? official.ownStock
+              : 10,
           dataStatus: 'ACTIVO',
           estado: true,
         };
@@ -129,6 +254,20 @@ export async function createOrder(
 
     if (!verifiedPart) {
       throw new Error(`El repuesto con SKU ${item.sku} no fue encontrado en el catálogo oficial.`);
+    }
+
+    // Priorizar existencias reales de Supabase o simulación de prueba si existen
+    const normalizedSku = item.sku.trim().toUpperCase();
+    if (memoryStockOverrides.has(normalizedSku)) {
+      verifiedPart.stockAvailable = memoryStockOverrides.get(normalizedSku)!;
+    } else if (dbStockMap.has(normalizedSku)) {
+      const dbInfo = dbStockMap.get(normalizedSku)!;
+      verifiedPart.stockAvailable = dbInfo.stock;
+      if (dbInfo.dataStatus) verifiedPart.dataStatus = dbInfo.dataStatus;
+      if (dbInfo.estado !== undefined) verifiedPart.estado = dbInfo.estado;
+      if (typeof dbInfo.price === 'number' && dbInfo.price > 0) {
+        verifiedPart.price = dbInfo.price;
+      }
     }
 
     // Validación de estado comercial y ciclo de vida del repuesto (Issue #9)
@@ -141,20 +280,15 @@ export async function createOrder(
       );
     }
 
-    if (!verifiedPart.isDirectSale || verifiedPart.stockAvailable <= 0) {
-      throw new Error(
-        `El repuesto «${verifiedPart.name}» requiere consultar disponibilidad con proveedor y no puede comprarse directamente.`
-      );
-    }
-
-    if (item.quantity <= 0 || !Number.isInteger(item.quantity)) {
-      throw new Error(`Cantidad inválida para el producto ${verifiedPart.name}.`);
-    }
-
-    if (item.quantity > verifiedPart.stockAvailable) {
-      throw new Error(
-        `No hay suficiente stock para «${verifiedPart.name}». Disponible: ${verifiedPart.stockAvailable} unidades.`
-      );
+    // Validación de existencias físicas reales contra stock de almacén (Issue #28)
+    const stockValidation = validateItemStock({
+      requestedQuantity: item.quantity,
+      stockAvailable: verifiedPart.stockAvailable,
+      partName: verifiedPart.name,
+      sku: verifiedPart.sku,
+    });
+    if (!stockValidation.valid) {
+      throw new Error(stockValidation.error);
     }
 
     const itemSubtotal = Math.round(verifiedPart.price * item.quantity * 100) / 100;
@@ -759,6 +893,11 @@ export async function updateOrderStatus(
   order.updatedAt = new Date().toISOString();
   if (adminNotes) order.adminNotes = adminNotes;
   memoryOrders.set(orderId, order);
+
+  // Si el pedido pasa a confirmado, descontar existencias
+  if (targetStatus === 'confirmado' && !order.stockDeducted) {
+    await deductStockForOrder(orderId);
+  }
 
   try {
     const supabase = createOrderAdminClient() || (await createClient());

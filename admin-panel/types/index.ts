@@ -445,6 +445,7 @@ export interface OrderRecord {
   paymentStatus: PaymentStatus;
   documentStatus: FiscalDocumentStatus;
   dispatchStatus: DispatchStatus;
+  stockDeducted?: boolean;
   customerNotes?: string | null;
   adminNotes?: string | null;
   createdAt: string;

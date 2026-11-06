@@ -117,7 +117,12 @@ export function EcoMotoCatalogSection({
       categoryName: part.category,
       imageUrl: part.imageUrl,
       isDirectSale: true,
-      stockAvailable: part.stockStatus === 'AGOTADO_EN_PAGINA' ? 0 : 15,
+      stockAvailable:
+        part.stockStatus === 'AGOTADO_EN_PAGINA'
+          ? 0
+          : typeof part.ownStock === 'number'
+          ? part.ownStock
+          : 10,
       voltage: part.electricalVoltageV || part.outputVoltageV,
     });
 

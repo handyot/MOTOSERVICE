@@ -5,6 +5,7 @@ import {
   CulqiWebhookPayload,
 } from '@/lib/payments/culqi';
 import { createClient, createOrderAdminClient } from '@/lib/supabase/server';
+import { deductStockForOrder } from '@/lib/orders/order-service';
 
 export async function POST(request: Request) {
   try {
@@ -45,6 +46,10 @@ export async function POST(request: Request) {
             updated_at: new Date().toISOString(),
           })
           .eq('id_pedido', result.orderId);
+
+        if (result.status === 'pagado') {
+          await deductStockForOrder(result.orderId);
+        }
       } catch (dbErr) {
         console.warn('[MOTOSERVICE Webhook] No se pudo actualizar DB:', dbErr);
       }

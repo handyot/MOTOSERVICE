@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { processCulqiCharge, isCulqiConfigured } from '@/lib/payments/culqi';
-import { getOrderSecurely, recordOrderPaymentInMemory } from '@/lib/orders/order-service';
+import { getOrderSecurely, recordOrderPaymentInMemory, deductStockForOrder } from '@/lib/orders/order-service';
 import { createClient, createOrderAdminClient, getOrderAdminConfigStatus } from '@/lib/supabase/server';
 import { generateProvisionalFiscalReceipt, calculateTaxBreakdown } from '@/lib/documents/fiscal-service';
 
@@ -221,6 +221,9 @@ export async function POST(request: Request) {
         total_comprobante: provisionalDoc.totalAmount,
         observaciones: provisionalDoc.observacion,
       });
+
+      // Descontar existencias físicas reales en Supabase tras pago verificado (Issue #28)
+      await deductStockForOrder(order.id);
 
       dbSuccess = true;
     } catch (dbErr) {
