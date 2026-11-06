@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { processCulqiCharge, isCulqiConfigured } from '@/lib/payments/culqi';
 import { getOrderSecurely, recordOrderPaymentInMemory, deductStockForOrder } from '@/lib/orders/order-service';
 import { createClient, createOrderAdminClient, getOrderAdminConfigStatus } from '@/lib/supabase/server';
-import { generateProvisionalFiscalReceipt, calculateTaxBreakdown } from '@/lib/documents/fiscal-service';
+import { emitFiscalDocumentForOrder, generateProvisionalFiscalReceipt, calculateTaxBreakdown } from '@/lib/documents/fiscal-service';
 
 export async function POST(request: Request) {
   try {
@@ -194,33 +194,8 @@ export async function POST(request: Request) {
         .eq('id_pedido', order.id)
         .neq('estado_pago', 'pagado');
 
-      // Generar registro de comprobante fiscal en estado listo
-      const taxBreakdown = calculateTaxBreakdown({
-        subtotal: order.subtotal,
-        discount: order.discount,
-        shipping: order.shippingCost,
-      });
-
-      const provisionalDoc = generateProvisionalFiscalReceipt({
-        type: order.invoiceType,
-        orderNumber: order.orderNumber,
-        docNumber: order.docNumber,
-        businessName: order.docBusinessName || undefined,
-        taxBreakdown,
-      });
-
-      await supabase.from('documentos_fiscales').insert({
-        id_pedido: order.id,
-        tipo: provisionalDoc.tipo,
-        serie: provisionalDoc.serie,
-        numero: provisionalDoc.numero,
-        estado: 'listo',
-        datos_receptor: provisionalDoc.datosReceptor,
-        total_gravada: provisionalDoc.taxableAmount,
-        total_igv: provisionalDoc.igvAmount,
-        total_comprobante: provisionalDoc.totalAmount,
-        observaciones: provisionalDoc.observacion,
-      });
+      // Generar registro de comprobante fiscal en estado listo e idempotente (Issue #29)
+      await emitFiscalDocumentForOrder({ order, supabaseClient: supabase });
 
       // Descontar existencias físicas reales en Supabase tras pago verificado (Issue #28)
       await deductStockForOrder(order.id);

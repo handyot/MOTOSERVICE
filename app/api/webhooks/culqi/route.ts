@@ -5,7 +5,8 @@ import {
   CulqiWebhookPayload,
 } from '@/lib/payments/culqi';
 import { createClient, createOrderAdminClient } from '@/lib/supabase/server';
-import { deductStockForOrder } from '@/lib/orders/order-service';
+import { deductStockForOrder, getOrderSecurely } from '@/lib/orders/order-service';
+import { emitFiscalDocumentForOrder } from '@/lib/documents/fiscal-service';
 
 export async function POST(request: Request) {
   try {
@@ -43,12 +44,19 @@ export async function POST(request: Request) {
           .update({
             estado_pago: result.status,
             estado_pedido: result.status === 'pagado' ? 'confirmado' : 'pendiente_pago',
+            estado_comprobante: result.status === 'pagado' ? 'listo' : 'pendiente',
             updated_at: new Date().toISOString(),
           })
           .eq('id_pedido', result.orderId);
 
         if (result.status === 'pagado') {
           await deductStockForOrder(result.orderId);
+
+          // Emitir comprobante fiscal en public.documentos_fiscales (Issue #29)
+          const order = await getOrderSecurely({ orderId: result.orderId, isAdmin: true });
+          if (order) {
+            await emitFiscalDocumentForOrder({ order, supabaseClient: supabase });
+          }
         }
       } catch (dbErr) {
         console.warn('[MOTOSERVICE Webhook] No se pudo actualizar DB:', dbErr);

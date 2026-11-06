@@ -2,6 +2,7 @@ import {
   validateFiscalDocument as coreValidateFiscalDocument,
   calculateTaxBreakdown as coreCalculateTaxBreakdown,
   generateProvisionalFiscalReceipt as coreGenerateProvisionalFiscalReceipt,
+  emitFiscalDocumentForOrder as coreEmitFiscalDocumentForOrder,
 } from './fiscal-core.mjs';
 import { InvoiceType } from '@/types';
 
@@ -39,3 +40,5 @@ export const generateProvisionalFiscalReceipt = coreGenerateProvisionalFiscalRec
   businessName?: string;
   taxBreakdown: TaxBreakdown;
 }) => Record<string, unknown>;
+
+export const emitFiscalDocumentForOrder = coreEmitFiscalDocumentForOrder;
