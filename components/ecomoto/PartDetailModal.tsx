@@ -16,6 +16,7 @@ import { SupplierPart } from '@/types';
 import { getPartWithCompatibleMotos } from '@/data/ecomoto-data';
 import { formatCurrency } from '@/lib/utils';
 import { useCart } from '@/lib/cart/cart-context';
+import { getCatalogPartStock } from '@/lib/catalog/part-stock';
 
 interface PartDetailModalProps {
   part: SupplierPart | null;
@@ -30,7 +31,7 @@ export function PartDetailModal({ part, onClose, onSelectMotoSlug }: PartDetailM
   if (!part) return null;
 
   const handleAddToCart = () => {
-    addItem({
+    const res = addItem({
       id: part.sku || part.partKey,
       sku: part.sku || part.partKey,
       partKey: part.partKey,
@@ -40,14 +41,13 @@ export function PartDetailModal({ part, onClose, onSelectMotoSlug }: PartDetailM
       categoryName: part.category,
       imageUrl: part.imageUrl,
       isDirectSale: true,
-      stockAvailable:
-        part.stockStatus === 'AGOTADO_EN_PAGINA'
-          ? 0
-          : typeof part.ownStock === 'number'
-          ? part.ownStock
-          : 10,
+      stockAvailable: getCatalogPartStock(part),
       voltage: part.electricalVoltageV || part.outputVoltageV,
     });
+    if (!res.success) {
+      window.alert(res.message || 'No se pudo añadir el repuesto al carrito.');
+      return;
+    }
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2500);
   };

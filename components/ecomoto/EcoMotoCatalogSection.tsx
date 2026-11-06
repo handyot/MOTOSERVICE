@@ -22,6 +22,7 @@ import {
 } from '@/data/ecomoto-data';
 import { formatCurrency } from '@/lib/utils';
 import { useCart } from '@/lib/cart/cart-context';
+import { getCatalogPartStock } from '@/lib/catalog/part-stock';
 import { isProductVisibleInCatalog } from '@/lib/catalog/product-status-core.mjs';
 import { normalizeSearchText } from '@/lib/catalog/search-core.mjs';
 import { MotoComparator } from './MotoComparator';
@@ -117,12 +118,7 @@ export function EcoMotoCatalogSection({
       categoryName: part.category,
       imageUrl: part.imageUrl,
       isDirectSale: true,
-      stockAvailable:
-        part.stockStatus === 'AGOTADO_EN_PAGINA'
-          ? 0
-          : typeof part.ownStock === 'number'
-          ? part.ownStock
-          : 10,
+      stockAvailable: getCatalogPartStock(part),
       voltage: part.electricalVoltageV || part.outputVoltageV,
     });
 

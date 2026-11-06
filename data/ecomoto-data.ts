@@ -1432,7 +1432,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "La fuente también enumera GreenLine M6, M5, E3, E5. Antes de mostrar compra confirmada, validar el puerto y la variante exacta. Precio publicado sin instalación.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/04/60V3A-cargador-tailg-hg-430x430.webp"
   },
   {
@@ -1454,7 +1454,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "La fuente declara compatibilidad con bicimotos/VMP TAILG LEDO, VMP S4, VMP S2 y VMP S2X, entre otros.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/bateria-de-tailg-ledo-litio-extraible-PHYLION-430x430.webp"
   },
   {
@@ -1476,7 +1476,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "VERIFICAR_VARIANTE",
     "notes": "La fuente enumera T7, V10, X51, T5, T3 y T24; incluye advertencia de verificar compatibilidad para otros modelos/marcas.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/Bateria-Litio-48V24AH-Extraible-Ampace-430x430.webp"
   },
   {
@@ -1499,7 +1499,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "La fuente indica que está equipada en TAILG F55L. No asumir compatibilidad en cualquier batería de tensión nominal similar.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/Bateria-Litio-Extraible-64V30AH-GreenWay-LMFP-H-430x430.webp"
   },
   {
@@ -1522,7 +1522,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Compatible según la fuente con bicimotos TAILG T7, V10 y X51.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/06/Cargador-de-Litio-48V-3A-Output-54.6V-frontal-430x430.webp"
   },
   {
@@ -1545,7 +1545,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "No reemplazar por un cargador 48V genérico: salida y adaptador difieren.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/cargador-de-litio-output-59.0V-3V-430x430.webp"
   },
   {
@@ -1569,7 +1569,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "La fuente declara 365 W y uso diseñado para la batería de TAILG F55L.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/TAILG-Cargador-de-litio-60V-5A-LiFEPO4-73V-430x430.webp"
   },
   {
@@ -1589,7 +1589,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "La fuente dice que precios no incluyen instalación.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/04/cajuela-cuadra-iw-blanco.webp"
   },
   {
@@ -1607,7 +1607,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "El proveedor muestra rango de precio S/30–60 según variante. Verificar sentido de rosca y lado antes de venta.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/10/Espejo-Deportivo-8mm-Original-TAILG-WY-261-430x430.webp"
   },
   {
@@ -1625,7 +1625,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Rango de precio publicado S/35–70 según variante.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2024/12/espejos-deportivos-TAILG-HJ-182-430x430.webp"
   },
   {
@@ -1643,7 +1643,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Rango de precio publicado S/40–80 según variante.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/Espejo-Deportivo-TAILG-XC-603.webp",
     "pricePen": 40
   },
@@ -1666,7 +1666,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "La página marca sin existencias; mostrar como agotado o para consultar, no permitir checkout como stock disponible.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/04/Cargador-tailg-72V3A-v-430x430.webp"
   },
   {
@@ -1689,7 +1689,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "PARCIAL",
     "notes": "No hay un modelo compatible específico indicado en la ficha consultada. No asignar compatibilidad automática por voltaje solamente.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/bateria-plomo-acido-12v-20ah.webp"
   },
   {
@@ -1712,7 +1712,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Página marcada sin existencias; la ficha lo describe como cargador genérico para pack de 5 celdas de plomo ácido (equivalente 60V).",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/04/60V3A-cargador-tailg-hg-430x430.webp"
   },
   {
@@ -1734,7 +1734,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PENDIENTE_DE_COMPATIBILIDAD",
     "notes": "La ficha no identifica modelos concretos de motos compatibles. No asociar automáticamente a todos los modelos de 72V.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/07/bateria-lifepo4-72V30AH-con-mayor-tiempo-de-vida.webp"
   },
   {
@@ -1756,7 +1756,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PENDIENTE_DE_COMPATIBILIDAD",
     "notes": "La ficha no identifica modelos concretos de motos compatibles. No asociar automáticamente a todos los modelos de 72V.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/07/bateria-lifepo4-72V24AH-con-mayor-ciclos-de-carga.webp"
   },
   {
@@ -1775,7 +1775,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "El proveedor identifica el modelo compatible de forma explícita.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/guardafango-posterior-bicimoto-ido_3-scaled.webp"
   },
   {
@@ -1791,7 +1791,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Precio no visible en el resultado consultado; no inventar precio.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/pastilla-de-freno-motor-mnk2-scaled-300x300.webp"
   },
   {
@@ -1812,7 +1812,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-30",
     "dataStatus": "PENDIENTE_DE_COMPATIBILIDAD",
     "notes": "No se atribuye compatibilidad a un modelo específico porque la ficha de producto no lo identifica.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/cargador-48v20ah-litio-bicimoto-scaled-300x300.webp"
   },
   {
@@ -1833,7 +1833,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/08/Bateria12V22AH-TAILG-Plomo-Acido-con-Grafeno-430x430.webp"
   },
   {
@@ -1854,7 +1854,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/08/Bateria12V23AH-TIAN-NENG-Plomo-Acido-con-Grafeno-430x430.webp"
   },
   {
@@ -1875,7 +1875,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/07/Bateria-12V35AH-Plomo-Acido-con-Grafeno-430x430.webp"
   },
   {
@@ -1896,7 +1896,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/06/Bateria-de-Litio-72V73Ah-Farasis-Celda-NMC-Tipo-Pouch-P-430x430.png"
   },
   {
@@ -1917,7 +1917,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/06/BATERIA-1-430x430.webp"
   },
   {
@@ -1935,7 +1935,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/02/Candado-de-Freno-Disco-con-Alarma-colores.webp"
   },
   {
@@ -1953,7 +1953,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/02/casco-bicimoto-WG5-negro-tailg-x.webp"
   },
   {
@@ -1971,7 +1971,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/07/casco-RNG-negro-brillante.webp"
   },
   {
@@ -1989,7 +1989,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/06/casco-BYB720-verde.webp"
   },
   {
@@ -2007,7 +2007,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/02/Casco-Doble-Visor-Abierto-byb730-negro-mate-lateral-front.webp"
   },
   {
@@ -2025,7 +2025,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/03/90-90-10-llanta-cocada-ficha.webp"
   },
   {
@@ -2043,7 +2043,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/04/90-90-12-llanta-cocada-XX.webp"
   },
   {
@@ -2060,7 +2060,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Rango de precio según variante publicada. Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2022/09/Espejo-Original-TAILG-WY-257.webp",
     "pricePen": 35
   },
@@ -2078,7 +2078,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Rango de precio según variante publicada. Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/Espejo-Rectangular-TAILG-XC-619.webp",
     "pricePen": 40
   },
@@ -2096,7 +2096,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Rango de precio según variante publicada. Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/03/espejo-retrovisor-tailg-vmp-6mm-s2x-fb-430x430.webp"
   },
   {
@@ -2113,7 +2113,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Rango de precio según variante publicada. Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/Espejo-Redondo-TAILG-WY-032-Negro.webp",
     "pricePen": 35
   },
@@ -2131,7 +2131,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Rango de precio según variante publicada. Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/03/Espejo-Vintage-Original-TAILG-HJ-192.webp",
     "pricePen": 35
   },
@@ -2150,7 +2150,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/Interruptor-Automatico-para-cargador-de-motos-electricas.webp"
   },
   {
@@ -2168,7 +2168,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/12/Llanta-ChaoYang-3.00-10-cocada-6PR-1.webp"
   },
   {
@@ -2186,7 +2186,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/12/Llanta-ChaoYang-3.00-10-cocada-8PR-X.webp"
   },
   {
@@ -2204,7 +2204,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2024/12/1.-llanta-moto-electrica-9090-10.webp"
   },
   {
@@ -2222,7 +2222,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2022/08/1.-llamta-bicimoto-14x2.5-tailun-430x430.webp"
   },
   {
@@ -2240,7 +2240,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/12/llanta-CST-8085-11-TAILG-F7.webp"
   },
   {
@@ -2258,7 +2258,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/12/llanta-CST-80-90-12-CM517-Polaris-ficha.webp"
   },
   {
@@ -2276,7 +2276,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/12/llanta-CST-80-90-12-CM809-Polaris-ficha.webp"
   },
   {
@@ -2294,7 +2294,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/12/llanta-CST-9080-11-F55-C6525E-A.webp"
   },
   {
@@ -2312,7 +2312,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/10/TAILG-Parrilla-Cajuela-F52-0.webp"
   },
   {
@@ -2330,7 +2330,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/10/TAILG-Parrilla-de-cajuela-F55-5.webp"
   },
   {
@@ -2348,7 +2348,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/04/TAILG-X9-PARRILLA-Y.webp"
   },
   {
@@ -2366,7 +2366,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/TAILG-N8-PARRILLA.webp"
   },
   {
@@ -2384,7 +2384,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/06/PLACA-1-430x430.webp"
   },
   {
@@ -2402,7 +2402,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/06/PLACA-2.webp"
   },
   {
@@ -2421,7 +2421,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/05/Puerto-de-carga-TAILG-GB42296-plomo-con-conector-TAILG.webp"
   },
   {
@@ -2441,7 +2441,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/04/Cargador-tailg-72V3A-v.webp"
   },
   {
@@ -2462,7 +2462,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/03/Cargador-de-Plomo-72v3a-TAILG-gb42296.webp"
   },
   {
@@ -2483,7 +2483,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el listado oficial de repuestos y accesorios TAILG Perú (páginas 1-3). Disponibilidad del proveedor: DISPONIBLE. Confirmar montaje/compatibilidad antes de vender.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2024/12/cargador-plomo-72V4A-GB-42296-TAILG.webp"
   },
   {
@@ -2498,7 +2498,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/carenado-frontal-bicimoto-dum-scaled.webp"
   },
   {
@@ -2513,7 +2513,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/cubierta-posapies-posterior-bicimoto-ido-scaled.webp"
   },
   {
@@ -2528,7 +2528,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/carenado-timon-moto-mnl5-scaled.webp"
   },
   {
@@ -2543,7 +2543,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/543-ASIENTO-MOTO-MNQ-scaled.webp"
   },
   {
@@ -2558,7 +2558,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/1185-RESPALDAR-Y-TAPA-TRIMOTO-XUANKU4-scaled.webp"
   },
   {
@@ -2573,7 +2573,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/355-ASIENTO-BICIMOTO-IDO-A-scaled.webp"
   },
   {
@@ -2588,7 +2588,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/413-SOPORTE-CON-RESPALDAR-BICIMOTO-scaled.webp"
   },
   {
@@ -2603,7 +2603,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/brazos-pedal-bicimoto-scaled.webp"
   },
   {
@@ -2618,7 +2618,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/pedales-bicimoto-scaled.webp"
   },
   {
@@ -2633,7 +2633,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/parante-lateral-bicimoto-scaled.webp"
   },
   {
@@ -2648,7 +2648,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/caballete-bicimoto-scaled.webp"
   },
   {
@@ -2663,7 +2663,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/freno-tambor-posterior-110mm-bicimoto-ido-scaled.webp"
   },
   {
@@ -2678,7 +2678,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/aro-2.5-10-diametro-tambor-120mm-bicimotoARO-2.5-10-DIAM.TAMBOR-120MM-BICIMOTO-scaled.webp"
   },
   {
@@ -2693,7 +2693,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/neumatico-tubless-14x2.5-10-bicimoto-scaled.webp"
   },
   {
@@ -2708,7 +2708,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/timon-moto-mnk2-scaled.webp"
   },
   {
@@ -2723,7 +2723,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/timon-moto-hww-scaled.webp"
   },
   {
@@ -2738,7 +2738,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/canastilla-metalica-bicimoto-scaled.webp"
   },
   {
@@ -2753,7 +2753,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/espejos-moto-milano-scaled.webp"
   },
   {
@@ -2768,7 +2768,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/horquilla-supension-moto-mnk3-scaled.webp"
   },
   {
@@ -2783,7 +2783,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/horquilla-suspension-moto-mnk2-scaled.webp"
   },
   {
@@ -2798,7 +2798,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/amortiguador-posterior-293mm-moto-luyuan-scaled.webp"
   },
   {
@@ -2813,7 +2813,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/amortiguador-posterior-225mm-bicimoto-1-scaled.webp"
   },
   {
@@ -2830,7 +2830,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/conector-jack-con-cable-48v4a-bicimoto-scaled.webp"
   },
   {
@@ -2845,7 +2845,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/ramal-electrico-72v-moto-luyuan-scaled.webp"
   },
   {
@@ -2860,7 +2860,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/convertidor-48v-72v-a-12v-moto-scaled.webp"
   },
   {
@@ -2875,7 +2875,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/vonvertidor-72v-60v-a-12v-moto-scaled.webp"
   },
   {
@@ -2890,7 +2890,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/bornera-de-4-entradas-moto-scaled.webp"
   },
   {
@@ -2905,7 +2905,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/bornera-de-6-entradas-moto-scaled.webp"
   },
   {
@@ -2920,7 +2920,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/llave-termica-b40-moto-scaled.webp"
   },
   {
@@ -2935,7 +2935,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/llave-termica-b50-moto-scaled.webp"
   },
   {
@@ -2951,7 +2951,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor. El proveedor expresa la corriente del controlador en su título (A).",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/controlador-con-ventilador-72v50ah-2000w-moto-scal.webp"
   },
   {
@@ -2967,7 +2967,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor. El proveedor expresa la corriente del controlador en su título (A).",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/controlador-48v17ah-350w-bicimoto-scaled.webp"
   },
   {
@@ -2982,7 +2982,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/motor-350w-con-tambor-110mm-bicimoto-little-fruit-.webp"
   },
   {
@@ -2997,7 +2997,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/motor-350w-sin-tambor-bicimoto-nauta-scaled.webp"
   },
   {
@@ -3012,7 +3012,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/1155-LUZ-STOP-CON-DIRECCIONAL-BICIMOTO-DUM24-scaled.webp"
   },
   {
@@ -3027,7 +3027,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/faro-delantero-bicimoto-dum24-scaled.webp"
   },
   {
@@ -3042,7 +3042,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/luz-stop-bicimoto-little-fruit-scaled.webp"
   },
   {
@@ -3057,7 +3057,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/faro-delantero-bicimoto-little-fruit-scaled.webp"
   },
   {
@@ -3078,7 +3078,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/07/bateria-lifepo4-60V30AH-larga-vida-util.webp"
   },
   {
@@ -3099,7 +3099,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/07/bateria-lifepo4-60V24AH-con-5-anos-de-vida-util.webp"
   },
   {
@@ -3120,7 +3120,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/07/bateria-lifepo4-48V30AH-larga-duracion.webp"
   },
   {
@@ -3141,7 +3141,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/07/bateria-lifepo4-48V12AH-para-bicimoto-electrica.webp"
   },
   {
@@ -3162,7 +3162,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/bateria-de-litio-60v20ah-scaled-1.webp"
   },
   {
@@ -3180,7 +3180,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/bateria-plomo-acido-12v20ah-scaled.webp"
   },
   {
@@ -3201,7 +3201,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/07/bateria-lifepo4-4824AH-para-bicimoto.webp"
   },
   {
@@ -3219,7 +3219,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/cargador-48v12ah-litio-bicimoto-scaled.webp"
   },
   {
@@ -3237,7 +3237,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/cargador-sans-60v40ah-litio-moto-scaled.webp"
   },
   {
@@ -3255,7 +3255,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/cargador-72v20ah-plomo-acido-moto-scaled.webp"
   },
   {
@@ -3270,7 +3270,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/acelerador-comando-3-vel.-A-R-trimoto-scaled.webp"
   },
   {
@@ -3285,7 +3285,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/acelerador-con-boton-parking-bicimoto-scaled.webp"
   },
   {
@@ -3300,7 +3300,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/acelerador-comando-3-vel.-P-bicimoto-scaled.webp"
   },
   {
@@ -3315,7 +3315,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "PARCIAL",
     "notes": "Publicado en el catálogo de repuestos de Kayencorp Perú. Precio no visible en el listado; no inventar precio, cotizar con el proveedor.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/acelerador-comando-3-vel.-A-R-trimoto-xuanku4-scaled.webp"
   },
   {
@@ -3334,7 +3334,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/Greenline-Candado-de-Cable-HERMEX-cb15-06.webp"
   },
   {
@@ -3355,7 +3355,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/bateria-plomo-acido-12v-20ah-1.webp"
   },
   {
@@ -3376,7 +3376,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/bateria-12v12ah-tailg.webp"
   },
   {
@@ -3396,7 +3396,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/cargador-72v-4a-greenline-tailg-c.webp"
   },
   {
@@ -3417,7 +3417,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/GREENLINE-BATERIA-LITIO-TIANNENG-48V-12AH-ANGULO.webp"
   },
   {
@@ -3438,7 +3438,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/bateria-litio-48v24ah-l24-greenline-fb.webp"
   },
   {
@@ -3459,7 +3459,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/bateria-litio-48v20ah-t2.webp"
   },
   {
@@ -3480,7 +3480,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/baterias-litio-48v16ah-t16-greenline.webp"
   },
   {
@@ -3499,7 +3499,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/llanta-130-7-12-greenline-r12.webp"
   },
   {
@@ -3518,7 +3518,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/aro-8-trimoto-llanta.webp"
   },
   {
@@ -3537,7 +3537,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/120-70-11-neumatico-michelin.webp"
   },
   {
@@ -3556,7 +3556,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/GreenLine-Tailg-FL1-LLANTA-20-1.95.webp"
   },
   {
@@ -3575,7 +3575,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/camara-de-llanta-bicicletas-1.webp"
   },
   {
@@ -3594,7 +3594,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/camara-de-llanta-bicicletas.webp"
   },
   {
@@ -3615,7 +3615,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/greenline-bateria-grafeno-12v35.5ah-01.webp"
   },
   {
@@ -3634,7 +3634,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/llanta-aro-3-10-trimoto-electrica-inclinado.webp"
   },
   {
@@ -3653,7 +3653,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/piton-para-moto-electrica-greenline-peru.webp"
   },
   {
@@ -3674,7 +3674,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/bateria-12v22ah.webp"
   },
   {
@@ -3693,7 +3693,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/espejo-rendondo-m8-m5-rosca-horario-greenline-frontal04.webp"
   },
   {
@@ -3712,7 +3712,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/espejo-brillate-trimoto-greenline-frontal2.webp"
   },
   {
@@ -3732,7 +3732,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/convertidor-voltaje-6072v-12v-tailg-fb.webp"
   },
   {
@@ -3751,7 +3751,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/chapa-encendido-bicimoto-vmp-s2x-s4-p20-l24-greenline.webp"
   },
   {
@@ -3770,7 +3770,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/posapie-copiloto-r10-greenline-frontal.webp"
   },
   {
@@ -3790,7 +3790,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/suspencion-delantera-r12-r10-greenline-frontal.webp"
   },
   {
@@ -3809,7 +3809,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/kit-posapie-copiloto-vmp-greenline-frontall.webp"
   },
   {
@@ -3828,7 +3828,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/posapie-copiloto-lion-greenline-frontal.webp"
   },
   {
@@ -3847,7 +3847,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/Maleta-delivery-abierto.webp"
   },
   {
@@ -3867,7 +3867,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/GREENLINE-MOTOR-MOTO-ELECTRICA-HUB-Y7-C-72V-1000W.webp"
   },
   {
@@ -3887,7 +3887,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/GREENLINE-LLAVE-TERMOMAGNETICA-DC-40A-MOTO-ELECTRICA-02.webp"
   },
   {
@@ -3906,7 +3906,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/GREENLINE-AMORTIGUADOR-MONO-SHOCK-R12-R10.webp"
   },
   {
@@ -3927,7 +3927,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/PowerAmp-48v24ah-bateria-tailg-t3-t5-3.webp"
   },
   {
@@ -3948,7 +3948,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/GREENLINE-BATERIA-PLOMO-12V-45AH-LATERAL1.webp"
   },
   {
@@ -3969,7 +3969,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/GREENLINE-BATERIA-LITIO-MATRIX-36V-36AH-ANG1.webp"
   },
   {
@@ -3988,7 +3988,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/CASCO-MATE-BLANCO-RNG701M.webp"
   },
   {
@@ -4007,7 +4007,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/espejo-original-F52-X.webp"
   },
   {
@@ -4026,7 +4026,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/Candado-de-Freno-Disco-con-Alarma.webp"
   },
   {
@@ -4045,7 +4045,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/Candado-de-Freno-Disco.webp"
   },
   {
@@ -4066,7 +4066,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/cargador-plomo-GB-42296-TAILG-72V4A.webp"
   },
   {
@@ -4085,7 +4085,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/espejo-original-tailg-x9-a1-x.webp"
   },
   {
@@ -4106,7 +4106,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/cargador-tailg-72v3a-plomo-acido-gb42296-1.webp"
   },
   {
@@ -4125,7 +4125,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/espejo-retrovisor-8mm-carcasa-color-plata.webp"
   },
   {
@@ -4144,7 +4144,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/espejo-retrovisor-tailg-pionero-gris-Logox.webp"
   },
   {
@@ -4163,7 +4163,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/espejo-retrovisor-tailg-m2-vintage.webp"
   },
   {
@@ -4182,7 +4182,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/WhatsApp-Image-2025-11-07-at-9.21.36-PM.webp"
   },
   {
@@ -4203,7 +4203,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/04/60V3A-cargador-tailg-hg.webp"
   },
   {
@@ -4222,7 +4222,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/CAJUELA-45L-negro-TAILG-X9.webp"
   },
   {
@@ -4242,7 +4242,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/CARGADOR-1.webp"
   },
   {
@@ -4261,7 +4261,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/Candado-de-Freno-Disco-con-Alarma-Accesorios-xx.webp"
   },
   {
@@ -4281,7 +4281,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/INTERRUPTOR-DOS-TOMAS-3.webp"
   },
   {
@@ -4302,7 +4302,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/Bateria-de-Litio-72V73Ah-Farasis-Celda-NMC-Tipo-Pouch-P.png"
   },
   {
@@ -4323,7 +4323,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/Bateria12V22AH-TAILG-Plomo-Acido-con-Grafeno.webp"
   },
   {
@@ -4344,7 +4344,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/Bateria12V23AH-TIAN-NENG-Plomo-Acido-con-Grafeno.webp"
   },
   {
@@ -4363,7 +4363,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/TAILG-ESPEJO-D.webp"
   },
   {
@@ -4384,7 +4384,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/greenway-bateria-48v24ah-pack.png"
   },
   {
@@ -4404,7 +4404,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Electrica.pe.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://electrica.pe/wp-content/uploads/987517922-8.png"
   },
   {
@@ -4425,7 +4425,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo TAILG Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/TAILG-Cargador-de-litio-60V-5A-LiFEPO4-73V.webp"
   },
   {
@@ -4446,7 +4446,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo TAILG Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2026/10/cargador-de-litio-output-59.0V-3V.webp"
   },
   {
@@ -4465,7 +4465,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo TAILG Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/10/Espejo-Deportivo-8mm-Original-TAILG-WY-261.webp"
   },
   {
@@ -4485,7 +4485,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo TAILG Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://tailg.com.pe/wp-content/uploads/2025/06/Cargador-de-Litio-48V-3A-Output-54.6V-frontal.webp"
   },
   {
@@ -4500,7 +4500,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Kayencorp Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/carenado-timon-moto-mnl5-scaled.webp"
   },
   {
@@ -4519,7 +4519,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Kayencorp Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/guardafango-posterior-bicimoto-ido_3-scaled.webp"
   },
   {
@@ -4534,7 +4534,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Kayencorp Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/pastilla-de-freno-motor-mnk2-scaled.webp"
   },
   {
@@ -4549,7 +4549,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Kayencorp Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/neumatico-tubless-14x2.5-10-bicimoto-scaled.webp"
   },
   {
@@ -4564,7 +4564,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Kayencorp Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/timon-moto-mnk2-scaled.webp"
   },
   {
@@ -4581,7 +4581,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Kayencorp Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/bateria-plomo-acido-12v20ah-scaled.webp"
   },
   {
@@ -4598,7 +4598,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_CON_CONDICIONES",
     "notes": "Repuesto oficial extraído de catálogo Kayencorp Perú.",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://kayencorp.com/wp-content/uploads/2024/05/cargador-48v20ah-litio-bicimoto-scaled.webp"
   },
   {
@@ -4619,7 +4619,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/10/Avioncito-rosa-con-pequena-aviadora.png"
   },
   {
@@ -4640,7 +4640,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/10/24V-Kids-Electric-Dirt-Bike-with-300W-Motor-16in-Wheels-Handle-Acceleration-Adjustable-Seat-Power-Display-Hand-Brakes.jpg"
   },
   {
@@ -4661,7 +4661,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/08/H5f0aef14596341cdbf7f2001d7623c9fe.jpg"
   },
   {
@@ -4682,7 +4682,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/06/XCS_9366.jpg"
   },
   {
@@ -4703,7 +4703,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/06/image_1-2026-06-02T160733.857-scaled.jpg"
   },
   {
@@ -4724,7 +4724,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/06/image_1-2026-06-03T135353.308.jpg"
   },
   {
@@ -4745,7 +4745,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/05/image_1-91.jpg"
   },
   {
@@ -4766,7 +4766,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/05/image_1-2026-05-31T153523.566.jpg"
   },
   {
@@ -4787,7 +4787,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/05/71iwKzRbnhL._AC_SL1500_.jpg"
   },
   {
@@ -4808,7 +4808,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/05/image_1-86.jpg"
   },
   {
@@ -4829,7 +4829,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/05/image_1-25.png"
   },
   {
@@ -4850,7 +4850,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/05/664357965_1907319133235294_8433895358544345680_n.jpg"
   },
   {
@@ -4871,7 +4871,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/05/image_1-2026-05-28T234206.764-1.jpg"
   },
   {
@@ -4892,7 +4892,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2026/05/454505619_1030243198726371_6949391567673916658_n.jpg"
   },
   {
@@ -4913,7 +4913,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/12/WhatsApp-Image-2025-11-30-at-11.49.49-AM-2.jpg"
   },
   {
@@ -4934,7 +4934,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/11/onemoto-200w-electric-motorbike-24v-kids-dirt-bike-Kids-Electric-Ride-On-Motorbike-Toys-2-1.jpg"
   },
   {
@@ -4955,7 +4955,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/11/981028523-2l.jpg"
   },
   {
@@ -4976,7 +4976,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/10/image_1-2025-10-16T204004.586.jpg"
   },
   {
@@ -4997,7 +4997,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/10/image_1-38.jpg"
   },
   {
@@ -5018,7 +5018,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/08/image_1-2025-08-29T164639.804-1.jpg"
   },
   {
@@ -5039,7 +5039,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/08/527579370_778875294667071_2394729507726862025_n-1.jpg"
   },
   {
@@ -5060,7 +5060,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/08/WhatsApp-Image-2025-08-22-at-12.14.15-PM.jpg"
   },
   {
@@ -5081,7 +5081,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/08/image_1-2025-08-20T164151.053.jpg"
   },
   {
@@ -5102,7 +5102,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/07/513742290_1376792350073252_8300465781573087065_n.jpg"
   },
   {
@@ -5123,7 +5123,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/07/513558022_707048038708347_7926313068087728579_n.jpg"
   },
   {
@@ -5144,7 +5144,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/07/www.centurymotors.pe_.jpg"
   },
   {
@@ -5165,7 +5165,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/07/www.centurymotors.pe_.png"
   },
   {
@@ -5186,7 +5186,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/06/image_33.jpg"
   },
   {
@@ -5207,7 +5207,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/03/image_1-15.jpg"
   },
   {
@@ -5228,7 +5228,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/02/image_1-49.jpg"
   },
   {
@@ -5249,7 +5249,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/02/71Z2jetEzRL._AC_SL1500_.jpg"
   },
   {
@@ -5270,7 +5270,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/01/image_1-23.jpg"
   },
   {
@@ -5291,7 +5291,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/01/image_32.jpg"
   },
   {
@@ -5312,7 +5312,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/01/image_1-2.jpg"
   },
   {
@@ -5333,7 +5333,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2025/01/H5fc055f554b042e3bc6bc750c95c541aU.jpg"
   },
   {
@@ -5354,7 +5354,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2024/10/H4fe3683ec30c4a7b834ae503896723a5V.jpg"
   },
   {
@@ -5375,7 +5375,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2024/08/D_NQ_NP_2X_684866-MPE69949211041_062023-F.jpg"
   },
   {
@@ -5396,7 +5396,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2024/04/cf06d271-9300-4474-8d00-c613e7a12473.jpg"
   },
   {
@@ -5417,7 +5417,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2024/04/super73-s1-e-bike.jpg"
   },
   {
@@ -5438,7 +5438,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2023/11/71xVy-UUl9L._AC_SL1500_.jpg"
   },
   {
@@ -5459,7 +5459,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2023/11/tractor-2-1.jpg"
   },
   {
@@ -5480,7 +5480,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/12/Hdd21db97b9ea4784b5ca1b476322442cE.jpg_960x960.jpg"
   },
   {
@@ -5501,7 +5501,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/11/2022-New-Model-Boyi-Factory-988-12V-4-Motors-Big-Kids-Children-Battery-Electric-Toy-Driving-Car-2.jpg"
   },
   {
@@ -5522,7 +5522,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/11/716m5OI9oUL._AC_SL1500_.jpg"
   },
   {
@@ -5543,7 +5543,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/11/Copia-de-Copia-de-Copia-de-tr-1.png"
   },
   {
@@ -5564,7 +5564,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/10/web-maverick.jpg"
   },
   {
@@ -5585,7 +5585,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/10/Scooter-Plegable-Patin2.jpg"
   },
   {
@@ -5606,7 +5606,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/09/H5ab1d42a1686424b9ab4a0bdf326c836O.jpg"
   },
   {
@@ -5627,7 +5627,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/09/H00a4d4123ee949e9ae8ac06fd23be9411.jpg"
   },
   {
@@ -5648,7 +5648,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/09/298294528_1984278621962706_3475201095668243621_n.jpg"
   },
   {
@@ -5669,7 +5669,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/09/298467007_4864125893692755_3656167639756867302_n.jpg"
   },
   {
@@ -5690,7 +5690,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/09/bateria-de-litio-60v-20ah-maleta-red.jpg"
   },
   {
@@ -5711,7 +5711,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/09/298525260_1408256519671390_2857251968738267585_n-scaled.jpg"
   },
   {
@@ -5732,7 +5732,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/09/298567027_3390877941199164_5653578506951289474_n-scaled.jpg"
   },
   {
@@ -5753,7 +5753,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/09/High-Quality-36V-48V-350W-BLDC-Motor-Controller-for-Electric-Bicycle-and-Scooter.jpg"
   },
   {
@@ -5774,7 +5774,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/09/6743094d-3169-4ddc-b8da-52d1ac20521a-1.jpg"
   },
   {
@@ -5795,7 +5795,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/09/bateria-60v-20ah-narada-1.png"
   },
   {
@@ -5816,7 +5816,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/08/8ba66722-61a9-47d3-8bab-dfa8f5b8679f.fdf12e27fd1d76f15535cf3900be703a.jpg"
   },
   {
@@ -5837,7 +5837,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/08/megastar_sport_edition_2_seater_12v_green_buggy_utv_style_kids_electric_rideon_car.jpg"
   },
   {
@@ -5858,7 +5858,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/08/HTB1F2soXyrxK1RkHFCc763QCVXac.png"
   },
   {
@@ -5879,7 +5879,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/08/H36ea87cfdd9d4efeb65036969b221d3cQ.jpg"
   },
   {
@@ -5900,7 +5900,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/07/1337129_20200823054228_5528_600x600.jpg"
   },
   {
@@ -5921,7 +5921,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/07/Copia-de-Copia-de-tr-4-1.png"
   },
   {
@@ -5942,7 +5942,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/07/Hba25f5fe7f5d4486847dafdfc7b5208cM.jpg"
   },
   {
@@ -5963,7 +5963,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/07/Ha8c1bb63788e4d3596e0d9a207744618D.jpg"
   },
   {
@@ -5984,7 +5984,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/07/s-l1600.jpg"
   },
   {
@@ -6005,7 +6005,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/07/H83df4740e250496e857c6c1a9kk09934f18.jpg"
   },
   {
@@ -6026,7 +6026,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/07/5b83b7ef-fddf-47e9-b5d3-ad11ed15f2d6.jpg"
   },
   {
@@ -6047,7 +6047,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/07/61lrJ2kcmL._AC_SL1500_.jpg"
   },
   {
@@ -6068,7 +6068,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/07/Go-Kart-Ferrari-century-kids4.jpg"
   },
   {
@@ -6089,7 +6089,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/06/pack-bateria-12v-15ah-li-ion-samsung-lg.jpg"
   },
   {
@@ -6110,7 +6110,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/06/2016-New-P1-Licensed-Best-Ride-on-c2.jpg"
   },
   {
@@ -6131,7 +6131,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/06/128738168_203836981298670_1675278411822741683_n.jpg"
   },
   {
@@ -6152,7 +6152,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/06/78325600-a9b8-42c7-82f4-3115d379412c.jpg"
   },
   {
@@ -6173,7 +6173,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/06/61D83VrczXL._AC_SL1000_.jpg"
   },
   {
@@ -6194,7 +6194,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/06/motocargas-electricas-800w.png"
   },
   {
@@ -6215,7 +6215,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/06/nave-espacial-2.jpg"
   },
   {
@@ -6236,7 +6236,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/06/a0a145c425b1c320e72a9fbb44348767_tn.jpg"
   },
   {
@@ -6257,7 +6257,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/06/H9150ce6f2d0d4d63b1907f3592d7f3feb.jpg_.jpg"
   },
   {
@@ -6278,7 +6278,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/06/6.jpg"
   },
   {
@@ -6299,7 +6299,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/06/ducati-12v.jpg"
   },
   {
@@ -6320,7 +6320,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/06/Hbdb4942a77ac4401b551a85d382007fbf.jpg"
   },
   {
@@ -6341,7 +6341,7 @@ export const OFFICIAL_PARTS: SupplierPart[] = [
     "sourceCheckedOn": "2026-10-31",
     "dataStatus": "VERIFICADO_EN_FUENTE",
     "notes": "Registrado automáticamente desde https://centurymotors.pe",
-    "ownStock": 0,
+    "ownStock": 20,
     "imageUrl": "https://centurymotors.pe/wp-content/uploads/2022/06/81090552_2096788053757151_241847735832018944_o.jpg"
   }
 ];

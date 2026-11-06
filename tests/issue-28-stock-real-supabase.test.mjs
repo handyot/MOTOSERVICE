@@ -114,9 +114,11 @@ test('Issue #28 - 5. Eliminación de constantes fijas de 15 unidades en orden y 
     'order-service.ts no debe asignar estáticamente 15 unidades'
   );
 
-  // En catálogo y modal debe leerse ownStock
-  assert.ok(catalogSectionCode.includes('ownStock'), 'EcoMotoCatalogSection debe considerar ownStock');
-  assert.ok(partModalCode.includes('ownStock'), 'PartDetailModal debe considerar ownStock');
+  // En catálogo y modal debe leerse ownStock (centralizado en lib/catalog/part-stock.ts)
+  const partStockCode = fs.readFileSync(new URL('../lib/catalog/part-stock.ts', import.meta.url), 'utf8');
+  assert.ok(partStockCode.includes('ownStock'), 'part-stock.ts debe considerar ownStock');
+  assert.ok(catalogSectionCode.includes('getCatalogPartStock'), 'EcoMotoCatalogSection debe usar getCatalogPartStock');
+  assert.ok(partModalCode.includes('getCatalogPartStock'), 'PartDetailModal debe usar getCatalogPartStock');
 });
 
 test('Issue #28 - 6. getVerifiedCatalogPart no retorna la constante fija 15', () => {

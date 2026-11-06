@@ -32,6 +32,7 @@ import {
 } from './order-core.mjs';
 import { canPurchaseProduct } from '../catalog/product-status-core.mjs';
 import { OFFICIAL_PARTS } from '../../data/ecomoto-data';
+import { getCatalogPartStock } from '../catalog/part-stock';
 import {
   GuestCheckoutInput,
   OrderRecord,
@@ -240,12 +241,7 @@ export async function createOrder(
           currency: 'PEN',
           category: official.category,
           isDirectSale: true,
-          stockAvailable:
-            official.stockStatus === 'AGOTADO_EN_PAGINA'
-              ? 0
-              : typeof official.ownStock === 'number'
-              ? official.ownStock
-              : 10,
+          stockAvailable: getCatalogPartStock(official),
           dataStatus: 'ACTIVO',
           estado: true,
         };
